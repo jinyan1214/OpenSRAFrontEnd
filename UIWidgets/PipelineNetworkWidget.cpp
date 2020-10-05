@@ -49,7 +49,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QVBoxLayout>
-#include <QComboBox>
 #include <QPushButton>
 #include <QGroupBox>
 #include <QJsonObject>

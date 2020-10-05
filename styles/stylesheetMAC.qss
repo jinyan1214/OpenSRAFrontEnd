@@ -192,6 +192,13 @@ QTreeView#treeViewOnTheLeft::item:selected:!active {
     background: rgb(63, 147, 168);
 }
 
+QComboBox {
+    min-width: 8em;
+}
+
+/*----------------------------------------------------------------------------*/
+/* QTableWidget                                                                 */
+/*----------------------------------------------------------------------------*/
 
 QTableWidget {
 
@@ -208,10 +215,5 @@ QHeaderView::section {
     font: bold 14px;
     padding-left: 4px;
     border: 1px solid white;
-}
-
-
-QComboBox {
-    min-width: 8em;
 }
 

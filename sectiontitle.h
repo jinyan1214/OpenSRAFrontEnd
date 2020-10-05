@@ -61,7 +61,6 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QGridLayout>
-class QComboBox;
 
 class SectionTitle : public QFrame
 {

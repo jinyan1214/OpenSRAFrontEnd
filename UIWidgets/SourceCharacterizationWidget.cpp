@@ -87,7 +87,7 @@ SourceCharacterizationWidget::~SourceCharacterizationWidget()
 
 bool SourceCharacterizationWidget::outputToJSON(QJsonObject &jsonObject)
 {
-
+    return true;
 }
 
 

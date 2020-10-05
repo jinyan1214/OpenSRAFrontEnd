@@ -251,7 +251,9 @@ QTreeView#treeViewOnTheLeft::item:selected:!active {
 
 QComboBox {
     font-size: 10pt;
-    border:  solid gray;
+    border:  1px solid gray;
+    border-radius: 2px;
+
     /*min-width: 6em;*/
 }
 
@@ -267,4 +269,23 @@ QComboBox:!editable:on, QComboBox::drop-down:editable:on {
     background: rgb(240, 240, 240);
 }
 
+/*----------------------------------------------------------------------------*/
+/* QTableWidget                                                                 */
+/*----------------------------------------------------------------------------*/
 
+QTableWidget {
+
+background: rgb(240, 240, 240);
+border: 1px solid white;
+gridline-color: white;
+
+selection-background-color: rgb(69, 187, 217);
+}
+
+QHeaderView::section {
+    background-color: #64B5F6;
+    color: black;
+    font: bold 14px;
+    padding-left: 4px;
+    border: 1px solid white;
+}

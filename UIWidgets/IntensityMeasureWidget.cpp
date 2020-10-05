@@ -141,7 +141,8 @@ QGridLayout* IntensityMeasureWidget::getIMLayout(void)
     auto modelSelectCombo = new QComboBox();
     modelSelectCombo->addItem("Median NGAWest2 model (preferred, reference)");
     modelSelectCombo->setCurrentIndex(0);
-    modelSelectCombo->setMinimumWidth(800);
+    modelSelectCombo->setMinimumWidth(300);
+    modelSelectCombo->setMaximumWidth(450);
 
     auto ModelParam1Label = new QLabel("Model Parameter 1:");
     auto ModelParam1LineEdit = new QLineEdit();

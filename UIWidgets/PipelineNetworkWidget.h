@@ -50,7 +50,6 @@ class MapGraphicsView;
 }
 }
 
-class QComboBox;
 class QGroupBox;
 
 class PipelineNetworkWidget : public  SimCenterAppWidget

@@ -144,7 +144,8 @@ QGroupBox* DecisionVariableWidget::getNumRepairsWidget(void)
     auto modelSelectCombo = new QComboBox();
     modelSelectCombo->addItem("O’Rouke (2020, preferred)");
     modelSelectCombo->setCurrentIndex(0);
-    modelSelectCombo->setMinimumWidth(800);
+    modelSelectCombo->setMinimumWidth(300);
+    modelSelectCombo->setMaximumWidth(450);
 
     auto sourceDemandLabel = new QLabel("Source for Demand");
     sourceDemandLabel->setStyleSheet("font-weight: bold; color: black");
