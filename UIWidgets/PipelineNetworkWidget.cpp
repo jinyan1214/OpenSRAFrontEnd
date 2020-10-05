@@ -71,7 +71,7 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent)
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
-    label->setText(QString("Pipeline Network"));
+    label->setText(QString("Infrastructure"));
     label->setMinimumWidth(150);
 
     theHeaderLayout->addWidget(label);
@@ -137,7 +137,7 @@ bool PipelineNetworkWidget::copyFiles(QString &destDir)
 
 QGroupBox* PipelineNetworkWidget::getInputWidget(void)
 {
-    QGroupBox* groupBox = new QGroupBox("Enter Pipeline Information");
+    QGroupBox* groupBox = new QGroupBox("Enter Component Locations and Characteristics");
     QGridLayout* gridLayout = new QGridLayout(this);
     groupBox->setLayout(gridLayout);
     groupBox->setFlat(true);
@@ -145,7 +145,7 @@ QGroupBox* PipelineNetworkWidget::getInputWidget(void)
     auto smallVSpacer = new QSpacerItem(0,10);
 
     QLabel* topText = new QLabel();
-    topText->setText("Load pipeline information from CSV File (headers in CSV file must match those shown in the table below)");
+    topText->setText("Load information from CSV File (headers in CSV file must match those shown in the table below)");
 
     QLabel* pathText = new QLabel();
     pathText->setText("Import Path:");
@@ -167,7 +167,7 @@ QGroupBox* PipelineNetworkWidget::getInputWidget(void)
     auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
 
     // Text label that says pipeline data
-    QLabel* pipeLineDataText = new QLabel("Pipeline Data");
+    QLabel* pipeLineDataText = new QLabel("Locations and Characteristics of the Components to the Infrastructure");
     pipeLineDataText->setStyleSheet("font-weight: bold; color: black");
 
 
@@ -202,7 +202,7 @@ QGroupBox* PipelineNetworkWidget::getInputWidget(void)
 
 QGroupBox* PipelineNetworkWidget::getVisualizationWidget(void)
 {
-    QGroupBox* groupBox = new QGroupBox("Visualize Pipeline Network");
+    QGroupBox* groupBox = new QGroupBox("Visualize Infrastructure");
     QGridLayout* layout = new QGridLayout(this);
     groupBox->setLayout(layout);
     groupBox->setFlat(true);
@@ -210,7 +210,7 @@ QGroupBox* PipelineNetworkWidget::getVisualizationWidget(void)
     auto smallVSpacer = new QSpacerItem(0,10);
 
     QLabel* topText = new QLabel();
-    topText->setText("Use the following shapes\nto select a subset of\nsegments to analyze");
+    topText->setText("Use the following shapes\nto select a subset of\ncomponents to analyze");
     topText->setStyleSheet("font-weight: bold; color: black; text-align: center");
 
     QPushButton *circleButton = new QPushButton();
@@ -222,7 +222,7 @@ QGroupBox* PipelineNetworkWidget::getVisualizationWidget(void)
     rectangleButton->setMaximumWidth(150);
 
     QLabel* bottomText = new QLabel();
-    bottomText->setText("Click the “Apply” button to\nuse the subset of segments");
+    bottomText->setText("Click the “Apply” button to\nuse the subset of components");
     bottomText->setStyleSheet("font-weight: bold; color: black; text-align: center");
 
     QPushButton *applyButton = new QPushButton();

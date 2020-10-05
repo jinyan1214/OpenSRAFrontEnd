@@ -110,7 +110,7 @@ WorkflowAppOpenSRA::WorkflowAppOpenSRA(QWidget *parent) : WorkflowAppWidget(pare
     horizontalLayout->addWidget(theComponentSelection);
 
     theComponentSelection->addComponent(QString("General\nInformation"), theGenInfoWidget);
-    theComponentSelection->addComponent(QString("Pipeline\nNetwork"), thePipelineNetworkWidget);
+    theComponentSelection->addComponent(QString("Infrastructure"), thePipelineNetworkWidget);
     theComponentSelection->addComponent(QString("Source\nCharacterization"), theSourceCharacterizationWidget);
     theComponentSelection->addComponent(QString("Intensity\nMeasure"), theIntensityMeasureWidget);
     theComponentSelection->addComponent(QString("Engineering\nDemand Parameter"), theEDPWidget);

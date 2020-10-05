@@ -186,7 +186,6 @@ QGridLayout* SourceCharacterizationWidget::getSourceLayout(void)
     tableRuptureScenario->verticalHeader()->setVisible(false);
     tableRuptureScenario->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-
     // Export objects
     QLabel* exportLabel = new QLabel("Export folder:");
 

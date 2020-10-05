@@ -157,6 +157,15 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     seedLineEdit->setText("1");
     seedLineEdit->setMaximumWidth(100);
 
+
+    UQLabel->hide();
+    dataGenLabel->hide();
+    dataGenCombo->hide();
+    numSamplesLabel->hide();
+    numSamplesLineEdit->hide();
+    seedLabel->hide();
+    seedLineEdit->hide();
+
     auto assessmentSetupLabel = new QLabel("Assessment Setup");
     assessmentSetupLabel->setStyleSheet("font-weight: bold; color: black");
 

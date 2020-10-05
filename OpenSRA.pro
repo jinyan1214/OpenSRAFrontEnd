@@ -23,10 +23,10 @@ ARCGIS_RUNTIME_VERSION = 100.9
 include($$PWD/arcgisruntime.pri)
 
 win32 {
-    RC_ICONS = icons/NHERI-EEUQ-Icon.ico
+    RC_ICONS = icons/openSRA-icon.ico
 } else {
     mac {
-    ICON = icons/NHERI-EEUQ-Icon.icns
+    ICON = icons/openSRA-icon.icns
     }
 }
 

@@ -164,7 +164,7 @@ QGroupBox* DamageMeasureWidget::getPipeStrainWidget(void)
 
     auto weightLabel = new QLabel("Weight:");
     auto weightLineEdit = new QLineEdit();
-    weightLineEdit->setText("100");
+    weightLineEdit->setText("1");
     weightLineEdit->setMaximumWidth(100);
 
     QPushButton *addRunListButton = new QPushButton();
@@ -178,7 +178,7 @@ QGroupBox* DamageMeasureWidget::getPipeStrainWidget(void)
     QListWidget *listWidget = new QListWidget(this);
 
     // Sample list widget item
-    new QListWidgetItem(tr("1. Median model - weight = 1)"), listWidget);
+    new QListWidgetItem(tr("1. Median model - weight = 1"), listWidget);
 
     listWidget->setMaximumWidth(400);
     listWidget->setMinimumWidth(300);

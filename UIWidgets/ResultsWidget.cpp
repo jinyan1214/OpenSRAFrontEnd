@@ -48,6 +48,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QListWidget>
 #include <QVBoxLayout>
 #include <QGroupBox>
+#include <QLineEdit>
+#include <QPushButton>
 #include <QJsonObject>
 #include <QCheckBox>
 #include <QMessageBox>
@@ -90,8 +92,33 @@ ResultsWidget::ResultsWidget(QWidget *parent)
 
     theVizLayout->addWidget(mapViewWidget);
 
+    // Export objects
+    QHBoxLayout *theExportLayout = new QHBoxLayout();
+
+    QLabel* exportLabel = new QLabel("Export folder:");
+
+    auto exportPathLineEdit = new QLineEdit();
+    exportPathLineEdit->setMaximumWidth(1000);
+    exportPathLineEdit->setMinimumWidth(400);
+    exportPathLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+    QPushButton *exportBrowseFileButton = new QPushButton();
+    exportBrowseFileButton->setText(tr("Browse"));
+    exportBrowseFileButton->setMaximumWidth(150);
+
+    QPushButton *exportFileButton = new QPushButton();
+    exportFileButton->setText(tr("Export to CSV"));
+    exportFileButton->setMaximumWidth(150);
+
+    theExportLayout->addStretch();
+    theExportLayout->addWidget(exportLabel);
+    theExportLayout->addWidget(exportPathLineEdit);
+    theExportLayout->addWidget(exportBrowseFileButton);
+    theExportLayout->addWidget(exportFileButton);
+
     mainLayout->addLayout(theHeaderLayout);
     mainLayout->addLayout(theVizLayout);
+    mainLayout->addLayout(theExportLayout);
 
     this->setLayout(mainLayout);
     this->setMinimumWidth(640);

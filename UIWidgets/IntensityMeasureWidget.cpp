@@ -164,7 +164,7 @@ QGridLayout* IntensityMeasureWidget::getIMLayout(void)
 
     auto weightLabel = new QLabel("Weight:");
     auto weightLineEdit = new QLineEdit();
-    weightLineEdit->setText("100");
+    weightLineEdit->setText("1");
     weightLineEdit->setMaximumWidth(100);
 
     QPushButton *addRunListButton = new QPushButton();
@@ -189,11 +189,11 @@ QGridLayout* IntensityMeasureWidget::getIMLayout(void)
     spatialCorrCheckbox->setChecked(true);
     spectralCorrCheckbox->setChecked(true);
 
-    QRadioButton *spatialCorr1 = new QRadioButton("Jayaram & Baker (2009)");
+    QRadioButton *spatialCorr1 = new QRadioButton("Jayaram && Baker (2009)");
     QRadioButton *spatialCorr2 = new QRadioButton("Method 2");
     spatialCorr1->setChecked(true);
 
-    QRadioButton *spectralCorr1 = new QRadioButton("Baker & Jayaram (2008)");
+    QRadioButton *spectralCorr1 = new QRadioButton("Baker && Jayaram (2008)");
     QRadioButton *spectralCorr2 = new QRadioButton("Method 2");
     spectralCorr1->setChecked(true);
 
@@ -203,7 +203,7 @@ QGridLayout* IntensityMeasureWidget::getIMLayout(void)
     QListWidget *listWidget = new QListWidget();
 
     // Sample list widget item
-    new QListWidgetItem(tr("1. Median NGAWest2 model - weight = 1)"), listWidget);
+    new QListWidgetItem(tr("1. Median NGAWest2 model - weight = 1"), listWidget);
 
     listWidget->setMaximumWidth(400);
     listWidget->setMinimumWidth(300);
