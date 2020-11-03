@@ -38,12 +38,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Latest revision: 10.01.2020
 
 #include "ResultsWidget.h"
+#include "VisualizationWidget.h"
 #include "sectiontitle.h"
+#include "TreeModel.h"
 
 // GIS headers
-#include "Basemap.h"
-#include "Map.h"
-#include "MapGraphicsView.h"
+#include "GroupLayer.h"
+#include "LayerListModel.h"
+#include "KmlLayer.h"
+#include "FeatureLayer.h"
+#include "ArcGISMapImageLayer.h"
+#include "RasterLayer.h"
 
 #include <QListWidget>
 #include <QVBoxLayout>
@@ -54,12 +59,29 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QCheckBox>
 #include <QMessageBox>
 #include <QDebug>
+#include <QJsonDocument>
+#include <QNetworkReply>
+#include <QJsonArray>
+
+#include <QTreeView>
 
 using namespace Esri::ArcGISRuntime;
 
-ResultsWidget::ResultsWidget(QWidget *parent)
-    : SimCenterWidget(parent), resultWidget(nullptr)
+ResultsWidget::ResultsWidget(QWidget *parent,  VisualizationWidget* visWidget)
+    : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
+    landslideLayer = nullptr;
+    liquefactionLayer = nullptr;
+    geologicMapLayer = nullptr;
+    pgaPolygonLayer = nullptr;
+    pgaOverlayLayer = nullptr;
+    pgaContourLayer = nullptr;
+    epicenterLayer = nullptr;
+    eventLayer = nullptr;
+
+    downloadJsonReply = nullptr;
+    baseCGSURL = "https://gis.conservation.ca.gov/server/rest/services/CGS/Geologic_Map_of_California/MapServer";
+
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);
 
@@ -79,18 +101,9 @@ ResultsWidget::ResultsWidget(QWidget *parent)
 
     theVizLayout->addWidget(visSelectBox);
 
-    // Create the Widget view
-    mapViewWidget = new MapGraphicsView(this);
+    auto theVisWidget = theVisualizationWidget->getVisWidget();
 
-    // Create a map using the topographic Basemap
-    mapObject = new Map(Basemap::topographic(this), this);
-
-    mapViewWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-
-    // Set map to map view
-    mapViewWidget->setMap(mapObject);
-
-    theVizLayout->addWidget(mapViewWidget);
+    theVizLayout->addWidget(theVisWidget);
 
     // Export objects
     QHBoxLayout *theExportLayout = new QHBoxLayout();
@@ -122,6 +135,14 @@ ResultsWidget::ResultsWidget(QWidget *parent)
 
     this->setLayout(mainLayout);
     this->setMinimumWidth(640);
+
+    //    QString mapServerUrl =  "/Users/steve/Desktop/SimCenter/OpenSRA/Examples/CA_Precip_1981-2010_30m_WGS84_clip_mm.tif";
+
+    //    auto shpLayer = theVisualizationWidget->createAndAddRasterLayer(mapServerUrl,"Precipitation Map",nullptr);
+
+    //    if(shpLayer != nullptr)
+    //        theVisualizationWidget->addLayerToMap(shpLayer);
+
 }
 
 
@@ -149,11 +170,12 @@ int ResultsWidget::processResults(QString &filenameResults, QString &filenameTab
 }
 
 
+
 QGroupBox* ResultsWidget::getVisSelectionGroupBox(void)
 {
     QGroupBox* groupBox = new QGroupBox("Select Data to Visualize");
     groupBox->setMaximumWidth(250);
-//    groupBox->setStyleSheet("background-color: white;");
+    //    groupBox->setStyleSheet("background-color: white;");
 
     auto layout = new QVBoxLayout();
     groupBox->setLayout(layout);
@@ -163,7 +185,11 @@ QGroupBox* ResultsWidget::getVisSelectionGroupBox(void)
 
     QCheckBox* CGS1Checkbox = new QCheckBox("CGS Geologic Map (Ref.)");
     QCheckBox* CGS2Checkbox = new QCheckBox("CGS Liquefaction Susceptibility\nMap (Ref.)");
-    CGS1Checkbox->setChecked(true);
+    QCheckBox* CGS3Checkbox = new QCheckBox("CGS Landslide Susceptibility\nMap (Ref.)");
+
+    connect(CGS1Checkbox,&QCheckBox::clicked,this,&ResultsWidget::showCGSGeologicMap);
+    connect(CGS2Checkbox,&QCheckBox::clicked,this,&ResultsWidget::showCGSLiquefactionMap);
+    connect(CGS3Checkbox,&QCheckBox::clicked,this,&ResultsWidget::showCGSLandslideMap);
 
     auto DVLabel = new QLabel("Decision Variables:");
     DVLabel->setStyleSheet("font-weight: bold; color: black");
@@ -186,9 +212,13 @@ QGroupBox* ResultsWidget::getVisSelectionGroupBox(void)
     othersLabel->setStyleSheet("font-weight: bold; color: black");
     QCheckBox* shakeMapCheckbox = new QCheckBox("ShakeMap");
 
+    connect(shakeMapCheckbox,&QCheckBox::clicked,this,&ResultsWidget::showShakeMapLayer);
+
+
     layout->addWidget(mapDataLabel);
     layout->addWidget(CGS1Checkbox);
     layout->addWidget(CGS2Checkbox);
+    layout->addWidget(CGS3Checkbox);
     layout->addWidget(DVLabel);
     layout->addWidget(allRepairsLabel);
     layout->addWidget(GMCheckbox);
@@ -204,5 +234,248 @@ QGroupBox* ResultsWidget::getVisSelectionGroupBox(void)
     layout->addStretch();
 
     return groupBox;
+}
+
+
+void ResultsWidget::processNetworkReply(QNetworkReply* pReply)
+{
+    if(pReply->error() != QNetworkReply::NoError)
+    {
+        QString err = "Error in connecting to the server at: " + pReply->url().toString();
+        this->userMessageDialog(err);
+        return;
+    }
+
+    if(pReply == downloadJsonReply)
+    {
+        this->createGSGLayers();
+    }
+
+}
+
+
+void ResultsWidget::createGSGLayers()
+{
+    //    auto eventLayer = new GroupLayer(QList<Layer*>{});
+    //    eventLayer->setName("California Geo Map");
+
+    //    auto data = downloadJsonReply->readAll();
+
+    //    QJsonDocument doc = QJsonDocument::fromJson(data);
+
+    //    auto jsonObject = doc.object();
+
+    //    QJsonValue nameValue = jsonObject["layers"];
+
+    //    auto layerArray = nameValue.toArray();
+
+    //    if(layerArray.size() == 0)
+    //        return;
+
+    //    auto urlToLayer = baseCGSURL;
+
+
+    //    for(auto&& it : layerArray)
+    //    {
+    //        auto ID = it.toObject()["id"];
+
+    //        auto name = it.toObject()["name"];
+
+    //        //      auto urlToLayer = baseCGSURL +"/" + QString::number(ID.toInt());
+
+    //        //      auto shpLayer = theVisualizationWidget->createAndAddMapServerLayer(urlToLayer,name.toString(),eventItem);
+
+    //        //      if(shpLayer != nullptr)
+    //        //          theVisualizationWidget->addLayerToMap(shpLayer);
+    //    }
+
+}
+
+
+void ResultsWidget::showCGSLandslideMap(bool state)
+{
+    if(state == false)
+    {
+        if(landslideLayer != nullptr)
+        {
+            theVisualizationWidget->removeLayerFromMap(landslideLayer);
+        }
+
+        return;
+    }
+
+
+    if(landslideLayer == nullptr)
+    {
+        QString mapServerUrl =  "https://gis.conservation.ca.gov/server/rest/services/CGS/MS58_LandslideSusceptibility_Classes/MapServer";
+        landslideLayer = theVisualizationWidget->createAndAddMapServerLayer(mapServerUrl,"Landslide Susceptibility Map",nullptr);
+    }
+
+    if(landslideLayer != nullptr)
+        theVisualizationWidget->addLayerToMap(landslideLayer);
+
+}
+
+
+void ResultsWidget::showCGSGeologicMap(bool state)
+{
+    if(state == false)
+    {
+        if(geologicMapLayer != nullptr)
+            theVisualizationWidget->removeLayerFromMap(geologicMapLayer);
+
+        return;
+    }
+
+    if(geologicMapLayer == nullptr)
+        geologicMapLayer = theVisualizationWidget->createAndAddMapServerLayer(baseCGSURL,"California Geo. Map",nullptr);
+
+
+    if(geologicMapLayer != nullptr)
+        theVisualizationWidget->addLayerToMap(geologicMapLayer);
+
+
+    //    QString addToJson = baseCGSURL + "?f=pjson";
+
+    //    QUrl addressToJson(addToJson);
+
+    //    QNetworkRequest request(addressToJson);
+
+    //    downloadJsonReply = m_WebCtrl.get(request);
+
+    //    connect(&m_WebCtrl, &QNetworkAccessManager::finished, this, &ResultsWidget::processNetworkReply);
+
+}
+
+
+void ResultsWidget::showCGSLiquefactionMap(bool state)
+{
+    if(state == false)
+    {
+        if(liquefactionLayer != nullptr)
+            theVisualizationWidget->removeLayerFromMap(liquefactionLayer);
+
+        return;
+    }
+
+    if(liquefactionLayer == nullptr)
+    {
+        QString mapServerUrl =  "https://gis.conservation.ca.gov/server/rest/services/CGS_Earthquake_Hazard_Zones/SHP_Liquefaction_Zones/MapServer";
+        liquefactionLayer = theVisualizationWidget->createAndAddMapServerLayer(mapServerUrl,"Liquefaction Zones Map",nullptr);
+    }
+
+    if(liquefactionLayer != nullptr)
+        theVisualizationWidget->addLayerToMap(liquefactionLayer);
+}
+
+
+void ResultsWidget::showShakeMapLayer(bool state)
+{
+
+    auto layersModel = theVisualizationWidget->getLayersModel();
+
+    if(state == false)
+    {
+        if(eventLayer != nullptr)
+        {
+            theVisualizationWidget->removeLayerFromMap(eventLayer);
+
+            layersModel->removeItemFromTree("Shake Map");
+        }
+
+        return;
+    }
+
+    // Check if there is a 'Shake Map' root item in the tree
+    auto shakeMapTreeItem = layersModel->getTreeItem("Shake Map");
+
+    // If there is no item, create one
+    if(shakeMapTreeItem == nullptr)
+        shakeMapTreeItem = layersModel->addItemToTree("Shake Map");
+
+    QString eventName = "Northridge";
+
+    // Add the event layer to the layer tree
+    auto eventItem = layersModel->addItemToTree(eventName, shakeMapTreeItem);
+
+    // Create the root group layer
+    if(eventLayer == nullptr)
+    {
+        eventLayer = new GroupLayer(QList<Layer*>{});
+        eventLayer->setName(eventName);
+    }
+
+    QString folderPath = "/Users/steve/Desktop/SimCenter/Examples/NorthridgeShakeMap/";
+
+    //    const QString xmlPath = folderPath + "grid.xml";
+    //    auto gridLayer = this->createAndAddXMLShakeMapLayer(xmlPath, "Grid", eventItem);
+
+    //    if(gridLayer == nullptr)
+    //        return;
+
+
+    if(pgaPolygonLayer == nullptr)
+    {
+        const QString pathPGAPolygons = folderPath + "polygons_mi.kmz";
+
+        pgaPolygonLayer = theVisualizationWidget->createAndAddKMLLayer(pathPGAPolygons, "PGA Polygons", eventItem, 0.3);
+    }
+
+
+    //    const QString pathPGAShapefile = folderPath + "pga.shp";
+    //    auto pgaShapeFileLayer = this->createAndAddShapefileLayer(pathPGAShapefile, "PGA Shapefile", eventItem);
+
+    //    if(pgaShapeFileLayer == nullptr)
+    //        return;
+
+
+    if(pgaOverlayLayer == nullptr)
+    {
+        const QString pathPGAOverlay = folderPath + "overlay.kmz";
+
+        pgaOverlayLayer = theVisualizationWidget->createAndAddKMLLayer(pathPGAOverlay, "PGA Overlay", eventItem, 0.3);
+    }
+
+
+    if(pgaContourLayer == nullptr)
+    {
+        const QString pathPGAContours = folderPath + "cont_pga.kmz";
+
+        pgaContourLayer = theVisualizationWidget->createAndAddKMLLayer(pathPGAContours, "PGA Contours", eventItem);
+    }
+
+
+    if(epicenterLayer == nullptr)
+    {
+        const QString pathEpicenter = folderPath + "epicenter.kmz";
+
+        epicenterLayer = theVisualizationWidget->createAndAddKMLLayer(pathEpicenter, "Epicenter", eventItem);
+    }
+
+    //    const QString pathFault = folderPath + "anchorageintraplate_se.kmz";
+    //    auto faultLayer = this->createAndAddKMLLayer(pathFault, "Fault", eventItem);
+
+    //    if(faultLayer == nullptr)
+    //        return;
+
+    //    const QString pathEventKMZ = folderPath + "northridgeellbgeol_m6p89_se.kmz";
+    //    auto eventKMZLayer = this->createAndAddKMLLayer(pathEventKMZ, "Event", eventItem, 0.3);
+
+    //    if(eventKMZLayer == nullptr)
+    //        return;
+    //    else
+    //        eventLayer->layers()->append(eventKMZLayer);
+
+
+    //    eventLayer->layers()->append(gridLayer);
+    eventLayer->layers()->append(pgaPolygonLayer);
+    eventLayer->layers()->append(pgaOverlayLayer);
+    //    eventLayer->layers()->append(pgaShapeFileLayer);
+    eventLayer->layers()->append(pgaContourLayer);
+    //    eventLayer->layers()->append(faultLayer);
+    eventLayer->layers()->append(epicenterLayer);
+
+
+    theVisualizationWidget->addLayerToMap(eventLayer,eventItem);
 }
 

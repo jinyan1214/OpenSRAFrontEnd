@@ -92,8 +92,8 @@ int main(int argc, char *argv[])
 
     // create the main window
 
-    WorkflowAppWidget *theInputApp = new WorkflowAppOpenSRA();
-    MainWindowWorkflowApp w(QString("OpenSRA: Open-Source Seismic Risk Assessment Tool"), theInputApp);
+    WorkflowAppOpenSRA *theInputApp = new WorkflowAppOpenSRA();
+    MainWindowWorkflowApp w(QString("OpenSRA: Open-Source Seismic Risk Assessment Tool"), theInputApp, nullptr);
 
     QString textAboutOpenSRA = "\
             <p> \

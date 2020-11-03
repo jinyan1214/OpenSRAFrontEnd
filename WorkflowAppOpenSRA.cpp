@@ -46,11 +46,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PipelineNetworkWidget.h"
 #include "LocalApplication.h"
 #include "RunWidget.h"
-#include "ResultsWidget.h"
+#include "UIWidgets/ResultsWidget.h"
 #include "IntensityMeasureWidget.h"
 #include "RunLocalWidget.h"
 #include "EngDemandParamWidget.h"
 #include "CustomizedItemModel.h"
+#include "VisualizationWidget.h"
 
 #include <QDir>
 #include <QFile>
@@ -86,14 +87,16 @@ WorkflowAppOpenSRA::WorkflowAppOpenSRA(QWidget *parent) : WorkflowAppWidget(pare
     // set static pointer for global procedure
     theApp = this;
 
+    theVisualizationWidget = new VisualizationWidget(this);
+
     // create the various widgets
     theGenInfoWidget = GeneralInformationWidget::getInstance();
     theSourceCharacterizationWidget = new SourceCharacterizationWidget();
     theIntensityMeasureWidget = new IntensityMeasureWidget(theGenInfoWidget);
     theDamageMeasureWidget = new DamageMeasureWidget();
-    thePipelineNetworkWidget = new PipelineNetworkWidget();
+    thePipelineNetworkWidget = new PipelineNetworkWidget(this,theVisualizationWidget);
     theEDPWidget = new EngDemandParamWidget();
-    theResultsWidget = new ResultsWidget();
+    theResultsWidget = new ResultsWidget(this,theVisualizationWidget);
     theDecisionVariableWidget = new DecisionVariableWidget();
 
     SimCenterWidget *theWidgets[1];
@@ -201,6 +204,12 @@ void WorkflowAppOpenSRA::onRemoteGetButtonClicked()
 void WorkflowAppOpenSRA::onExitButtonClicked()
 {
 
+}
+
+
+int WorkflowAppOpenSRA::getMaxNumParallelTasks()
+{
+    return 1;
 }
 
 

@@ -1,14 +1,16 @@
 
 
-QT += core gui charts concurrent network sql webenginewidgets webengine webchannel 3dcore 3drender 3dextras charts
+QT += core gui charts concurrent network sql webenginewidgets webengine webchannel 3dcore 3drender 3dextras charts xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
 
 TARGET = OpenSRA
 TEMPLATE = app
-
 VERSION=1.0.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+
+# C++14 support
+CONFIG += c++14
 
 equals(QT_MAJOR_VERSION, 5) {
     lessThan(QT_MINOR_VERSION, 15) {
@@ -19,9 +21,7 @@ equals(QT_MAJOR_VERSION, 5) {
         }
 }
 
-ARCGIS_RUNTIME_VERSION = 100.9
-include($$PWD/arcgisruntime.pri)
-
+#Application Icons
 win32 {
     RC_ICONS = icons/openSRA-icon.ico
 } else {
@@ -31,15 +31,20 @@ win32 {
 }
 
 
+ARCGIS_RUNTIME_VERSION = 100.9
+include($$PWD/arcgisruntime.pri)
+
+
+# Specify the path to RDT and common
+PATH_TO_RDT=../../RDT/RDT
+PATH_TO_COMMON=../../SimCenterCommon
+
+# To avoid code copying, include the common SimCenter code
+include(OpenSRACommon.pri)
+include($$PATH_TO_COMMON/Common/Common.pri)
+
 SOURCES += main.cpp \
     WorkflowAppOpenSRA.cpp \
-    SimCenterWidget.cpp \
-    SimCenterPreferences.cpp \
-    SimCenterComponentSelection.cpp \
-    HeaderWidget.cpp \
-    SimCenterAppWidget.cpp \
-    sectiontitle.cpp \
-    CustomizedItemModel.cpp \
     WorkflowAppWidget.cpp \
     MainWindowWorkflowApp.cpp \
     UIWidgets/DecisionVariableWidget.cpp \
@@ -50,25 +55,14 @@ SOURCES += main.cpp \
     UIWidgets/GeneralInformationWidget.cpp \
     UIWidgets/IntensityMeasureWidget.cpp \
     UIWidgets/DamageMeasureWidget.cpp \
-    Utils/dialogabout.cpp \
-    Utils/RelativePathResolver.cpp \
     RunWidget.cpp
 
 HEADERS  += \
     WorkflowAppOpenSRA.h \
-    SimCenterWidget.h \
-    SimCenterPreferences.h \
-    SimCenterComponentSelection.h \
-    SimCenterAppWidget.h \
-    HeaderWidget.h \
     DecisionVariableWidget.h \
-    sectiontitle.h \
-    CustomizedItemModel.h \
     WorkflowAppWidget.h \
     MainWindowWorkflowApp.h \
     RunWidget.h \
-    Utils/dialogabout.h \
-    Utils/RelativePathResolver.h \
     UIWidgets/DecisionVariableWidget.h \
     UIWidgets/SourceCharacterizationWidget.h \
     UIWidgets/ResultsWidget.h \
@@ -77,8 +71,6 @@ HEADERS  += \
     UIWidgets/GeneralInformationWidget.h \
     UIWidgets/IntensityMeasureWidget.h \
     UIWidgets/DamageMeasureWidget.h \
-    Utils/dialogabout.h \
-    Utils/RelativePathResolver.h \
 
 RESOURCES += \
     images.qrc \

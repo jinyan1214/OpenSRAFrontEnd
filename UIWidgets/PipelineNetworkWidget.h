@@ -51,13 +51,15 @@ class MapGraphicsView;
 }
 
 class QGroupBox;
+class ComponentInputWidget;
+class VisualizationWidget;
 
 class PipelineNetworkWidget : public  SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit PipelineNetworkWidget(QWidget *parent = 0);
+    explicit PipelineNetworkWidget(QWidget *parent, VisualizationWidget* visWidget);
     ~PipelineNetworkWidget();
 
     bool outputAppDataToJSON(QJsonObject &jsonObject);
@@ -78,8 +80,12 @@ private:
     QGroupBox* getInputWidget(void);
     QGroupBox* getVisualizationWidget(void);
 
+    std::unique_ptr<ComponentInputWidget> theComponentInputWidget;
+
     Esri::ArcGISRuntime::Map*             mapObject = nullptr;
     Esri::ArcGISRuntime::MapGraphicsView* mapViewWidget = nullptr;
+
+    VisualizationWidget* theVisualizationWidget;
 };
 
 #endif // WIND_SELECTION_H

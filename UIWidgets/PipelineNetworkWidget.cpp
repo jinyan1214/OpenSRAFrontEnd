@@ -40,6 +40,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PipelineNetworkWidget.h"
 #include "sectiontitle.h"
 #include "SimCenterComponentSelection.h"
+#include "ComponentInputWidget.h"
+#include "VisualizationWidget.h"
 
 // GIS headers
 #include "Basemap.h"
@@ -63,8 +65,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 using namespace Esri::ArcGISRuntime;
 
-PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent)
-    : SimCenterAppWidget(parent)
+PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidget* visWidget)
+    : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);
@@ -86,11 +88,25 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent)
 
     theComponentSelection->setMaxWidth(120);
 
-    QGroupBox* pipelineInfoBox = this->getInputWidget();
+    theComponentInputWidget = std::make_unique<ComponentInputWidget>(this, "Components");
+
+    theVisualizationWidget->setPipelineWidget(theComponentInputWidget.get());
+
+
+    theComponentInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
+    theComponentInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
+
+//    QGroupBox* pipelineInfoBox = this->getInputWidget();
+
+    QGroupBox* componentBox = theComponentInputWidget->getComponentsWidget();
+    theComponentInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
+
+    QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
+    theComponentInputWidget->testFileLoad(pathToPipelineInfoFile);
 
     QGroupBox* visualizationBox = this->getVisualizationWidget();
 
-    theComponentSelection->addComponent("Input",pipelineInfoBox);
+    theComponentSelection->addComponent("Input", componentBox);
     theComponentSelection->addComponent("Visualization",visualizationBox);
 
     theComponentSelection->displayComponent("Input");

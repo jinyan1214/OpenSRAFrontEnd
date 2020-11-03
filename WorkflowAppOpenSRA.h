@@ -56,9 +56,9 @@ class ResultsWidget;
 class EngDemandParamWidget;
 class GeneralInformationWidget;
 class IntensityMeasureWidget;
-class ResultsWidget;
 class RunLocalWidget;
 class RunWidget;
+class VisualizationWidget;
 
 class QStackedWidget;
 class Application;
@@ -81,6 +81,7 @@ public:
     void onRemoteRunButtonClicked();
     void onRemoteGetButtonClicked();
     void onExitButtonClicked();
+    int getMaxNumParallelTasks();
     
     GeneralInformationWidget *getTheGI() const;
     void setTheGI(GeneralInformationWidget *value);
@@ -103,21 +104,22 @@ private:
     SimCenterComponentSelection *theComponentSelection;
 
     // objects that go in sidebar
-    GeneralInformationWidget *theGenInfoWidget;
-    SourceCharacterizationWidget *theSourceCharacterizationWidget;
-    PipelineNetworkWidget *thePipelineNetworkWidget;
-    IntensityMeasureWidget *theIntensityMeasureWidget;
+    GeneralInformationWidget* theGenInfoWidget;
+    SourceCharacterizationWidget* theSourceCharacterizationWidget;
+    PipelineNetworkWidget* thePipelineNetworkWidget;
+    IntensityMeasureWidget* theIntensityMeasureWidget;
     DecisionVariableWidget* theDecisionVariableWidget;
     DamageMeasureWidget* theDamageMeasureWidget;
-    EngDemandParamWidget *theEDPWidget;
-    ResultsWidget *theResultsWidget;
+    EngDemandParamWidget* theEDPWidget;
+    ResultsWidget* theResultsWidget;
+    VisualizationWidget* theVisualizationWidget;
 
     // objects for running the workflow and obtaining results
-    RunWidget *theRunWidget;
-    Application *localApp;
+    RunWidget* theRunWidget;
+    Application* localApp;
 
-    QJsonObject *jsonObjOrig;
-    QNetworkAccessManager *manager;
+    QJsonObject* jsonObjOrig;
+    QNetworkAccessManager* manager;
 };
 
 #endif // WORKFLOW_APP_EE_UQ_H

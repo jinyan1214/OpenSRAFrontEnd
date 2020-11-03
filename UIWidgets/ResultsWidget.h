@@ -39,27 +39,32 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 // Latest revision: 10.01.2020
 
-#include <SimCenterWidget.h>
+#include <SimCenterAppWidget.h>
+
+#include <QNetworkAccessManager>
 
 namespace Esri
 {
 namespace ArcGISRuntime
 {
-class Map;
-class MapGraphicsView;
+class ArcGISMapImageLayer;
+class GroupLayer;
+class KmlLayer;
 }
 }
 
 class QGroupBox;
+class VisualizationWidget;
+class QNetworkReply;
 
-class ResultsWidget : public SimCenterWidget
+class ResultsWidget : public SimCenterAppWidget
 {
 
     Q_OBJECT
 
 public:
 
-    explicit ResultsWidget(QWidget *parent = nullptr);
+    explicit ResultsWidget(QWidget *parent, VisualizationWidget* visWidget);
     virtual ~ResultsWidget();
 
     virtual bool outputToJSON(QJsonObject &rvObject);
@@ -69,18 +74,43 @@ public:
 
 signals:
 
+
 public slots:
+    void processNetworkReply(QNetworkReply* pReply);
+
+    void showCGSGeologicMap(bool state);
+
+    void showCGSLandslideMap(bool state);
+
+    void showCGSLiquefactionMap(bool state);
+
+    void showShakeMapLayer(bool state);
 
 protected:
 
-    ResultsWidget *resultWidget;
-
 private:
+
+    void createGSGLayers();
 
     QGroupBox* getVisSelectionGroupBox(void);
 
-    Esri::ArcGISRuntime::Map*             mapObject = nullptr;
-    Esri::ArcGISRuntime::MapGraphicsView* mapViewWidget = nullptr;
+    VisualizationWidget* theVisualizationWidget;
+
+    QNetworkAccessManager m_WebCtrl;
+    QNetworkReply* downloadJsonReply;
+    QString baseCGSURL;
+
+    Esri::ArcGISRuntime::ArcGISMapImageLayer* landslideLayer;
+    Esri::ArcGISRuntime::ArcGISMapImageLayer* liquefactionLayer;
+    Esri::ArcGISRuntime::ArcGISMapImageLayer* geologicMapLayer;
+
+    Esri::ArcGISRuntime::GroupLayer* eventLayer;
+
+    Esri::ArcGISRuntime::KmlLayer* pgaPolygonLayer;
+    Esri::ArcGISRuntime::KmlLayer* pgaOverlayLayer;
+    Esri::ArcGISRuntime::KmlLayer* pgaContourLayer;
+    Esri::ArcGISRuntime::KmlLayer* epicenterLayer;
+
 };
 
 #endif // ResultsWidget
