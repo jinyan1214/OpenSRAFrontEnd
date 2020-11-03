@@ -49,6 +49,7 @@ namespace ArcGISRuntime
 {
 class ArcGISMapImageLayer;
 class GroupLayer;
+class FeatureCollectionLayer;
 class KmlLayer;
 }
 }
@@ -106,6 +107,7 @@ private:
 
     Esri::ArcGISRuntime::GroupLayer* eventLayer;
 
+    Esri::ArcGISRuntime::FeatureCollectionLayer* gridLayer;
     Esri::ArcGISRuntime::KmlLayer* pgaPolygonLayer;
     Esri::ArcGISRuntime::KmlLayer* pgaOverlayLayer;
     Esri::ArcGISRuntime::KmlLayer* pgaContourLayer;

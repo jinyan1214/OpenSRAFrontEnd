@@ -35,12 +35,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.01.2020
+// Latest revision: 11.03.2020
 
 #include "ResultsWidget.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
-#include "TreeModel.h"
+#include "TreeView.h"
 
 // GIS headers
 #include "GroupLayer.h"
@@ -49,6 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "FeatureLayer.h"
 #include "ArcGISMapImageLayer.h"
 #include "RasterLayer.h"
+#include "FeatureCollectionLayer.h"
 
 #include <QListWidget>
 #include <QVBoxLayout>
@@ -62,7 +63,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonDocument>
 #include <QNetworkReply>
 #include <QJsonArray>
-
 #include <QTreeView>
 
 using namespace Esri::ArcGISRuntime;
@@ -78,6 +78,7 @@ ResultsWidget::ResultsWidget(QWidget *parent,  VisualizationWidget* visWidget)
     pgaContourLayer = nullptr;
     epicenterLayer = nullptr;
     eventLayer = nullptr;
+    gridLayer = nullptr;
 
     downloadJsonReply = nullptr;
     baseCGSURL = "https://gis.conservation.ca.gov/server/rest/services/CGS/Geologic_Map_of_California/MapServer";
@@ -372,7 +373,7 @@ void ResultsWidget::showCGSLiquefactionMap(bool state)
 void ResultsWidget::showShakeMapLayer(bool state)
 {
 
-    auto layersModel = theVisualizationWidget->getLayersModel();
+    auto layersModel = theVisualizationWidget->getLayersTree();
 
     if(state == false)
     {
@@ -405,13 +406,15 @@ void ResultsWidget::showShakeMapLayer(bool state)
         eventLayer->setName(eventName);
     }
 
+
     QString folderPath = "/Users/steve/Desktop/SimCenter/Examples/NorthridgeShakeMap/";
 
-    //    const QString xmlPath = folderPath + "grid.xml";
-    //    auto gridLayer = this->createAndAddXMLShakeMapLayer(xmlPath, "Grid", eventItem);
 
-    //    if(gridLayer == nullptr)
-    //        return;
+    if(gridLayer == nullptr)
+    {
+        const QString xmlPath = folderPath + "grid.xml";
+        gridLayer = theVisualizationWidget->createAndAddXMLShakeMapLayer(xmlPath, "Grid", eventItem);
+    }
 
 
     if(pgaPolygonLayer == nullptr)
@@ -467,7 +470,7 @@ void ResultsWidget::showShakeMapLayer(bool state)
     //        eventLayer->layers()->append(eventKMZLayer);
 
 
-    //    eventLayer->layers()->append(gridLayer);
+    eventLayer->layers()->append(gridLayer);
     eventLayer->layers()->append(pgaPolygonLayer);
     eventLayer->layers()->append(pgaOverlayLayer);
     //    eventLayer->layers()->append(pgaShapeFileLayer);

@@ -11,6 +11,7 @@ SOURCES +=  $$PATH_TO_RDT/CSVReaderWriter.cpp \
             $$PATH_TO_RDT/UIWidgets/PopUpWidget.cpp \
             $$PATH_TO_RDT/UIWidgets/TreeItem.cpp \
             $$PATH_TO_RDT/UIWidgets/TreeModel.cpp \
+            $$PATH_TO_RDT/UIWidgets/TreeView.cpp \
             $$PATH_TO_RDT/UIWidgets/TreeViewStyle.cpp \
             $$PATH_TO_RDT/UIWidgets/VisualizationWidget.cpp \
             $$PATH_TO_RDT/UIWidgets/ComponentInputWidget.cpp \
@@ -23,6 +24,7 @@ HEADERS +=  $$PATH_TO_RDT/XMLAdaptor.h \
             $$PATH_TO_RDT/UIWidgets/PopUpWidget.h \
             $$PATH_TO_RDT/UIWidgets/TreeItem.h \
             $$PATH_TO_RDT/UIWidgets/TreeModel.h \
+            $$PATH_TO_RDT/UIWidgets/TreeView.h \
             $$PATH_TO_RDT/UIWidgets/TreeViewStyle.h \
             $$PATH_TO_RDT/UIWidgets/VisualizationWidget.h \
             $$PATH_TO_RDT/UIWidgets/ComponentInputWidget.h \
