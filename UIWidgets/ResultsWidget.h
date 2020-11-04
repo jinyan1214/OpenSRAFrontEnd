@@ -55,7 +55,9 @@ class KmlLayer;
 }
 
 class QGroupBox;
+class QPushButton;
 class VisualizationWidget;
+class ShakeMapWidget;
 class QNetworkReply;
 
 class ResultsWidget : public SimCenterAppWidget
@@ -94,6 +96,8 @@ private:
     void createGSGLayers();
 
     QGroupBox* getVisSelectionGroupBox(void);
+    QPushButton* loadShakeMapButton;
+    std::unique_ptr<ShakeMapWidget> theShakeMapWidget;
 
     VisualizationWidget* theVisualizationWidget;
 
@@ -105,13 +109,6 @@ private:
     Esri::ArcGISRuntime::ArcGISMapImageLayer* liquefactionLayer;
     Esri::ArcGISRuntime::ArcGISMapImageLayer* geologicMapLayer;
 
-    Esri::ArcGISRuntime::GroupLayer* eventLayer;
-
-    Esri::ArcGISRuntime::FeatureCollectionLayer* gridLayer;
-    Esri::ArcGISRuntime::KmlLayer* pgaPolygonLayer;
-    Esri::ArcGISRuntime::KmlLayer* pgaOverlayLayer;
-    Esri::ArcGISRuntime::KmlLayer* pgaContourLayer;
-    Esri::ArcGISRuntime::KmlLayer* epicenterLayer;
 
 };
 

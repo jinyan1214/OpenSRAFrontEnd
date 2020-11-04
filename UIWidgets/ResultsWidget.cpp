@@ -41,15 +41,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
 #include "TreeView.h"
+#include "ShakeMapWidget.h"
 
 // GIS headers
 #include "GroupLayer.h"
 #include "LayerListModel.h"
-#include "KmlLayer.h"
 #include "FeatureLayer.h"
 #include "ArcGISMapImageLayer.h"
 #include "RasterLayer.h"
-#include "FeatureCollectionLayer.h"
 
 #include <QListWidget>
 #include <QVBoxLayout>
@@ -64,6 +63,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QNetworkReply>
 #include <QJsonArray>
 #include <QTreeView>
+#include <QPushButton>
+
 
 using namespace Esri::ArcGISRuntime;
 
@@ -73,12 +74,6 @@ ResultsWidget::ResultsWidget(QWidget *parent,  VisualizationWidget* visWidget)
     landslideLayer = nullptr;
     liquefactionLayer = nullptr;
     geologicMapLayer = nullptr;
-    pgaPolygonLayer = nullptr;
-    pgaOverlayLayer = nullptr;
-    pgaContourLayer = nullptr;
-    epicenterLayer = nullptr;
-    eventLayer = nullptr;
-    gridLayer = nullptr;
 
     downloadJsonReply = nullptr;
     baseCGSURL = "https://gis.conservation.ca.gov/server/rest/services/CGS/Geologic_Map_of_California/MapServer";
@@ -212,9 +207,13 @@ QGroupBox* ResultsWidget::getVisSelectionGroupBox(void)
     auto othersLabel = new QLabel("Others:");
     othersLabel->setStyleSheet("font-weight: bold; color: black");
     QCheckBox* shakeMapCheckbox = new QCheckBox("ShakeMap");
-
     connect(shakeMapCheckbox,&QCheckBox::clicked,this,&ResultsWidget::showShakeMapLayer);
 
+    loadShakeMapButton = new QPushButton ("Add ShakeMap", this);
+    loadShakeMapButton->setVisible(false);
+
+    theShakeMapWidget = std::make_unique<ShakeMapWidget>(theVisualizationWidget);
+    connect(loadShakeMapButton,&QPushButton::pressed,theShakeMapWidget.get(),&ShakeMapWidget::showLoadShakeMapDialog);
 
     layout->addWidget(mapDataLabel);
     layout->addWidget(CGS1Checkbox);
@@ -231,6 +230,7 @@ QGroupBox* ResultsWidget::getVisSelectionGroupBox(void)
     layout->addWidget(LandslideCheckbox2);
     layout->addWidget(othersLabel);
     layout->addWidget(shakeMapCheckbox);
+    layout->addWidget(loadShakeMapButton);
 
     layout->addStretch();
 
@@ -373,112 +373,16 @@ void ResultsWidget::showCGSLiquefactionMap(bool state)
 void ResultsWidget::showShakeMapLayer(bool state)
 {
 
-    auto layersModel = theVisualizationWidget->getLayersTree();
+    theShakeMapWidget->showShakeMapLayers(state);
 
     if(state == false)
     {
-        if(eventLayer != nullptr)
-        {
-            theVisualizationWidget->removeLayerFromMap(eventLayer);
-
-            layersModel->removeItemFromTree("Shake Map");
-        }
+        loadShakeMapButton->setVisible(false);
 
         return;
     }
 
-    // Check if there is a 'Shake Map' root item in the tree
-    auto shakeMapTreeItem = layersModel->getTreeItem("Shake Map");
-
-    // If there is no item, create one
-    if(shakeMapTreeItem == nullptr)
-        shakeMapTreeItem = layersModel->addItemToTree("Shake Map");
-
-    QString eventName = "Northridge";
-
-    // Add the event layer to the layer tree
-    auto eventItem = layersModel->addItemToTree(eventName, shakeMapTreeItem);
-
-    // Create the root group layer
-    if(eventLayer == nullptr)
-    {
-        eventLayer = new GroupLayer(QList<Layer*>{});
-        eventLayer->setName(eventName);
-    }
-
-
-    QString folderPath = "/Users/steve/Desktop/SimCenter/Examples/NorthridgeShakeMap/";
-
-
-    if(gridLayer == nullptr)
-    {
-        const QString xmlPath = folderPath + "grid.xml";
-        gridLayer = theVisualizationWidget->createAndAddXMLShakeMapLayer(xmlPath, "Grid", eventItem);
-    }
-
-
-    if(pgaPolygonLayer == nullptr)
-    {
-        const QString pathPGAPolygons = folderPath + "polygons_mi.kmz";
-
-        pgaPolygonLayer = theVisualizationWidget->createAndAddKMLLayer(pathPGAPolygons, "PGA Polygons", eventItem, 0.3);
-    }
-
-
-    //    const QString pathPGAShapefile = folderPath + "pga.shp";
-    //    auto pgaShapeFileLayer = this->createAndAddShapefileLayer(pathPGAShapefile, "PGA Shapefile", eventItem);
-
-    //    if(pgaShapeFileLayer == nullptr)
-    //        return;
-
-
-    if(pgaOverlayLayer == nullptr)
-    {
-        const QString pathPGAOverlay = folderPath + "overlay.kmz";
-
-        pgaOverlayLayer = theVisualizationWidget->createAndAddKMLLayer(pathPGAOverlay, "PGA Overlay", eventItem, 0.3);
-    }
-
-
-    if(pgaContourLayer == nullptr)
-    {
-        const QString pathPGAContours = folderPath + "cont_pga.kmz";
-
-        pgaContourLayer = theVisualizationWidget->createAndAddKMLLayer(pathPGAContours, "PGA Contours", eventItem);
-    }
-
-
-    if(epicenterLayer == nullptr)
-    {
-        const QString pathEpicenter = folderPath + "epicenter.kmz";
-
-        epicenterLayer = theVisualizationWidget->createAndAddKMLLayer(pathEpicenter, "Epicenter", eventItem);
-    }
-
-    //    const QString pathFault = folderPath + "anchorageintraplate_se.kmz";
-    //    auto faultLayer = this->createAndAddKMLLayer(pathFault, "Fault", eventItem);
-
-    //    if(faultLayer == nullptr)
-    //        return;
-
-    //    const QString pathEventKMZ = folderPath + "northridgeellbgeol_m6p89_se.kmz";
-    //    auto eventKMZLayer = this->createAndAddKMLLayer(pathEventKMZ, "Event", eventItem, 0.3);
-
-    //    if(eventKMZLayer == nullptr)
-    //        return;
-    //    else
-    //        eventLayer->layers()->append(eventKMZLayer);
-
-
-    eventLayer->layers()->append(gridLayer);
-    eventLayer->layers()->append(pgaPolygonLayer);
-    eventLayer->layers()->append(pgaOverlayLayer);
-    //    eventLayer->layers()->append(pgaShapeFileLayer);
-    eventLayer->layers()->append(pgaContourLayer);
-    //    eventLayer->layers()->append(faultLayer);
-    eventLayer->layers()->append(epicenterLayer);
-
-
-    theVisualizationWidget->addLayerToMap(eventLayer,eventItem);
+    loadShakeMapButton->setVisible(true);
 }
+
 
