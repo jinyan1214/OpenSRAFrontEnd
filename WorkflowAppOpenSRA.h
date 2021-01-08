@@ -37,7 +37,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 09.29.2020
 
 #include "MainWindow.h"
 #include "WorkflowAppWidget.h"
@@ -47,7 +46,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class SimCenterComponentSelection;
 class InputWidgetBIM;
 class InputWidgetUQ;
-class SourceCharacterizationWidget;
 class PipelineNetworkWidget;
 class DecisionVariableWidget;
 class DamageMeasureWidget;
@@ -59,6 +57,7 @@ class IntensityMeasureWidget;
 class RunLocalWidget;
 class RunWidget;
 class VisualizationWidget;
+class UncertaintyQuantificationWidget;
 
 class QStackedWidget;
 class Application;
@@ -72,6 +71,10 @@ public:
     explicit WorkflowAppOpenSRA(QWidget *parent = 0);
     ~WorkflowAppOpenSRA();
 
+    static WorkflowAppOpenSRA *theInstance;
+
+    static WorkflowAppOpenSRA *getInstance(void);
+
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
     void clear(void);
@@ -83,8 +86,8 @@ public:
     void onExitButtonClicked();
     int getMaxNumParallelTasks();
     
-    GeneralInformationWidget *getTheGI() const;
-    void setTheGI(GeneralInformationWidget *value);
+    GeneralInformationWidget *getGeneralInformationWidget() const;
+    VisualizationWidget *getVisualizationWidget() const;
 
 signals:
     void setUpForApplicationRunDone(QString &tmpDirectory, QString &inputFile);
@@ -105,7 +108,7 @@ private:
 
     // objects that go in sidebar
     GeneralInformationWidget* theGenInfoWidget;
-    SourceCharacterizationWidget* theSourceCharacterizationWidget;
+    UncertaintyQuantificationWidget* theUQWidget;
     PipelineNetworkWidget* thePipelineNetworkWidget;
     IntensityMeasureWidget* theIntensityMeasureWidget;
     DecisionVariableWidget* theDecisionVariableWidget;

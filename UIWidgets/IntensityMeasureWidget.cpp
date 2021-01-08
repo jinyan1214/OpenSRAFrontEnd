@@ -35,14 +35,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.01.2020
 
 #include "IntensityMeasureWidget.h"
 #include "sectiontitle.h"
+#include "OpenSHAWidget.h"
+#include "ShakeMapWidget.h"
+#include "SourceCharacterizationWidget.h"
+#include "WorkflowAppOpenSRA.h"
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QCheckBox>
+#include <QGroupBox>
 #include <QStackedWidget>
 #include <QComboBox>
 #include <QListWidget>
@@ -56,12 +60,23 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDebug>
 #include <QFileDialog>
 #include <QPushButton>
+#include <QStackedWidget>
 
-IntensityMeasureWidget::IntensityMeasureWidget(GeneralInformationWidget* generalInfoWidget, QWidget *parent)
+IntensityMeasureWidget::IntensityMeasureWidget(VisualizationWidget* visWidget, QWidget *parent)
     : SimCenterAppWidget(parent)
 {
+    PGACheckbox = nullptr;
+    PGVCheckbox = nullptr;
 
-    QVBoxLayout *mainLayout = new QVBoxLayout();
+    IMSelectCombo = new QComboBox(this);
+    IMSelectCombo->addItem("OpenSHA (Preferred)");
+    IMSelectCombo->addItem("ShakeMap");
+    IMSelectCombo->addItem("User-defined");
+    IMSelectCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+
+    connect(IMSelectCombo,QOverload<int>::of(&QComboBox::currentIndexChanged),this,&IntensityMeasureWidget::IMSelectionChanged);
+
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
@@ -72,17 +87,27 @@ IntensityMeasureWidget::IntensityMeasureWidget(GeneralInformationWidget* general
     theHeaderLayout->addWidget(label);
     QSpacerItem *spacer = new QSpacerItem(50,10);
     theHeaderLayout->addItem(spacer);
-    theHeaderLayout->addStretch(1);
+    theHeaderLayout->addWidget(IMSelectCombo);
 
-    auto IMLayout = this->getIMLayout();
+    auto IMBox = this->getIMBox();
+
+    openSHA = new OpenSHAWidget(this);
+    shakeMap = new ShakeMapWidget(visWidget, this);
+
+    shakeMapStackedWidget = shakeMap->getShakeMapWidget();
+
+    theSourceCharacterizationWidget = new SourceCharacterizationWidget(this);
+
+    mainPanel = new QStackedWidget(this);
+    mainPanel->addWidget(openSHA);
+    mainPanel->addWidget(shakeMapStackedWidget);
+    mainPanel->addWidget(theSourceCharacterizationWidget);
 
     mainLayout->addLayout(theHeaderLayout);
-    mainLayout->addLayout(IMLayout);
+    mainLayout->addWidget(mainPanel);
+    mainLayout->addWidget(IMBox);
     mainLayout->addStretch();
 
-    this->setLayout(mainLayout);
-    this->setMinimumWidth(640);
-    this->setMaximumWidth(1000);
 }
 
 
@@ -94,6 +119,52 @@ IntensityMeasureWidget::~IntensityMeasureWidget()
 
 bool IntensityMeasureWidget::outputToJSON(QJsonObject &jsonObject)
 {
+    QJsonObject IMobj;
+
+    auto index = IMSelectCombo->currentIndex();
+
+    if(index == 0)
+    {
+        openSHA->outputToJSON(IMobj);
+    }
+    else if(index == 1)
+    {
+        shakeMap->outputToJSON(IMobj);
+    }
+    else
+    {
+        return false;
+    }
+
+    QJsonObject TypeObj;
+    QJsonObject PGAObj;
+    QJsonObject PGVObj;
+
+    PGAObj.insert("ToAssess",PGACheckbox->isChecked());
+    PGVObj.insert("ToAssess",PGVCheckbox->isChecked());
+
+    TypeObj.insert("PGA",PGAObj);
+    TypeObj.insert("PGV",PGVObj);
+
+    IMobj.insert("Type",TypeObj);
+
+    QJsonObject corrObj;
+    QJsonObject spatCorrObj;
+    QJsonObject specCorrObj;
+
+    spatCorrObj.insert("ToInclude",spatialCorrCheckbox->isChecked());
+    spatCorrObj.insert("Method",spatialCorrComboBox->currentData().toString());
+
+    specCorrObj.insert("ToInclude",spectralCorrCheckbox->isChecked());
+    specCorrObj.insert("Method",spectralCorrComboBox->currentData().toString());
+
+    corrObj.insert("Spatial",spatCorrObj);
+    corrObj.insert("Spectral",specCorrObj);
+
+    IMobj.insert("Correlation",corrObj);
+
+    jsonObject.insert("IntensityMeasure",IMobj);
+
     return true;
 }
 
@@ -104,22 +175,20 @@ bool IntensityMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
 }
 
 
-void IntensityMeasureWidget::eventSelectionChanged(const QString &arg1)
+void IntensityMeasureWidget::IMSelectionChanged(int index)
 {
-
-}
-
-
-bool IntensityMeasureWidget::outputAppDataToJSON(QJsonObject &jsonObject)
-{
-
-    return true;
-}
-
-
-bool IntensityMeasureWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
-{
-    return true;
+    if(index == 0)
+    {
+        mainPanel->setCurrentWidget(openSHA);
+    }
+    else if(index == 1)
+    {
+        mainPanel->setCurrentWidget(shakeMapStackedWidget);
+    }
+    else if(index == 2)
+    {
+        mainPanel->setCurrentWidget(theSourceCharacterizationWidget);
+    }
 }
 
 
@@ -130,52 +199,17 @@ bool IntensityMeasureWidget::copyFiles(QString &destDir)
 }
 
 
-QGridLayout* IntensityMeasureWidget::getIMLayout(void)
+QGroupBox* IntensityMeasureWidget::getIMBox(void)
 {
     auto smallVSpacer = new QSpacerItem(0,10);
 
-    auto GMCharacLabel = new QLabel("Ground Motion Characterization");
-    GMCharacLabel->setStyleSheet("font-weight: bold; color: black");
-
-    auto ModelLabel = new QLabel("Model:");
-    auto modelSelectCombo = new QComboBox();
-    modelSelectCombo->addItem("Median NGAWest2 model (preferred, reference)");
-    modelSelectCombo->setCurrentIndex(0);
-    modelSelectCombo->setMinimumWidth(300);
-    modelSelectCombo->setMaximumWidth(450);
-
-    auto ModelParam1Label = new QLabel("Model Parameter 1:");
-    auto ModelParam1LineEdit = new QLineEdit();
-    ModelParam1LineEdit->setText("100");
-    ModelParam1LineEdit->setMaximumWidth(100);
-    auto param1UnitLabel = new QLabel("Unit");
-
-    auto ModelParam2Label = new QLabel("Model Parameter 2:");
-    auto ModelParam2LineEdit = new QLineEdit();
-    ModelParam2LineEdit->setText("100");
-    ModelParam2LineEdit->setMaximumWidth(100);
-    auto param2UnitLabel = new QLabel("Unit");
-
-    auto ModelParamNLabel = new QLabel("Model Parameter N:");
-    auto ModelParamNLineEdit = new QLineEdit();
-    ModelParamNLineEdit->setText("100");
-    ModelParamNLineEdit->setMaximumWidth(100);
-    auto paramNUnitLabel = new QLabel("Unit");
-
-    auto weightLabel = new QLabel("Weight:");
-    auto weightLineEdit = new QLineEdit();
-    weightLineEdit->setText("1");
-    weightLineEdit->setMaximumWidth(100);
-
-    QPushButton *addRunListButton = new QPushButton();
-    addRunListButton->setText(tr("Add run to list"));
-    addRunListButton->setMinimumWidth(250);
+    QGroupBox* IMGroupBox = new QGroupBox(this);
 
     auto IMLabel = new QLabel("Intensity Measures");
     IMLabel->setStyleSheet("font-weight: bold; color: black");
 
-    QCheckBox* PGACheckbox = new QCheckBox("Peak Ground Acceleration (PGA)");
-    QCheckBox* PGVCheckbox = new QCheckBox("Peak Ground Velocity (PGV)");
+    PGACheckbox = new QCheckBox("Peak Ground Acceleration (PGA)");
+    PGVCheckbox = new QCheckBox("Peak Ground Velocity (PGV)");
 
     PGACheckbox->setChecked(true);
     PGVCheckbox->setChecked(true);
@@ -183,82 +217,39 @@ QGridLayout* IntensityMeasureWidget::getIMLayout(void)
     auto correlationsLabel = new QLabel("Correlations");
     correlationsLabel->setStyleSheet("font-weight: bold; color: black");
 
-    QCheckBox* spatialCorrCheckbox = new QCheckBox("Spatial Correlation");
-    QCheckBox* spectralCorrCheckbox = new QCheckBox("Spectral (Cross) Correlation");
+    spatialCorrCheckbox = new QCheckBox("Spatial Correlation");
+    spectralCorrCheckbox = new QCheckBox("Spectral (Cross) Correlation");
 
     spatialCorrCheckbox->setChecked(true);
     spectralCorrCheckbox->setChecked(true);
 
-    QRadioButton *spatialCorr1 = new QRadioButton("Jayaram && Baker (2009)");
-    QRadioButton *spatialCorr2 = new QRadioButton("Method 2");
-    spatialCorr1->setChecked(true);
+    spatialCorrComboBox = new QComboBox(this);
+    spatialCorrComboBox->addItem("Jayaram & Baker (2009)","JayaramBaker2009");
 
-    QRadioButton *spectralCorr1 = new QRadioButton("Baker && Jayaram (2008)");
-    QRadioButton *spectralCorr2 = new QRadioButton("Method 2");
-    spectralCorr1->setChecked(true);
-
-    auto casesListLabel = new QLabel("List of Cases to Run");
-    casesListLabel->setStyleSheet("font-weight: bold; color: black");
-
-    QListWidget *listWidget = new QListWidget();
-
-    // Sample list widget item
-    new QListWidgetItem(tr("1. Median NGAWest2 model - weight = 1"), listWidget);
-
-    listWidget->setMaximumWidth(400);
-    listWidget->setMinimumWidth(300);
+    spectralCorrComboBox = new QComboBox(this);
+    spectralCorrComboBox->addItem("Baker & Jayaram (2008)","BakerJayaram2008");
 
     // Add a vertical spacer at the bottom to push everything up
     auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-    QGridLayout* gridLayout = new QGridLayout();
+    QGridLayout* gridLayout = new QGridLayout(IMGroupBox);
 
-    gridLayout->addItem(smallVSpacer,0,0);
-    gridLayout->addWidget(GMCharacLabel,1,0);
+    gridLayout->addWidget(IMLabel,0,0);
 
-    gridLayout->addWidget(ModelLabel,2,0);
-    gridLayout->addWidget(modelSelectCombo,2,1,1,2);
+    gridLayout->addWidget(PGACheckbox,1,0);
+    gridLayout->addWidget(PGVCheckbox,1,1);
 
-    gridLayout->addWidget(ModelParam1Label,3,0);
-    gridLayout->addWidget(ModelParam1LineEdit,3,1);
-    gridLayout->addWidget(param1UnitLabel,3,2);
+    gridLayout->addItem(smallVSpacer,2,0);
 
-    gridLayout->addWidget(ModelParam2Label,4,0);
-    gridLayout->addWidget(ModelParam2LineEdit,4,1);
-    gridLayout->addWidget(param2UnitLabel,4,2);
+    gridLayout->addWidget(correlationsLabel,3,0);
 
-    gridLayout->addWidget(ModelParamNLabel,5,0);
-    gridLayout->addWidget(ModelParamNLineEdit,5,1);
-    gridLayout->addWidget(paramNUnitLabel,5,2);
+    gridLayout->addWidget(spatialCorrCheckbox,4,0);
+    gridLayout->addWidget(spatialCorrComboBox,4,1);
 
-    gridLayout->addWidget(weightLabel,6,0);
-    gridLayout->addWidget(weightLineEdit,6,1);
+    gridLayout->addWidget(spectralCorrCheckbox,5,0);
+    gridLayout->addWidget(spectralCorrComboBox,5,1);
 
-    gridLayout->addWidget(addRunListButton,7,0,1,3,Qt::AlignCenter);
+    gridLayout->addItem(vspacer, 6, 0);
 
-    gridLayout->addItem(smallVSpacer,8,0);
-
-    gridLayout->addWidget(IMLabel,9,0);
-
-    gridLayout->addWidget(PGACheckbox,10,0);
-    gridLayout->addWidget(PGVCheckbox,10,1);
-
-    gridLayout->addItem(smallVSpacer,11,0);
-
-    gridLayout->addWidget(correlationsLabel,12,0);
-
-    gridLayout->addWidget(spatialCorrCheckbox,13,0);
-    gridLayout->addWidget(spatialCorr1,13,1);
-    gridLayout->addWidget(spatialCorr2,13,2);
-
-    gridLayout->addWidget(spectralCorrCheckbox,14,0);
-    gridLayout->addWidget(spectralCorr1,14,1);
-    gridLayout->addWidget(spectralCorr2,14,2);
-
-    gridLayout->addWidget(casesListLabel,1,4);
-    gridLayout->addWidget(listWidget,2,4,14,1);
-
-    gridLayout->addItem(vspacer, 15, 0);
-
-    return gridLayout;
+    return IMGroupBox;
 }

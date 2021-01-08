@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QGridLayout>
 #include <QGroupBox>
+#include <QFileDialog>
 #include <QJsonArray>
 #include <QPushButton>
 #include <QRadioButton>
@@ -53,19 +54,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLineEdit>
 #include <QMetaEnum>
 
-GeneralInformationWidget* GeneralInformationWidget::getInstance()
-{
-    if (theInstance == 0)
-        theInstance = new GeneralInformationWidget();
 
-    return theInstance;
-}
-
-
-GeneralInformationWidget *GeneralInformationWidget::theInstance = nullptr;
-
-
-GeneralInformationWidget::GeneralInformationWidget(QWidget *parent) : SimCenterWidget(parent)
+GeneralInformationWidget::GeneralInformationWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);
@@ -98,17 +88,28 @@ GeneralInformationWidget::~GeneralInformationWidget()
 }
 
 
-bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj){
+bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
+{
 
+    QJsonObject outputObj;
+
+    QJsonObject directoryObj;
+    directoryObj.insert("Working",workingDirectoryLineEdit->text());
+    outputObj.insert("AnalysisID",analysisLineEdit->text());
+    outputObj.insert("UnitSystem",unitsCombo->currentText());
+    outputObj.insert("Directory", directoryObj);
+    outputObj.insert("OutputFileType", "txt");
+
+    jsonObj.insert("General",outputObj);
 
     return true;
 }
 
 
-bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject){
+bool GeneralInformationWidget::inputFromJSON(QJsonObject &/*jsonObject*/){
 
 
-    return true;
+    return false;
 }
 
 
@@ -120,40 +121,42 @@ void GeneralInformationWidget::clear(void)
 
 QGridLayout* GeneralInformationWidget::getInfoLayout(void)
 {
-    auto analysisLabel = new QLabel("Analysis ID:");
+    auto analysisLabel = new QLabel("Analysis ID:", this);
     analysisLineEdit = new QLineEdit();
     analysisLineEdit->setText("Analysis_1");
     analysisLineEdit->setMaximumWidth(250);
 
-    auto unitSystemLabel = new QLabel("Unit System:");
+    auto unitSystemLabel = new QLabel("Unit System:", this);
     unitsCombo = new QComboBox();
     unitsCombo->addItem("SI (km)");
     unitsCombo->setCurrentIndex(0);
     unitsCombo->setMaximumWidth(260);
 
-    QPushButton *loadFileButton = new QPushButton();
+    QPushButton *loadFileButton = new QPushButton(this);
     loadFileButton->setText(tr("Browse"));
     loadFileButton->setMaximumWidth(150);
     auto workingDirectoryLabel = new QLabel("Working Directory:");
     workingDirectoryLineEdit = new QLineEdit();
     workingDirectoryLineEdit->setMaximumWidth(400);
 
+    connect(loadFileButton,&QPushButton::clicked, this, &GeneralInformationWidget::chooseDirectoryDialog);
+
     auto UQLabel = new QLabel("Uncertainty Quantification (UQ)");
     UQLabel->setStyleSheet("font-weight: bold; color: black");
 
     auto dataGenLabel = new QLabel("Method for Data Generation");
-    dataGenCombo = new QComboBox();
+    dataGenCombo = new QComboBox(this);
     dataGenCombo->addItem("Latin Hypercube Sampling");
     dataGenCombo->setCurrentIndex(0);
     dataGenCombo->setMaximumWidth(250);
 
-    auto numSamplesLabel = new QLabel("Number of Samples:");
+    auto numSamplesLabel = new QLabel("Number of Samples:", this);
     numSamplesLineEdit = new QLineEdit();
     numSamplesLineEdit->setText("100");
     numSamplesLineEdit->setMaximumWidth(100);
 
-    auto seedLabel = new QLabel("Seed:");
-    seedLineEdit = new QLineEdit();
+    auto seedLabel = new QLabel("Seed:", this);
+    seedLineEdit = new QLineEdit(this);
     seedLineEdit->setText("1");
     seedLineEdit->setMaximumWidth(100);
 
@@ -166,14 +169,14 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     seedLabel->hide();
     seedLineEdit->hide();
 
-    auto assessmentSetupLabel = new QLabel("Assessment Setup");
+    auto assessmentSetupLabel = new QLabel("Assessment Setup", this);
     assessmentSetupLabel->setStyleSheet("font-weight: bold; color: black");
 
-    QRadioButton *button1 = new QRadioButton("Pre-configured setup for risk assessment (preferred)");
-    QRadioButton *button2 = new QRadioButton("Allow for user customization (e.g., source models, evaluation methods to use)");
+    QRadioButton *button1 = new QRadioButton("Pre-configured setup for risk assessment (preferred)", this);
+    QRadioButton *button2 = new QRadioButton("Allow for user customization (e.g., source models, evaluation methods to use)", this);
     button1->setChecked(true);
 
-    auto warningLabel = new QLabel();
+    auto warningLabel = new QLabel(this);
     warningLabel->setText("Warning: Only choose this option if you have read the user manual and are familiar with the program");
     warningLabel->setStyleSheet("color: red");
 
@@ -211,5 +214,24 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     return layout;
 }
 
+
+void GeneralInformationWidget::chooseDirectoryDialog(void)
+{
+    auto pathToWorkingDirectoryFile = QFileDialog::getExistingDirectory(this,tr("Working Directory"));
+
+    // Return if the user cancels
+    if(pathToWorkingDirectoryFile.isEmpty() || !QDir(pathToWorkingDirectoryFile).exists())
+    {
+        QString errMsg = "The given path " + pathToWorkingDirectoryFile + " is not a valid directory";
+        this->userMessageDialog(errMsg);
+
+        return;
+    }
+
+    // Set file name & entry in qLine edit
+    workingDirectoryLineEdit->setText(pathToWorkingDirectoryFile);
+
+    return;
+}
 
 

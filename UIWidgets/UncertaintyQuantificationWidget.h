@@ -1,10 +1,10 @@
-#ifndef GENERALINFORMATIONWIDGET_H
-#define GENERALINFORMATIONWIDGET_H
+#ifndef UncertaintyQuantificationWidget_H
+#define UncertaintyQuantificationWidget_H
 /* *****************************************************************************
-Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
+Redistribution and use in source and binary forms, with or without 
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -28,50 +28,55 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, University of California, Berkeley
+// Written by: Stevan Gavrilovic
 
 #include "SimCenterAppWidget.h"
 
-class QComboBox;
-class QGridLayout;
-class QLineEdit;
+class SimCenterAppWidget;
+class DakotaResults;
+class MonteCarloSamplingWidget;
 
-class GeneralInformationWidget : public SimCenterAppWidget
+class QVBoxLayout;
+class QComboBox;
+class QCheckBox;
+class QLineEdit;
+class QStackedWidget;
+
+class UncertaintyQuantificationWidget : public  SimCenterAppWidget
 {
     Q_OBJECT
 
-    explicit GeneralInformationWidget(QWidget *parent = 0);
-    ~GeneralInformationWidget();
-
 public:
+    explicit UncertaintyQuantificationWidget(QWidget *parent);
+    ~UncertaintyQuantificationWidget();
+
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
 
-    void clear(void);
-
 private slots:
-    void chooseDirectoryDialog(void);
+    void onTextChanged(const QString &text);
 
 private:
+    QVBoxLayout *layout;
+    QWidget     *methodSpecific;
+    QComboBox   *samplingMethod;
+    QLineEdit   *numSamples;
+    QLineEdit   *randomSeed;
 
-    QGridLayout* getInfoLayout(void);
+    QComboBox   *uqSelection;
+    QWidget     *uqSpecific;
 
-    QLineEdit* analysisLineEdit;
-    QLineEdit* workingDirectoryLineEdit;
-    QLineEdit* numSamplesLineEdit;
-    QLineEdit* seedLineEdit;
+    QStackedWidget *theStackedWidget;
+    MonteCarloSamplingWidget *theMC;
 
-    QComboBox* unitsCombo;
-    QComboBox* dataGenCombo;
 };
 
-
-#endif // GENERALINFORMATIONWIDGET_H
+#endif // UncertaintyQuantificationWidget_H

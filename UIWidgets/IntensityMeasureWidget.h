@@ -37,13 +37,19 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.01.2020
 
 #include <SimCenterAppWidget.h>
-#include <GeneralInformationWidget.h>
 
-class QGridLayout;
+class OpenSHAWidget;
+class SourceCharacterizationWidget;
+class ShakeMapWidget;
 class UserDefinedApplication;
+class VisualizationWidget;
+
+class QComboBox;
+class QGroupBox;
+class QCheckBox;
+class QStackedWidget;
 
 class IntensityMeasureWidget : public  SimCenterAppWidget
 {
@@ -51,24 +57,41 @@ class IntensityMeasureWidget : public  SimCenterAppWidget
 
 public:
 
-    explicit IntensityMeasureWidget(GeneralInformationWidget* generalInfoWidget, QWidget *parent = 0);
+    explicit IntensityMeasureWidget(VisualizationWidget* visWidget, QWidget *parent = 0);
     ~IntensityMeasureWidget();
 
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
-    bool outputAppDataToJSON(QJsonObject &rvObject);
-    bool inputAppDataFromJSON(QJsonObject &rvObject);
+
     bool copyFiles(QString &destName);
 
 signals:
 
 public slots:
 
-    void eventSelectionChanged(const QString &arg1);
+    void IMSelectionChanged(int index);
 
 private:
 
-    QGridLayout* getIMLayout(void);
+    QComboBox* IMSelectCombo;
+
+    OpenSHAWidget* openSHA;
+    ShakeMapWidget* shakeMap;
+    QWidget* shakeMapStackedWidget;
+    SourceCharacterizationWidget* theSourceCharacterizationWidget;
+
+    QStackedWidget* mainPanel;
+    QGroupBox* getIMBox(void);
+
+    QCheckBox* PGACheckbox;
+    QCheckBox* PGVCheckbox;
+
+    QCheckBox* spatialCorrCheckbox;
+    QComboBox* spatialCorrComboBox;
+
+    QCheckBox* spectralCorrCheckbox;
+    QComboBox* spectralCorrComboBox;
+
 };
 
 #endif // EARTHQUAKE_EVENT_SELECTION_H

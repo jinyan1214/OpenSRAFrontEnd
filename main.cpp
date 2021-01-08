@@ -22,6 +22,9 @@
 static QString logFilePath;
 static bool logToFile = false;
 
+#include "ArcGISRuntimeEnvironment.h"
+
+using namespace Esri::ArcGISRuntime;
 
 // customMessgaeOutput code taken from web:
 // https://stackoverflow.com/questions/4954140/how-to-redirect-qdebug-qwarning-qcritical-etc-output
@@ -90,8 +93,10 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
-    // create the main window
+    // Set the key for the ArcGIS interface
+    ArcGISRuntimeEnvironment::setLicense("LICENSE");
 
+    // create the main window
     WorkflowAppOpenSRA *theInputApp = new WorkflowAppOpenSRA();
     MainWindowWorkflowApp w(QString("OpenSRA: Open-Source Seismic Risk Assessment Tool"), theInputApp, nullptr);
 

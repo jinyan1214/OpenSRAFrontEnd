@@ -35,52 +35,57 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 09.29.2020
 
-#include "WorkflowAppOpenSRA.h"
-#include "SimCenterComponentSelection.h"
-#include "GeneralInformationWidget.h"
-#include "SourceCharacterizationWidget.h"
+#include "CustomizedItemModel.h"
 #include "DamageMeasureWidget.h"
 #include "DecisionVariableWidget.h"
-#include "PipelineNetworkWidget.h"
-#include "LocalApplication.h"
-#include "RunWidget.h"
-#include "UIWidgets/ResultsWidget.h"
-#include "IntensityMeasureWidget.h"
-#include "RunLocalWidget.h"
 #include "EngDemandParamWidget.h"
-#include "CustomizedItemModel.h"
+#include "GeneralInformationWidget.h"
+#include "IntensityMeasureWidget.h"
+#include "LocalApplication.h"
+#include "PipelineNetworkWidget.h"
+#include "RunLocalWidget.h"
+#include "RunWidget.h"
+#include "SimCenterComponentSelection.h"
+#include "UIWidgets/ResultsWidget.h"
 #include "VisualizationWidget.h"
+#include "WorkflowAppOpenSRA.h"
+#include "UncertaintyQuantificationWidget.h"
 
+#include <QCoreApplication>
+#include <QDebug>
 #include <QDir>
 #include <QFile>
+#include <QHBoxLayout>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QLabel>
+#include <QProcess>
+#include <QPushButton>
 #include <QSettings>
 #include <QUuid>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
-#include <QHostInfo>
-#include <QPushButton>
-#include <QScrollArea>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QJsonDocument>
-#include <QLabel>
-#include <QDebug>
-#include <QHBoxLayout>
-#include <QStackedWidget>
-#include <QProcess>
-#include <QCoreApplication>
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkReply>
-#include <QtNetwork/QNetworkRequest>
-#include <QHostInfo>
-#include <QTreeView>
-#include <QUuid>
 
 // static pointer for global procedure set in constructor
 static WorkflowAppOpenSRA *theApp = nullptr;
+
+// global procedure
+int getNumParallelTasks()
+{
+    return theApp->getMaxNumParallelTasks();
+}
+
+
+WorkflowAppOpenSRA* WorkflowAppOpenSRA::getInstance()
+{
+    return theInstance;
+}
+
+
+WorkflowAppOpenSRA *WorkflowAppOpenSRA::theInstance = nullptr;
 
 WorkflowAppOpenSRA::WorkflowAppOpenSRA(QWidget *parent) : WorkflowAppWidget(parent)
 {
@@ -90,17 +95,30 @@ WorkflowAppOpenSRA::WorkflowAppOpenSRA(QWidget *parent) : WorkflowAppWidget(pare
     theVisualizationWidget = new VisualizationWidget(this);
 
     // create the various widgets
-    theGenInfoWidget = GeneralInformationWidget::getInstance();
-    theSourceCharacterizationWidget = new SourceCharacterizationWidget();
-    theIntensityMeasureWidget = new IntensityMeasureWidget(theGenInfoWidget);
-    theDamageMeasureWidget = new DamageMeasureWidget();
+    theGenInfoWidget = new GeneralInformationWidget(this);
+    theUQWidget = new UncertaintyQuantificationWidget(this);
+    theIntensityMeasureWidget = new IntensityMeasureWidget(theVisualizationWidget, this);
+    theDamageMeasureWidget = new DamageMeasureWidget(this);
     thePipelineNetworkWidget = new PipelineNetworkWidget(this,theVisualizationWidget);
-    theEDPWidget = new EngDemandParamWidget();
+    theEDPWidget = new EngDemandParamWidget(this);
     theResultsWidget = new ResultsWidget(this,theVisualizationWidget);
-    theDecisionVariableWidget = new DecisionVariableWidget();
+    theDecisionVariableWidget = new DecisionVariableWidget(this);
 
     SimCenterWidget *theWidgets[1];
+
+    localApp = new LocalApplication("OpenSRA.py");
     theRunWidget = new RunWidget(localApp, theWidgets, 0);
+
+    connect(theRunWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
+    connect(theRunWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
+    connect(theRunWidget,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
+
+    connect(localApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
+    connect(localApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
+    connect(localApp,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
+    connect(localApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
+    connect(this,SIGNAL(setUpForApplicationRunDone(QString&, QString &)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString &)));
+    connect(localApp,SIGNAL(processResults(QString, QString, QString)), this, SLOT(processResults(QString, QString, QString)));
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
@@ -108,21 +126,21 @@ WorkflowAppOpenSRA::WorkflowAppOpenSRA(QWidget *parent) : WorkflowAppWidget(pare
     horizontalLayout->setMargin(0);
 
     // Create the component selection & add the components to it
-
     theComponentSelection = new SimCenterComponentSelection();
     horizontalLayout->addWidget(theComponentSelection);
 
+    theComponentSelection->addComponent(QString("Visualization"), theResultsWidget);
     theComponentSelection->addComponent(QString("General\nInformation"), theGenInfoWidget);
+    theComponentSelection->addComponent(QString("Uncertainty\nQuantification"), theUQWidget);
     theComponentSelection->addComponent(QString("Infrastructure"), thePipelineNetworkWidget);
-    theComponentSelection->addComponent(QString("Source\nCharacterization"), theSourceCharacterizationWidget);
     theComponentSelection->addComponent(QString("Intensity\nMeasure"), theIntensityMeasureWidget);
-    theComponentSelection->addComponent(QString("Engineering\nDemand Parameter"), theEDPWidget);
+    theComponentSelection->addComponent(QString("Engineering\nDemand\nParameter"), theEDPWidget);
     theComponentSelection->addComponent(QString("Damage\nMeasure"), theDamageMeasureWidget);
     theComponentSelection->addComponent(QString("Decision\nVariable"), theDecisionVariableWidget);
-    theComponentSelection->addComponent(QString("Visualization"), theResultsWidget);
-    theComponentSelection->setMaxWidth(160);
+    theComponentSelection->setWidth(130);
+    theComponentSelection->setItemWidthHeight(130,60);
 
-    theComponentSelection->displayComponent("General\nInformation");
+    theComponentSelection->displayComponent("Engineering\nDemand\nParameter");
 
     // access a web page which will increment the usage count for this tool
     manager = new QNetworkAccessManager(this);
@@ -131,6 +149,7 @@ WorkflowAppOpenSRA::WorkflowAppOpenSRA(QWidget *parent) : WorkflowAppWidget(pare
 
     manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/eeuq/use.php")));
 }
+
 
 WorkflowAppOpenSRA::~WorkflowAppOpenSRA()
 {
@@ -143,19 +162,29 @@ void WorkflowAppOpenSRA::replyFinished(QNetworkReply *pReply)
     return;
 }
 
-GeneralInformationWidget *WorkflowAppOpenSRA::getTheGI() const
+VisualizationWidget *WorkflowAppOpenSRA::getVisualizationWidget() const
+{
+    return theVisualizationWidget;
+}
+
+
+GeneralInformationWidget *WorkflowAppOpenSRA::getGeneralInformationWidget() const
 {
     return theGenInfoWidget;
 }
 
-void WorkflowAppOpenSRA::setTheGI(GeneralInformationWidget *value)
-{
-    theGenInfoWidget = value;
-}
 
 
 bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
 {
+    // Get each of the main widgets to output themselves
+    theGenInfoWidget->outputToJSON(jsonObjectTop);
+    theUQWidget->outputToJSON(jsonObjectTop);
+    thePipelineNetworkWidget->outputToJSON(jsonObjectTop);
+    theIntensityMeasureWidget->outputToJSON(jsonObjectTop);
+    theDecisionVariableWidget->outputToJSON(jsonObjectTop);
+    theDamageMeasureWidget->outputToJSON(jsonObjectTop);
+    theEDPWidget->outputToJSON(jsonObjectTop);
 
     return true;
 }
@@ -170,7 +199,7 @@ void WorkflowAppOpenSRA::processResults(QString dakotaOut, QString dakotaTab, QS
 
 void WorkflowAppOpenSRA::clear(void)
 {
-    theGenInfoWidget->clear();
+
 }
 
 
@@ -247,7 +276,6 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
     destinationDirectory.mkpath(templateDirectory);
 
     // copyPath(path, tmpDirectory, false);
-    theSourceCharacterizationWidget->copyFiles(templateDirectory);
     theIntensityMeasureWidget->copyFiles(templateDirectory);
     theDamageMeasureWidget->copyFiles(templateDirectory);
     thePipelineNetworkWidget->copyFiles(templateDirectory);
@@ -269,7 +297,7 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
     this->outputToJSON(json);
 
     json["runDir"]=tmpDirectory;
-    json["WorkflowType"]="Building Simulation";
+    json["WorkflowType"]="OpenSRA Simulation";
 
     QJsonDocument doc(json);
     file.write(doc.toJson());

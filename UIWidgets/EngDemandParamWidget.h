@@ -31,9 +31,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.01.2020
 
 #include <SimCenterAppWidget.h>
+
+class EDPLandslideWidget;
+class EDPLiquefactionWidget;
+class EDPLatSpreadWidget;
 
 class QGroupBox;
 
@@ -57,9 +60,10 @@ public slots:
 
 private:
 
-    QGroupBox* getLandSlideBox(void);
-    QGroupBox* getLiquefactionBox(void);
-    QGroupBox* getLateralSpreadingBox(void);
+    EDPLandslideWidget* EDPLandslide;
+    EDPLiquefactionWidget* EDPLiquefaction;
+    EDPLatSpreadWidget* EDPLatSpread;
+
     QGroupBox* getGroundSettlementBox(void);
     QGroupBox* getSurfaceFaultRupBox(void);
     QGroupBox* getSubsurfaceFaultRupBox(void);

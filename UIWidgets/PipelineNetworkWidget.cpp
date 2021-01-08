@@ -68,7 +68,7 @@ using namespace Esri::ArcGISRuntime;
 PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidget* visWidget)
     : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout();
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
@@ -83,35 +83,34 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     theHeaderLayout->addStretch(1);
     mainLayout->addLayout(theHeaderLayout);
 
-    auto theComponentSelection = new SimCenterComponentSelection();
-    mainLayout->addWidget(theComponentSelection);
-
-    theComponentSelection->setMaxWidth(120);
+    //    auto theComponentSelection = new SimCenterComponentSelection();
+    //    mainLayout->addWidget(theComponentSelection);
+    //    theComponentSelection->setWidth(120);
 
     theComponentInputWidget = std::make_unique<ComponentInputWidget>(this, "Components");
+    theComponentInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
 
     theVisualizationWidget->setPipelineWidget(theComponentInputWidget.get());
-
 
     theComponentInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
     theComponentInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
 
-//    QGroupBox* pipelineInfoBox = this->getInputWidget();
+    //    QGroupBox* pipelineInfoBox = this->getInputWidget();
 
-    QGroupBox* componentBox = theComponentInputWidget->getComponentsWidget();
-    theComponentInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
+    //    QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
+    //    theComponentInputWidget->testFileLoad(pathToPipelineInfoFile);
 
-    QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
-    theComponentInputWidget->testFileLoad(pathToPipelineInfoFile);
+    //    QGroupBox* visualizationBox = this->getVisualizationWidget();
 
-    QGroupBox* visualizationBox = this->getVisualizationWidget();
+    //    theComponentSelection->addComponent("Input", componentBox);
+    //    theComponentSelection->addComponent("Visualization",visualizationBox);
 
-    theComponentSelection->addComponent("Input", componentBox);
-    theComponentSelection->addComponent("Visualization",visualizationBox);
+    //    theComponentSelection->displayComponent("Input");
 
-    theComponentSelection->displayComponent("Input");
+    mainLayout->addWidget(theComponentInputWidget.get());
 
-    this->setLayout(mainLayout);
+    mainLayout->addStretch();
+
 }
 
 
@@ -123,6 +122,14 @@ PipelineNetworkWidget::~PipelineNetworkWidget()
 
 bool PipelineNetworkWidget::outputToJSON(QJsonObject &jsonObject)
 {
+
+    QJsonObject infrastructureObj;
+
+    auto siteDataPath = theComponentInputWidget->getPathToComponentFile();
+    infrastructureObj.insert("SiteDataFile",siteDataPath);
+
+    jsonObject.insert("Infrastructure",infrastructureObj);
+
     return true;
 }
 
@@ -147,73 +154,9 @@ bool PipelineNetworkWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
 bool PipelineNetworkWidget::copyFiles(QString &destDir)
 {
-  return false;
+    return false;
 }
 
-
-QGroupBox* PipelineNetworkWidget::getInputWidget(void)
-{
-    QGroupBox* groupBox = new QGroupBox("Enter Component Locations and Characteristics");
-    QGridLayout* gridLayout = new QGridLayout(this);
-    groupBox->setLayout(gridLayout);
-    groupBox->setFlat(true);
-
-    auto smallVSpacer = new QSpacerItem(0,10);
-
-    QLabel* topText = new QLabel();
-    topText->setText("Load information from CSV File (headers in CSV file must match those shown in the table below)");
-
-    QLabel* pathText = new QLabel();
-    pathText->setText("Import Path:");
-
-    auto workingDirectoryLineEdit = new QLineEdit(this);
-    workingDirectoryLineEdit->setMaximumWidth(750);
-    workingDirectoryLineEdit->setMinimumWidth(400);
-    workingDirectoryLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-    QPushButton *browseFileButton = new QPushButton();
-    browseFileButton->setText(tr("Browse"));
-    browseFileButton->setMaximumWidth(150);
-
-    QPushButton *loadFileButton = new QPushButton();
-    loadFileButton->setText(tr("Load CSV File"));
-    loadFileButton->setMaximumWidth(150);
-
-    // Add a horizontal spacer after the browse and load buttons
-    auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-    // Text label that says pipeline data
-    QLabel* pipeLineDataText = new QLabel("Locations and Characteristics of the Components to the Infrastructure");
-    pipeLineDataText->setStyleSheet("font-weight: bold; color: black");
-
-
-    // Create the table
-    // Headings for the table
-    QStringList headings;
-    headings << tr("Latitude") << tr("Longitude") << tr("Length")<< tr("Material")<< tr("Placeholder_1")<< tr("Placeholder_2");
-
-    auto tableWidget = new QTableWidget(10, headings.size(), this);
-    tableWidget->setHorizontalHeaderLabels(headings);
-    tableWidget->verticalHeader()->setVisible(false);
-    tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-
-    // Add a vertical spacer at the bottom to push everything up
-    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
-
-    gridLayout->addItem(smallVSpacer,0,0,1,5);
-    gridLayout->addWidget(topText,1,0,1,5);
-    gridLayout->addWidget(pathText,2,0);
-    gridLayout->addWidget(workingDirectoryLineEdit,2,1);
-    gridLayout->addWidget(browseFileButton,2,2);
-    gridLayout->addWidget(loadFileButton,2,3);
-    gridLayout->addItem(hspacer, 2, 4);
-    gridLayout->addItem(smallVSpacer,3,0,1,5);
-    gridLayout->addWidget(pipeLineDataText,4,0,1,5,Qt::AlignCenter);
-    gridLayout->addWidget(tableWidget, 5, 0, 1, 5);
-    gridLayout->addItem(vspacer, 6, 0);
-
-    return groupBox;
-}
 
 
 QGroupBox* PipelineNetworkWidget::getVisualizationWidget(void)

@@ -82,11 +82,11 @@ bool RunWidget::inputFromJSON(QJsonObject &jsonObject)
 
 void RunWidget::showLocalApplication(void)
 {
-//    theStackedWidget->setCurrentIndex(0);
-//    theCurrentApplication = localApp;
+    theStackedWidget->setCurrentIndex(0);
+    theCurrentApplication = localApp;
 
-//    this->show();
-//    theCurrentApplication->displayed();
+    this->show();
+    theCurrentApplication->displayed();
 }
 
 

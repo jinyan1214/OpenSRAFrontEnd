@@ -44,6 +44,12 @@ include(OpenSRACommon.pri)
 include($$PATH_TO_COMMON/Common/Common.pri)
 
 SOURCES += main.cpp \
+    UIWidgets/EDPLandslideWidget.cpp \
+    UIWidgets/EDPLiquefactionWidget.cpp \
+    UIWidgets/EDPLatSpreadWidget.cpp \
+    UIWidgets/MonteCarloSamplingWidget.cpp \
+    UIWidgets/OpenSHAWidget.cpp \
+    UIWidgets/UncertaintyQuantificationWidget.cpp \
     WorkflowAppOpenSRA.cpp \
     WorkflowAppWidget.cpp \
     MainWindowWorkflowApp.cpp \
@@ -55,9 +61,15 @@ SOURCES += main.cpp \
     UIWidgets/GeneralInformationWidget.cpp \
     UIWidgets/IntensityMeasureWidget.cpp \
     UIWidgets/DamageMeasureWidget.cpp \
-    RunWidget.cpp
+    RunWidget.cpp \
 
 HEADERS  += \
+    UIWidgets/EDPLandslideWidget.h \
+    UIWidgets/EDPLiquefactionWidget.h \
+    UIWidgets/EDPLatSpreadWidget.h \
+    UIWidgets/MonteCarloSamplingWidget.h \
+    UIWidgets/OpenSHAWidget.h \
+    UIWidgets/UncertaintyQuantificationWidget.h \
     WorkflowAppOpenSRA.h \
     DecisionVariableWidget.h \
     WorkflowAppWidget.h \

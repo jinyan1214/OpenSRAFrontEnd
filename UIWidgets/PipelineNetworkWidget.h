@@ -77,7 +77,6 @@ public slots:
 
 private:
 
-    QGroupBox* getInputWidget(void);
     QGroupBox* getVisualizationWidget(void);
 
     std::unique_ptr<ComponentInputWidget> theComponentInputWidget;
