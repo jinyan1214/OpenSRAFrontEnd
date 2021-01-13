@@ -66,7 +66,7 @@ QGroupBox* EDPGroundSettlementWidget::getWidgetBox(void)
 
     QGridLayout* gridLayout = new QGridLayout(groupBox);
 
-    gridLayout->addWidget(toAssessCheckBox,0,0);
+    gridLayout->addWidget(toAssessCheckBox,0,0,1,2);
     gridLayout->addItem(smallVSpacer,0,1);
     gridLayout->addWidget(ModelLabel,1,0);
     gridLayout->addWidget(modelSelectCombo,1,1);

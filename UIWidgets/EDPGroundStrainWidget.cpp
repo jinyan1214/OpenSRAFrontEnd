@@ -42,8 +42,6 @@ QGroupBox* EDPGroundStrainWidget::getWidgetBox(void)
     modelSelectCombo = new QComboBox(this);
     modelSelectCombo->addItem("Median model (preferred, reference)");
     modelSelectCombo->setCurrentIndex(0);
-    modelSelectCombo->setMinimumWidth(300);
-    modelSelectCombo->setMaximumWidth(450);
 
     auto notesLabel = new QLabel("");
 
@@ -69,7 +67,7 @@ QGroupBox* EDPGroundStrainWidget::getWidgetBox(void)
 
     QGridLayout* gridLayout = new QGridLayout(groupBox);
 
-    gridLayout->addWidget(toAssessCheckBox,0,0);
+    gridLayout->addWidget(toAssessCheckBox,0,0,1,2);
     gridLayout->addItem(smallVSpacer,0,1);
     gridLayout->addWidget(ModelLabel,1,0);
     gridLayout->addWidget(modelSelectCombo,1,1);

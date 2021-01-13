@@ -63,9 +63,13 @@ QGroupBox* DMPipeStrainWidget::getWidgetBox(void)
     ModelParamNLineEdit->setMaximumWidth(100);
     auto paramNUnitLabel = new QLabel("Unit",this);
 
+    QDoubleValidator* validator = new QDoubleValidator(this);
+    validator->setRange(0.0,1.0,5);
+
     auto weightLabel = new QLabel("Weight:");
-    weightLineEdit = new QLineEdit();
-    weightLineEdit->setText("1");
+    weightLineEdit = new QLineEdit(this);
+    weightLineEdit->setText("1.0");
+    weightLineEdit->setValidator(validator);
     weightLineEdit->setMaximumWidth(100);
 
     QPushButton *addRunListButton = new QPushButton(this);

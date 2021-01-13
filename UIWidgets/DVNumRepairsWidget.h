@@ -29,6 +29,9 @@ private:
 
     CustomListWidget *listWidget ;
 
+    QCheckBox* PGVCheckBox;
+    QCheckBox* PGDCheckBox;
+
     QCheckBox* toAssessCheckBox;
     QComboBox* modelSelectCombo;
     QLineEdit* weightLineEdit;
