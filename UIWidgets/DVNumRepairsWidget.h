@@ -1,5 +1,5 @@
-#ifndef EDPLatSpreadWidget_H
-#define EDPLatSpreadWidget_H
+#ifndef DVNumRepairsWidget_H
+#define DVNumRepairsWidget_H
 
 #include "SimCenterAppWidget.h"
 
@@ -11,10 +11,10 @@ class QCheckBox;
 class QComboBox;
 class QLineEdit;
 
-class EDPLatSpreadWidget : public SimCenterAppWidget
+class DVNumRepairsWidget : public SimCenterAppWidget
 {
 public:
-    EDPLatSpreadWidget(QWidget* parent = nullptr);
+    DVNumRepairsWidget(QWidget* parent = nullptr);
 
     QGroupBox* getWidgetBox(void);
 
@@ -34,4 +34,4 @@ private:
     QLineEdit* weightLineEdit;
 };
 
-#endif // EDPLatSpreadWidget_H
+#endif // DVNumRepairsWidget_H

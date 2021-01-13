@@ -35,8 +35,8 @@ ARCGIS_RUNTIME_VERSION = 100.9
 include($$PWD/arcgisruntime.pri)
 
 
-# Specify the path to RDT and common
-PATH_TO_RDT=../../RDT/RDT
+# Specify the path to R2D and common
+PATH_TO_R2D=../../R2DTool/R2DTool
 PATH_TO_COMMON=../../SimCenterCommon
 
 # To avoid code copying, include the common SimCenter code
@@ -44,9 +44,15 @@ include(OpenSRACommon.pri)
 include($$PATH_TO_COMMON/Common/Common.pri)
 
 SOURCES += main.cpp \
+    UIWidgets/DMPipeStrainWidget.cpp \
+    UIWidgets/DVNumRepairsWidget.cpp \
+    UIWidgets/EDPGroundSettlementWidget.cpp \
+    UIWidgets/EDPGroundStrainWidget.cpp \
     UIWidgets/EDPLandslideWidget.cpp \
     UIWidgets/EDPLiquefactionWidget.cpp \
     UIWidgets/EDPLatSpreadWidget.cpp \
+    UIWidgets/EDPSubSurfFaultRupWidget.cpp \
+    UIWidgets/EDPSurfFaultRupWidget.cpp \
     UIWidgets/MonteCarloSamplingWidget.cpp \
     UIWidgets/OpenSHAWidget.cpp \
     UIWidgets/UncertaintyQuantificationWidget.cpp \
@@ -64,9 +70,16 @@ SOURCES += main.cpp \
     RunWidget.cpp \
 
 HEADERS  += \
+    OpenSRAUserPass.h \
+    UIWidgets/DMPipeStrainWidget.h \
+    UIWidgets/DVNumRepairsWidget.h \
+    UIWidgets/EDPGroundSettlementWidget.h \
+    UIWidgets/EDPGroundStrainWidget.h \
     UIWidgets/EDPLandslideWidget.h \
     UIWidgets/EDPLiquefactionWidget.h \
     UIWidgets/EDPLatSpreadWidget.h \
+    UIWidgets/EDPSubSurfFaultRupWidget.h \
+    UIWidgets/EDPSurfFaultRupWidget.h \
     UIWidgets/MonteCarloSamplingWidget.h \
     UIWidgets/OpenSHAWidget.h \
     UIWidgets/UncertaintyQuantificationWidget.h \

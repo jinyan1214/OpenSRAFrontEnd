@@ -35,9 +35,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.01.2020
 
 #include "DecisionVariableWidget.h"
+#include "DVNumRepairsWidget.h"
 #include "sectiontitle.h"
 #include "SimCenterComponentSelection.h"
 
@@ -59,7 +59,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 DecisionVariableWidget::DecisionVariableWidget(QWidget *parent): SimCenterAppWidget(parent)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout();
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
@@ -74,10 +74,9 @@ DecisionVariableWidget::DecisionVariableWidget(QWidget *parent): SimCenterAppWid
     theHeaderLayout->addStretch(1);
     mainLayout->addLayout(theHeaderLayout);
 
-    auto theComponentSelection = new SimCenterComponentSelection();
-    mainLayout->addWidget(theComponentSelection);
+    auto theComponentSelection = new SimCenterComponentSelection(this);
 
-    theComponentSelection->setWidth(120);
+    DVNumRepairs = new DVNumRepairsWidget(this);
 
     QGroupBox* numRepairsBox = this->getNumRepairsWidget();
     QGroupBox* numBreaksBox = this->getNumBreaksWidget();
@@ -85,15 +84,16 @@ DecisionVariableWidget::DecisionVariableWidget(QWidget *parent): SimCenterAppWid
 
     QGroupBox* DM4Box = this->getDM4Widget();
 
-    theComponentSelection->addComponent("Annual Number\nof Repairs",numRepairsBox);
-    theComponentSelection->addComponent("Annual Number\nof Breaks",numBreaksBox);
+    theComponentSelection->addComponent("Annual Number\nof Repairs",DVNumRepairs);
+    theComponentSelection->addComponent("Annual Number\nof Breaks",numRepairsBox);
     theComponentSelection->addComponent("Serviceability\nIndex",serviceabilityBox);
-    theComponentSelection->addComponent("DV 4",DM4Box);
 
     theComponentSelection->displayComponent("Annual Number\nof Repairs");
+
     theComponentSelection->setWidth(150);
 
-    this->setLayout(mainLayout);
+    mainLayout->addWidget(theComponentSelection);
+
 }
 
 
@@ -105,6 +105,16 @@ DecisionVariableWidget::~DecisionVariableWidget()
 
 bool DecisionVariableWidget::outputToJSON(QJsonObject &jsonObject)
 {
+    QJsonObject outputObj;
+
+    QJsonObject typeObj;
+
+    DVNumRepairs->outputToJSON(typeObj);
+
+    outputObj.insert("Type",typeObj);
+
+    jsonObject.insert("DecisionVariable",outputObj);
+
     return true;
 }
 
@@ -114,17 +124,6 @@ bool DecisionVariableWidget::inputFromJSON(QJsonObject &jsonObject)
     return false;
 }
 
-
-bool DecisionVariableWidget::outputAppDataToJSON(QJsonObject &jsonObject)
-{
-    return true;
-}
-
-
-bool DecisionVariableWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
-{
-    return false;
-}
 
 
 bool DecisionVariableWidget::copyFiles(QString &destDir)

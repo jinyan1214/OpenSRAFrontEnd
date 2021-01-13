@@ -106,8 +106,8 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
 }
 
 
-bool GeneralInformationWidget::inputFromJSON(QJsonObject &/*jsonObject*/){
-
+bool GeneralInformationWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
 
     return false;
 }

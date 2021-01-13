@@ -1,5 +1,5 @@
-#ifndef EDPLatSpreadWidget_H
-#define EDPLatSpreadWidget_H
+#ifndef EDPGroundSettlementWidget_H
+#define EDPGroundSettlementWidget_H
 
 #include "SimCenterAppWidget.h"
 
@@ -11,10 +11,10 @@ class QCheckBox;
 class QComboBox;
 class QLineEdit;
 
-class EDPLatSpreadWidget : public SimCenterAppWidget
+class EDPGroundSettlementWidget : public SimCenterAppWidget
 {
 public:
-    EDPLatSpreadWidget(QWidget* parent = nullptr);
+    EDPGroundSettlementWidget(QWidget* parent = nullptr);
 
     QGroupBox* getWidgetBox(void);
 
@@ -34,4 +34,4 @@ private:
     QLineEdit* weightLineEdit;
 };
 
-#endif // EDPLatSpreadWidget_H
+#endif // EDPGroundSettlementWidget_H

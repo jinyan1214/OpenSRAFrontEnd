@@ -32,8 +32,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "EngDemandParamWidget.h"
 #include "EDPLandslideWidget.h"
+#include "EDPGroundSettlementWidget.h"
 #include "EDPLiquefactionWidget.h"
 #include "EDPLatSpreadWidget.h"
+#include "EDPGroundStrainWidget.h"
+#include "EDPSurfFaultRupWidget.h"
+#include "EDPSubSurfFaultRupWidget.h"
+
 #include "sectiontitle.h"
 #include "SimCenterComponentSelection.h"
 
@@ -74,28 +79,26 @@ EngDemandParamWidget::EngDemandParamWidget(QWidget *parent) : SimCenterAppWidget
     EDPLandslide = new EDPLandslideWidget(this);
     EDPLiquefaction = new EDPLiquefactionWidget(this);
     EDPLatSpread = new EDPLatSpreadWidget(this);
+    EDPGroundSettlement = new EDPGroundSettlementWidget(this);
+    EDPGroundStrain = new EDPGroundStrainWidget(this);
+    EDPSurfFaultRup = new EDPSurfFaultRupWidget(this);
+    EDPSubSurfFaultRup = new EDPSubSurfFaultRupWidget(this);
 
     theComponentSelection->setWidth(120);
 
     theComponentSelection->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    QGroupBox* groundSetBox = this->getGroundSettlementBox();
-    QGroupBox* surfFaultRup = this->getSurfaceFaultRupBox();
-    QGroupBox* subsurfFaultRup = this->getSubsurfaceFaultRupBox();
-    QGroupBox* groundStrn = this->getGroundStrainBox();
-
     theComponentSelection->addComponent("Liquefaction",EDPLiquefaction);
     theComponentSelection->addComponent("Lateral\nSpreading",EDPLatSpread);
-    theComponentSelection->addComponent("Ground\nSettlement",groundSetBox);
+    theComponentSelection->addComponent("Ground\nSettlement",EDPGroundSettlement);
     theComponentSelection->addComponent("Landslide",EDPLandslide);
-    theComponentSelection->addComponent("Surface\nFault Rupture",surfFaultRup);
-    theComponentSelection->addComponent("Subsurface\nFault Rupture",subsurfFaultRup);
-    theComponentSelection->addComponent("Ground\nStrain",groundStrn);
+    theComponentSelection->addComponent("Surface\nFault Rupture",EDPSurfFaultRup);
+    theComponentSelection->addComponent("Subsurface\nFault Rupture",EDPSubSurfFaultRup);
+    theComponentSelection->addComponent("Ground\nStrain",EDPGroundStrain);
 
-    theComponentSelection->displayComponent("Landslide");
+    theComponentSelection->displayComponent("Liquefaction");
 
     mainLayout->addWidget(theComponentSelection);
-
 }
 
 EngDemandParamWidget::~EngDemandParamWidget()
@@ -104,9 +107,25 @@ EngDemandParamWidget::~EngDemandParamWidget()
 }
 
 
-bool
-EngDemandParamWidget::outputToJSON(QJsonObject &jsonObject)
+bool EngDemandParamWidget::outputToJSON(QJsonObject &jsonObject)
 {
+
+    QJsonObject outputObj;
+
+    QJsonObject typeObj;
+
+    EDPLandslide->outputToJSON(typeObj);
+    EDPLiquefaction->outputToJSON(typeObj);
+    EDPLatSpread->outputToJSON(typeObj);
+    EDPGroundSettlement->outputToJSON(typeObj);
+    EDPGroundStrain->outputToJSON(typeObj);
+    EDPSurfFaultRup->outputToJSON(typeObj);
+    EDPSubSurfFaultRup->outputToJSON(typeObj);
+
+    outputObj.insert("Type",typeObj);
+
+    jsonObject.insert("EngineeringDemandParameter",outputObj);
+
     return true;
 }
 
@@ -129,49 +148,11 @@ bool EngDemandParamWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
     return true;
 }
 
+
 bool EngDemandParamWidget::copyFiles(QString &destDir)
 {
 
     return false;
 }
 
-
-QGroupBox* EngDemandParamWidget::getGroundSettlementBox(void)
-{
-    QGroupBox* groupBox = new QGroupBox("Ground Settlement");
-    groupBox->setFlat(true);
-
-
-    return groupBox;
-}
-
-
-QGroupBox* EngDemandParamWidget::getSurfaceFaultRupBox(void)
-{
-    QGroupBox* groupBox = new QGroupBox("Surface Fault Rupture");
-    groupBox->setFlat(true);
-
-
-    return groupBox;
-}
-
-
-QGroupBox* EngDemandParamWidget::getSubsurfaceFaultRupBox(void)
-{
-    QGroupBox* groupBox = new QGroupBox("Subsurface Fault Rupture");
-    groupBox->setFlat(true);
-
-
-    return groupBox;
-}
-
-
-QGroupBox* EngDemandParamWidget::getGroundStrainBox(void)
-{
-    QGroupBox* groupBox = new QGroupBox("Ground Strain");
-    groupBox->setFlat(true);
-
-
-    return groupBox;
-}
 

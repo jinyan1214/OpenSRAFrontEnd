@@ -43,7 +43,7 @@ OpenSHAWidget::OpenSHAWidget(QWidget* parent) : SimCenterAppWidget(parent)
     vs30InfoLabel = new QLabel("NOTE: Vs30 must be specified in the SiteData input file if the \"User Defined\" option is selected");
     vs30InfoLabel->setStyleSheet("font-weight: bold; color: red");
 
-    QGroupBox* filterGroupBox = new QGroupBox("Filter",this);
+    QGroupBox* filterGroupBox = new QGroupBox("Filters",this);
     auto filterGridLayout = new QGridLayout(filterGroupBox);
 
     RpCheckBox = new QCheckBox("Return Period [years]", this);

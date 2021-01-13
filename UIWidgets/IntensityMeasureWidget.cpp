@@ -204,6 +204,7 @@ QGroupBox* IntensityMeasureWidget::getIMBox(void)
     auto smallVSpacer = new QSpacerItem(0,10);
 
     QGroupBox* IMGroupBox = new QGroupBox(this);
+    IMGroupBox->setFlat(true);
 
     auto IMLabel = new QLabel("Intensity Measures");
     IMLabel->setStyleSheet("font-weight: bold; color: black");

@@ -37,17 +37,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.01.2020
 
-#include <SimCenterAppWidget.h>
+#include "SimCenterAppWidget.h"
+
+class DVNumRepairsWidget;
 
 class QGroupBox;
-class QComboBox;
-class QStackedWidget;
-class RandomVariablesContainer;
-class ResultsWidget;
-class UQ_Engine;
-class RandomVariablesContainer;
 
 class DecisionVariableWidget : public  SimCenterAppWidget
 {
@@ -57,8 +52,6 @@ public:
     explicit DecisionVariableWidget(QWidget *parent = 0);
     ~DecisionVariableWidget();
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
     bool copyFiles(QString &destName);
@@ -71,6 +64,7 @@ public slots:
 
 private:
 
+    DVNumRepairsWidget* DVNumRepairs;
     QGroupBox* getNumRepairsWidget(void);
     QGroupBox* getNumBreaksWidget(void);
     QGroupBox* getServiceabilityWidget(void);

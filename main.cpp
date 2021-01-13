@@ -3,6 +3,7 @@
 
 #include "MainWindowWorkflowApp.h"
 #include "WorkflowAppOpenSRA.h"
+#include "OpenSRAUserPass.h"
 
 #include <QApplication>
 #include <QDebug>
@@ -68,7 +69,7 @@ int main(int argc, char *argv[])
     logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
             + QDir::separator() + QCoreApplication::applicationName();
 
-    // make sure tool dir exists in Documentss folder
+    // make sure tool dir exists in Documents folder
     QDir dirWork(logFilePath);
     if (!dirWork.exists())
         if (!dirWork.mkpath(logFilePath)) {
@@ -94,7 +95,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     // Set the key for the ArcGIS interface
-    ArcGISRuntimeEnvironment::setLicense("LICENSE");
+    ArcGISRuntimeEnvironment::setLicense(getArcGISKey());
 
     // create the main window
     WorkflowAppOpenSRA *theInputApp = new WorkflowAppOpenSRA();

@@ -1,0 +1,12 @@
+#ifndef OPENSRAUSERPASS_H
+#define OPENSRAUSERPASS_H
+
+// Written by: Stevan Gavrilovic
+
+// DO NOT CHANGE THE NAME OF THIS FILE, OTHERWISE GIT IGNORE WILL NOT WORK AND IT WILL INCLUDE IT IN THE REPO
+
+#include <QString>
+
+static QString getArcGISKey(void){return "runtimelite,1000,rud6425635914,none,2K0RJAY3FPJ3R6EJM104";}
+
+#endif // OPENSRAUSERPASS_H

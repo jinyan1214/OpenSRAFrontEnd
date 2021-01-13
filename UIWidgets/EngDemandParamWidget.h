@@ -37,6 +37,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class EDPLandslideWidget;
 class EDPLiquefactionWidget;
 class EDPLatSpreadWidget;
+class EDPGroundSettlementWidget;
+class EDPGroundStrainWidget;
+class EDPSurfFaultRupWidget;
+class EDPSubSurfFaultRupWidget;
 
 class QGroupBox;
 
@@ -63,12 +67,10 @@ private:
     EDPLandslideWidget* EDPLandslide;
     EDPLiquefactionWidget* EDPLiquefaction;
     EDPLatSpreadWidget* EDPLatSpread;
-
-    QGroupBox* getGroundSettlementBox(void);
-    QGroupBox* getSurfaceFaultRupBox(void);
-    QGroupBox* getSubsurfaceFaultRupBox(void);
-    QGroupBox* getGroundStrainBox(void);
-
+    EDPGroundSettlementWidget* EDPGroundSettlement;
+    EDPGroundStrainWidget* EDPGroundStrain;
+    EDPSurfFaultRupWidget* EDPSurfFaultRup;
+    EDPSubSurfFaultRupWidget* EDPSubSurfFaultRup;
 };
 
 #endif // EDP_EARTHQUAKE_SELECTION_H

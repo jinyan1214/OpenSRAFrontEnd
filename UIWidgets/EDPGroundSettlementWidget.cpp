@@ -1,9 +1,9 @@
-#include "EDPLiquefactionWidget.h"
+#include "EDPGroundSettlementWidget.h"
 #include "CustomListWidget.h"
 
 #include <QCheckBox>
-#include <QJsonObject>
 #include <QJsonArray>
+#include <QJsonObject>
 #include <QSplitter>
 #include <QLabel>
 #include <QPushButton>
@@ -12,7 +12,7 @@
 #include <QGroupBox>
 #include <QVBoxLayout>
 
-EDPLiquefactionWidget::EDPLiquefactionWidget(QWidget* parent) : SimCenterAppWidget(parent)
+EDPGroundSettlementWidget::EDPGroundSettlementWidget(QWidget* parent) : SimCenterAppWidget(parent)
 {
 
     QSplitter *splitter = new QSplitter(this);
@@ -29,21 +29,21 @@ EDPLiquefactionWidget::EDPLiquefactionWidget(QWidget* parent) : SimCenterAppWidg
 }
 
 
-QGroupBox* EDPLiquefactionWidget::getWidgetBox(void)
+QGroupBox* EDPGroundSettlementWidget::getWidgetBox(void)
 {
-    QGroupBox* groupBox = new QGroupBox("Liquefaction");
+    QGroupBox* groupBox = new QGroupBox("Ground Settlement");
     groupBox->setFlat(true);
 
     auto smallVSpacer = new QSpacerItem(0,20);
 
     toAssessCheckBox = new QCheckBox("Include in analysis",this);
 
-    auto ModelLabel = new QLabel("Model:");
+    auto ModelLabel = new QLabel("Model:", this);
     modelSelectCombo = new QComboBox(this);
-    modelSelectCombo->addItem("Zhu et al. (2017)","ZhuEtal2017");
+    modelSelectCombo->addItem("Hazus (FEMA, 2014)","Hazus2014");
     modelSelectCombo->setCurrentIndex(0);
 
-    auto notesLabel = new QLabel("Values for model parameters will be extracted from available datasets");
+    auto notesLabel = new QLabel("");
 
     QDoubleValidator* validator = new QDoubleValidator(this);
     validator->setRange(0.0,1.0,5);
@@ -53,12 +53,11 @@ QGroupBox* EDPLiquefactionWidget::getWidgetBox(void)
     weightLineEdit->setText("1.0");
     weightLineEdit->setValidator(validator);
     weightLineEdit->setMaximumWidth(100);
-
     QPushButton *addRunListButton = new QPushButton(this);
     addRunListButton->setText(tr("Add run to list"));
     addRunListButton->setMinimumWidth(250);
 
-    connect(addRunListButton,&QPushButton::clicked, this, &EDPLiquefactionWidget::handleAddButtonPressed);
+    connect(addRunListButton,&QPushButton::clicked, this, &EDPGroundSettlementWidget::handleAddButtonPressed);
 
     // Add a vertical spacer at the bottom to push everything up
     auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
@@ -82,8 +81,8 @@ QGroupBox* EDPLiquefactionWidget::getWidgetBox(void)
 }
 
 
-void EDPLiquefactionWidget::handleAddButtonPressed(void)
-{    
+void EDPGroundSettlementWidget::handleAddButtonPressed(void)
+{
     QString item = modelSelectCombo->currentText();
     QString model = modelSelectCombo->currentData().toString();
     double weight = weightLineEdit->text().toDouble();
@@ -92,7 +91,7 @@ void EDPLiquefactionWidget::handleAddButtonPressed(void)
 }
 
 
-bool EDPLiquefactionWidget::outputToJSON(QJsonObject &jsonObj)
+bool EDPGroundSettlementWidget::outputToJSON(QJsonObject &jsonObj)
 {
     QJsonObject outputObj;
 
@@ -109,17 +108,15 @@ bool EDPLiquefactionWidget::outputToJSON(QJsonObject &jsonObj)
 
     QJsonObject otherParamsObj;
 
-    otherParamsObj.insert("dc_cutoff",20);
-
     outputObj.insert("OtherParameters",otherParamsObj);
 
-    jsonObj.insert("Liquefaction",outputObj);
+    jsonObj.insert("GroundSettlement",outputObj);
 
     return true;
 }
 
 
-bool EDPLiquefactionWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
+bool EDPGroundSettlementWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 {
 
     return false;

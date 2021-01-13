@@ -140,7 +140,7 @@ WorkflowAppOpenSRA::WorkflowAppOpenSRA(QWidget *parent) : WorkflowAppWidget(pare
     theComponentSelection->setWidth(130);
     theComponentSelection->setItemWidthHeight(130,60);
 
-    theComponentSelection->displayComponent("Engineering\nDemand\nParameter");
+    theComponentSelection->displayComponent("Decision\nVariable");
 
     // access a web page which will increment the usage count for this tool
     manager = new QNetworkAccessManager(this);

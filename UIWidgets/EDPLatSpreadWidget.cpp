@@ -1,6 +1,9 @@
 #include "EDPLatSpreadWidget.h"
 #include "CustomListWidget.h"
 
+#include <QCheckBox>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <QSplitter>
 #include <QLabel>
 #include <QPushButton>
@@ -19,51 +22,39 @@ EDPLatSpreadWidget::EDPLatSpreadWidget(QWidget* parent) : SimCenterAppWidget(par
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
 
-    splitter->addWidget(this->getLandSlideBox());
+    splitter->addWidget(this->getWidgetBox());
     splitter->addWidget(listWidget);
 
     mainLayout->addWidget(splitter);
 }
 
 
-QGroupBox* EDPLatSpreadWidget::getLandSlideBox(void)
+QGroupBox* EDPLatSpreadWidget::getWidgetBox(void)
 {
     QGroupBox* groupBox = new QGroupBox("Lateral Spreading");
     groupBox->setFlat(true);
 
-    auto smallVSpacer = new QSpacerItem(0,10);
+    auto smallVSpacer = new QSpacerItem(0,20);
 
-    auto ModelLabel = new QLabel("Model:");
-    modelSelectCombo = new QComboBox();
-    modelSelectCombo->addItem("Median model (preferred, reference)");
+    toAssessCheckBox = new QCheckBox("Include in analysis",this);
+
+    auto ModelLabel = new QLabel("Model:", this);
+    modelSelectCombo = new QComboBox(this);
+    modelSelectCombo->addItem("Grant et al. (2016)","GrantEtal2016");
     modelSelectCombo->setCurrentIndex(0);
-    modelSelectCombo->setMinimumWidth(300);
-    modelSelectCombo->setMaximumWidth(450);
 
-    auto ModelParam1Label = new QLabel("Model Parameter 1:");
-    auto ModelParam1LineEdit = new QLineEdit();
-    ModelParam1LineEdit->setText("100");
-    ModelParam1LineEdit->setMaximumWidth(100);
-    auto param1UnitLabel = new QLabel("Unit");
+    auto notesLabel = new QLabel("Values for model parameters will be extracted from available datasets");
 
-    auto ModelParam2Label = new QLabel("Model Parameter 2:");
-    auto ModelParam2LineEdit = new QLineEdit();
-    ModelParam2LineEdit->setText("100");
-    ModelParam2LineEdit->setMaximumWidth(100);
-    auto param2UnitLabel = new QLabel("Unit");
-
-    auto ModelParamNLabel = new QLabel("Model Parameter N:");
-    auto ModelParamNLineEdit = new QLineEdit();
-    ModelParamNLineEdit->setText("100");
-    ModelParamNLineEdit->setMaximumWidth(100);
-    auto paramNUnitLabel = new QLabel("Unit");
+    QDoubleValidator* validator = new QDoubleValidator(this);
+    validator->setRange(0.0,1.0,5);
 
     auto weightLabel = new QLabel("Weight:");
-    weightLineEdit = new QLineEdit();
-    weightLineEdit->setText("1");
+    weightLineEdit = new QLineEdit(this);
+    weightLineEdit->setText("1.0");
+    weightLineEdit->setValidator(validator);
     weightLineEdit->setMaximumWidth(100);
 
-    QPushButton *addRunListButton = new QPushButton();
+    QPushButton *addRunListButton = new QPushButton(this);
     addRunListButton->setText(tr("Add run to list"));
     addRunListButton->setMinimumWidth(250);
 
@@ -74,32 +65,18 @@ QGroupBox* EDPLatSpreadWidget::getLandSlideBox(void)
 
     auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding,QSizePolicy::Minimum);
 
-    QGridLayout* gridLayout = new QGridLayout();
+    QGridLayout* gridLayout = new QGridLayout(groupBox);
 
-    gridLayout->addItem(smallVSpacer,0,0);
+    gridLayout->addWidget(toAssessCheckBox,0,0);
+    gridLayout->addItem(smallVSpacer,0,1);
     gridLayout->addWidget(ModelLabel,1,0);
-    gridLayout->addWidget(modelSelectCombo,1,1,1,2);
-
-    gridLayout->addWidget(ModelParam1Label,2,0);
-    gridLayout->addWidget(ModelParam1LineEdit,2,1);
-    gridLayout->addWidget(param1UnitLabel,2,2);
-
-    gridLayout->addWidget(ModelParam2Label,3,0);
-    gridLayout->addWidget(ModelParam2LineEdit,3,1);
-    gridLayout->addWidget(param2UnitLabel,3,2);
-
-    gridLayout->addWidget(ModelParamNLabel,4,0);
-    gridLayout->addWidget(ModelParamNLineEdit,4,1);
-    gridLayout->addWidget(paramNUnitLabel,4,2);
-
-    gridLayout->addWidget(weightLabel,5,0);
-    gridLayout->addWidget(weightLineEdit,5,1);
-
-    gridLayout->addWidget(addRunListButton,6,0,1,3,Qt::AlignCenter);
-
-    gridLayout->addItem(hspacer, 1, 4);
-    gridLayout->addItem(vspacer, 7, 0);
-    groupBox->setLayout(gridLayout);
+    gridLayout->addWidget(modelSelectCombo,1,1);
+    gridLayout->addWidget(notesLabel,2,0,1,2,Qt::AlignCenter);
+    gridLayout->addWidget(weightLabel,3,0);
+    gridLayout->addWidget(weightLineEdit,3,1);
+    gridLayout->addWidget(addRunListButton,4,0,1,2,Qt::AlignCenter);
+    gridLayout->addItem(vspacer, 5, 0);
+    gridLayout->addItem(hspacer, 0, 1,6,1);
 
     return groupBox;
 }
@@ -107,7 +84,43 @@ QGroupBox* EDPLatSpreadWidget::getLandSlideBox(void)
 
 void EDPLatSpreadWidget::handleAddButtonPressed(void)
 {
-    QString newItem = QString::number(listWidget->getNumberOfItems()+1) + ". " + modelSelectCombo->currentText() + " - weight="+weightLineEdit->text();
+    QString item = modelSelectCombo->currentText();
+    QString model = modelSelectCombo->currentData().toString();
+    double weight = weightLineEdit->text().toDouble();
 
-    listWidget->addItem(newItem);
+    listWidget->addItem(item, model, weight);
+}
+
+
+bool EDPLatSpreadWidget::outputToJSON(QJsonObject &jsonObj)
+{
+    QJsonObject outputObj;
+
+    outputObj.insert("ToAssess", toAssessCheckBox->isChecked());
+
+    auto modelsList = listWidget->getListOfModels();
+    auto weightsList = listWidget->getListOfWeights();
+
+    QJsonArray methods = QJsonArray::fromStringList(modelsList);
+    QJsonArray weights = QJsonArray::fromVariantList(weightsList);
+
+    outputObj.insert("ListOfMethods",methods);
+    outputObj.insert("ListOfWeights",weights);
+
+    QJsonObject otherParamsObj;
+
+    otherParamsObj.insert("dw_cutoff",50);
+
+    outputObj.insert("OtherParameters",otherParamsObj);
+
+    jsonObj.insert("LateralSpread",outputObj);
+
+    return true;
+}
+
+
+bool EDPLatSpreadWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
+{
+
+    return false;
 }
