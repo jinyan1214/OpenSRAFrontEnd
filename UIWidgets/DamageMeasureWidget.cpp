@@ -132,3 +132,8 @@ QGroupBox* DamageMeasureWidget::getDM2Widget(void)
     return groupBox;
 }
 
+void DamageMeasureWidget::clear(void)
+{
+    DMPipeStrain->clear();
+}
+

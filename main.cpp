@@ -101,6 +101,9 @@ int main(int argc, char *argv[])
     WorkflowAppOpenSRA *theInputApp = new WorkflowAppOpenSRA();
     MainWindowWorkflowApp w(QString("OpenSRA: Open-Source Seismic Risk Assessment Tool"), theInputApp, nullptr);
 
+    // Create the  menu bar and actions to run the examples
+    theInputApp->initialize();
+
     QString textAboutOpenSRA = "\
             <p> \
             This is the OpenSRA application. More to come here\

@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, University of California, Berkeley
+// Written by: Stevan Gavrilovic, UC Berkeley
 
 #include "SimCenterAppWidget.h"
 

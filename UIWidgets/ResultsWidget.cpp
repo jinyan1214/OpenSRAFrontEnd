@@ -40,7 +40,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ResultsWidget.h"
 #include "VisualizationWidget.h"
 #include "sectiontitle.h"
-#include "TreeView.h"
 #include "ShakeMapWidget.h"
 
 // GIS headers
@@ -160,7 +159,7 @@ bool ResultsWidget::inputFromJSON(QJsonObject &jsonObject)
 }
 
 
-int ResultsWidget::processResults(QString &filenameResults, QString &filenameTab) {
+int ResultsWidget::processResults(QString &filenameResults) {
 
     return 0;
 }

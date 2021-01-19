@@ -218,7 +218,7 @@ QGroupBox* IntensityMeasureWidget::getIMBox(void)
     auto correlationsLabel = new QLabel("Correlations");
     correlationsLabel->setStyleSheet("font-weight: bold; color: black");
 
-    spatialCorrCheckbox = new QCheckBox("Spatial Correlation");
+    spatialCorrCheckbox = new QCheckBox("Spatial Correlation (limited to a maximum of 5,000 sites)");
     spectralCorrCheckbox = new QCheckBox("Spectral (Cross) Correlation");
 
     spatialCorrCheckbox->setChecked(true);

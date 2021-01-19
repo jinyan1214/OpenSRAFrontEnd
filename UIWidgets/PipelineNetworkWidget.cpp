@@ -95,17 +95,8 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     theComponentInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
     theComponentInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
 
-    //    QGroupBox* pipelineInfoBox = this->getInputWidget();
-
-    //    QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/Examples/CECPipelineExample/sample_input.csv";
-    //    theComponentInputWidget->testFileLoad(pathToPipelineInfoFile);
-
-    //    QGroupBox* visualizationBox = this->getVisualizationWidget();
-
-    //    theComponentSelection->addComponent("Input", componentBox);
-    //    theComponentSelection->addComponent("Visualization",visualizationBox);
-
-    //    theComponentSelection->displayComponent("Input");
+    QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/OpenSRABackend/test/Ex1_OpenSHA/Input/SiteData.csv";
+    theComponentInputWidget->testFileLoad(pathToPipelineInfoFile);
 
     mainLayout->addWidget(theComponentInputWidget.get());
 
@@ -154,65 +145,20 @@ bool PipelineNetworkWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 
 bool PipelineNetworkWidget::copyFiles(QString &destDir)
 {
+
+    QString fileName = theComponentInputWidget->getPathToComponentFile();
+    QFileInfo fileInfo(fileName);
+
+    if (fileInfo.exists()) {
+        return this->copyFile(fileName, destDir);
+    }
+
     return false;
 }
 
 
 
-QGroupBox* PipelineNetworkWidget::getVisualizationWidget(void)
+void PipelineNetworkWidget::clear(void)
 {
-    QGroupBox* groupBox = new QGroupBox("Visualize Infrastructure");
-    QGridLayout* layout = new QGridLayout(this);
-    groupBox->setLayout(layout);
-    groupBox->setFlat(true);
-
-    auto smallVSpacer = new QSpacerItem(0,10);
-
-    QLabel* topText = new QLabel();
-    topText->setText("Use the following shapes\nto select a subset of\ncomponents to analyze");
-    topText->setStyleSheet("font-weight: bold; color: black; text-align: center");
-
-    QPushButton *circleButton = new QPushButton();
-    circleButton->setText(tr("Circle"));
-    circleButton->setMaximumWidth(150);
-
-    QPushButton *rectangleButton = new QPushButton();
-    rectangleButton->setText(tr("Rectangle"));
-    rectangleButton->setMaximumWidth(150);
-
-    QLabel* bottomText = new QLabel();
-    bottomText->setText("Click the “Apply” button to\nuse the subset of components");
-    bottomText->setStyleSheet("font-weight: bold; color: black; text-align: center");
-
-    QPushButton *applyButton = new QPushButton();
-    applyButton->setText(tr("Apply"));
-    applyButton->setMaximumWidth(150);
-
-    // Add a vertical spacer at the bottom to push everything up
-    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
-
-    // Create the Widget view
-    mapViewWidget = new MapGraphicsView(this);
-
-    // Create a map using the topographic Basemap
-    mapObject = new Map(Basemap::topographic(this), this);
-
-    mapViewWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-
-    // Set map to map view
-    mapViewWidget->setMap(mapObject);
-
-    layout->addItem(smallVSpacer,0,0,1,2);
-    layout->addWidget(topText,1,0);
-    layout->addWidget(circleButton,2,0);
-    layout->addWidget(rectangleButton,3,0);
-    layout->addWidget(bottomText,4,0);
-    layout->addWidget(applyButton,5,0);
-    layout->addItem(vspacer,6,0,1,1);
-
-    layout->addWidget(mapViewWidget,0,1,8,2);
-
-    return groupBox;
+    theComponentInputWidget->clear();
 }
-
-

@@ -77,12 +77,7 @@ public slots:
 
 private:
 
-    QGroupBox* getVisualizationWidget(void);
-
     std::unique_ptr<ComponentInputWidget> theComponentInputWidget;
-
-    Esri::ArcGISRuntime::Map*             mapObject = nullptr;
-    Esri::ArcGISRuntime::MapGraphicsView* mapViewWidget = nullptr;
 
     VisualizationWidget* theVisualizationWidget;
 };

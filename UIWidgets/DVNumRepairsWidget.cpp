@@ -2,6 +2,8 @@
 #include "CustomListWidget.h"
 
 #include <QCheckBox>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QSplitter>
 #include <QLabel>
 #include <QPushButton>
@@ -12,6 +14,9 @@
 
 DVNumRepairsWidget::DVNumRepairsWidget(QWidget* parent) : SimCenterAppWidget(parent)
 {
+
+    PGVTreeItem = nullptr;
+    PGDTreeItem = nullptr;
 
     QSplitter *splitter = new QSplitter(this);
 
@@ -37,8 +42,8 @@ QGroupBox* DVNumRepairsWidget::getWidgetBox(void)
     QGroupBox* demandBox = new QGroupBox("Demand",this);
     QVBoxLayout* demandBoxLayout = new QVBoxLayout(demandBox);
 
-    PGVCheckBox = new QCheckBox("PGV - Shaking Induced",this);
-    PGDCheckBox = new QCheckBox("PGD - Deformation Induced",this);
+    PGVCheckBox = new QCheckBox("Shaking Induced",this);
+    PGDCheckBox = new QCheckBox("Deformation Induced",this);
 
     demandBoxLayout->addWidget(PGVCheckBox);
     demandBoxLayout->addWidget(PGDCheckBox);
@@ -70,7 +75,6 @@ QGroupBox* DVNumRepairsWidget::getWidgetBox(void)
 
     // Add a vertical spacer at the bottom to push everything up
     auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
-
     auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding,QSizePolicy::Minimum);
 
     QGridLayout* gridLayout = new QGridLayout(groupBox);
@@ -97,33 +101,71 @@ void DVNumRepairsWidget::handleAddButtonPressed(void)
     QString model = modelSelectCombo->currentData().toString();
     double weight = weightLineEdit->text().toDouble();
 
-    listWidget->addItem(item, model, weight);
+    if(PGVCheckBox->isChecked())
+    {
+        if(!PGVTreeItem)
+            PGVTreeItem = listWidget->addItem("Shaking Induced");
+
+        listWidget->addItem(item, model, weight, PGVTreeItem);
+
+    }
+
+    if(PGDCheckBox->isChecked())
+    {
+        if(!PGDTreeItem)
+            PGDTreeItem = listWidget->addItem("Deformation Induced");
+
+        listWidget->addItem(item, model, weight, PGDTreeItem);
+    }
+
+    if(!PGDCheckBox->isChecked() && !PGVCheckBox->isChecked())
+    {
+        QString msg = "Please check the \"Shaking Induced\" or \"Deformation Induced\" checkbox to add items to list to run";
+        this->userMessageDialog(msg);
+    }
+
 }
 
 
 bool DVNumRepairsWidget::outputToJSON(QJsonObject &jsonObj)
 {
-//    QJsonObject outputObj;
 
-//    outputObj.insert("ToAssess", toAssessCheckBox->isChecked());
+    QJsonObject PGVObj;
 
-//    auto modelsList = listWidget->getListOfModels();
-//    auto weightsList = listWidget->getListOfWeights();
+    PGVObj.insert("ToAssess", PGVCheckBox->isChecked());
 
-//    QJsonArray methods = QJsonArray::fromStringList(modelsList);
-//    QJsonArray weights = QJsonArray::fromVariantList(weightsList);
+    auto modelsListPGV = listWidget->getListOfModels();
+    auto weightsListPGV = listWidget->getListOfWeights();
 
-//    outputObj.insert("ListOfMethods",methods);
-//    outputObj.insert("ListOfWeights",weights);
+    QJsonArray methodsPGV = QJsonArray::fromVariantList(modelsListPGV);
+    QJsonArray weightsPGV = QJsonArray::fromVariantList(weightsListPGV);
 
-//    QJsonObject otherParamsObj;
+    PGVObj.insert("ListOfMethods",methodsPGV);
+    PGVObj.insert("ListOfWeights",weightsPGV);
 
-//    otherParamsObj.insert("SourceParametersForKy", "UserDefined");
-//    otherParamsObj.insert("gm_type", "general");
+    QJsonObject otherParamsObjPGV;
+    PGVObj.insert("OtherParameters",otherParamsObjPGV);
 
-//    outputObj.insert("OtherParameters",otherParamsObj);
+    QJsonObject PGDObj;
 
-//    jsonObj.insert("Landslide",outputObj);
+    PGDObj.insert("ToAssess", PGDCheckBox->isChecked());
+
+    auto modelsListPGD = listWidget->getListOfModels();
+    auto weightsListPGD = listWidget->getListOfWeights();
+
+    QJsonArray methodsPGD = QJsonArray::fromVariantList(modelsListPGD);
+    QJsonArray weightsPGD = QJsonArray::fromVariantList(weightsListPGD);
+
+    PGDObj.insert("ListOfMethods",methodsPGD);
+    PGDObj.insert("ListOfWeights",weightsPGD);
+
+    QJsonObject otherParamsObjPGD;
+    otherParamsObjPGD.insert("flag_rup_depend", true);
+    otherParamsObjPGD.insert("pgd_cutoff", 10.16);
+    PGDObj.insert("OtherParameters",otherParamsObjPGD);
+
+    jsonObj.insert("RepairRatePGV",PGVObj);
+    jsonObj.insert("RepairRatePGD",PGDObj);
 
     return true;
 }

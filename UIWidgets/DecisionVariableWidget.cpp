@@ -63,7 +63,7 @@ DecisionVariableWidget::DecisionVariableWidget(QWidget *parent): SimCenterAppWid
     mainLayout->setMargin(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
-    SectionTitle *label = new SectionTitle();
+    SectionTitle *label = new SectionTitle(this);
     label->setText(QString("Decision Variable (DV)"));
     label->setMinimumWidth(150);
 
@@ -85,6 +85,8 @@ DecisionVariableWidget::DecisionVariableWidget(QWidget *parent): SimCenterAppWid
     QGroupBox* DM4Box = this->getDM4Widget();
 
     theComponentSelection->addComponent("Annual Number\nof Repairs",DVNumRepairs);
+    theComponentSelection->addComponent("Test",numRepairsBox);
+
     theComponentSelection->addComponent("Serviceability\nIndex",serviceabilityBox);
 
     theComponentSelection->displayComponent("Annual Number\nof Repairs");
@@ -183,7 +185,7 @@ QGroupBox* DecisionVariableWidget::getNumRepairsWidget(void)
     auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
     auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding,QSizePolicy::Minimum);
 
-    QGridLayout* gridLayout = new QGridLayout(this);
+    QGridLayout* gridLayout = new QGridLayout();
 
     gridLayout->addItem(smallVSpacer,0,0);
     gridLayout->addWidget(ModelLabel,1,0);
@@ -236,4 +238,10 @@ QGroupBox* DecisionVariableWidget::getDM4Widget(void)
     groupBox->setFlat(true);
 
     return groupBox;
+}
+
+
+void DecisionVariableWidget::clear(void)
+{
+    DVNumRepairs->clear();
 }

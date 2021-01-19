@@ -101,7 +101,7 @@ bool EDPGroundStrainWidget::outputToJSON(QJsonObject &jsonObj)
     auto modelsList = listWidget->getListOfModels();
     auto weightsList = listWidget->getListOfWeights();
 
-    QJsonArray methods = QJsonArray::fromStringList(modelsList);
+    QJsonArray methods = QJsonArray::fromVariantList(modelsList);
     QJsonArray weights = QJsonArray::fromVariantList(weightsList);
 
     outputObj.insert("ListOfMethods",methods);

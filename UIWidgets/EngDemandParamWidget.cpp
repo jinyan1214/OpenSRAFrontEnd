@@ -155,4 +155,15 @@ bool EngDemandParamWidget::copyFiles(QString &destDir)
     return false;
 }
 
+void EngDemandParamWidget::clear(void)
+{
+    EDPLandslide->clear();
+    EDPLiquefaction->clear();
+    EDPLatSpread->clear();
+    EDPGroundSettlement->clear();
+    EDPGroundStrain->clear();
+    EDPSurfFaultRup->clear();
+    EDPSubSurfFaultRup->clear();
+}
+
 

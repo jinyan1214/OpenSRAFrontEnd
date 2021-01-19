@@ -70,7 +70,7 @@ signals:
 
 public slots:  
     virtual void setUpForApplicationRun(QString &, QString &) =0;
-    virtual void processResults(QString dakotaOut, QString dakotaTab, QString inputFile) =0;
+    virtual void processResults(QString pathToResults) =0;
 
     virtual void loadFile(QString filename) =0;
     void statusMessage(QString message);

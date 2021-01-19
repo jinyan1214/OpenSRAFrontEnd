@@ -34,10 +34,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-// Latest revision: 09.30.2020
+// Written by: Stevan Gavrilovic, UC Berkeley
 
 #include "GeneralInformationWidget.h"
+#include "SimCenterPreferences.h"
 #include "sectiontitle.h"
 
 #include <QGridLayout>
@@ -100,6 +100,9 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     outputObj.insert("Directory", directoryObj);
     outputObj.insert("OutputFileType", "txt");
 
+    // To delete test:
+    outputObj.insert("SiteDataFile","SiteData.csv");
+
     jsonObj.insert("General",outputObj);
 
     return true;
@@ -138,6 +141,10 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     auto workingDirectoryLabel = new QLabel("Working Directory:");
     workingDirectoryLineEdit = new QLineEdit();
     workingDirectoryLineEdit->setMaximumWidth(400);
+
+    // Set the local work dir as default
+    auto loclWorkDir =SimCenterPreferences::getInstance()->getLocalWorkDir();
+    workingDirectoryLineEdit->setText(loclWorkDir);
 
     connect(loadFileButton,&QPushButton::clicked, this, &GeneralInformationWidget::chooseDirectoryDialog);
 

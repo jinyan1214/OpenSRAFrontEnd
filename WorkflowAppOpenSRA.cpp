@@ -51,12 +51,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 #include "WorkflowAppOpenSRA.h"
 #include "UncertaintyQuantificationWidget.h"
+#include "MainWindowWorkflowApp.h"
 
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QHBoxLayout>
+#include <QMenu>
+#include <QMenuBar>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -92,6 +95,55 @@ WorkflowAppOpenSRA::WorkflowAppOpenSRA(QWidget *parent) : WorkflowAppWidget(pare
     // set static pointer for global procedure
     theApp = this;
 
+    theInstance = this;
+}
+
+
+WorkflowAppOpenSRA::~WorkflowAppOpenSRA()
+{
+
+}
+
+
+void WorkflowAppOpenSRA::initialize(void)
+{
+    // Load the examples
+    auto pathToExamplesJson = QCoreApplication::applicationDirPath() + QDir::separator() + "Examples" + QDir::separator() + "Examples.json";
+    // QString pathToExamplesJson = "/Users/steve/Desktop/SimCenter/RDT/RDT/Examples/";
+
+    QFile jsonFile(pathToExamplesJson);
+    jsonFile.open(QFile::ReadOnly);
+    QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
+
+    auto docObj = exDoc.object();
+
+    auto exContainerObj = docObj.value("Examples").toObject();
+
+    auto numEx = exContainerObj.count();
+
+    if(numEx > 0)
+    {
+        QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
+
+        for(auto it = exContainerObj.begin(); it!=exContainerObj.end(); ++it)
+        {
+            auto name = it.key();
+
+            auto exObj = exContainerObj.value(name).toObject();
+
+            auto inputFile = exObj.value("InputFile").toString();
+
+            // Set the path to the input file
+            auto action = exampleMenu->addAction(name, this, &WorkflowAppOpenSRA::loadExamples);
+            action->setProperty("InputFile",inputFile);
+        }
+    }
+
+    // Clear action
+    QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
+    // Set the path to the input file
+    editMenu->addAction("Clear", this, &WorkflowAppOpenSRA::clear);
+
     theVisualizationWidget = new VisualizationWidget(this);
 
     // create the various widgets
@@ -118,7 +170,7 @@ WorkflowAppOpenSRA::WorkflowAppOpenSRA(QWidget *parent) : WorkflowAppWidget(pare
     connect(localApp,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
     connect(localApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
     connect(this,SIGNAL(setUpForApplicationRunDone(QString&, QString &)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString &)));
-    connect(localApp,SIGNAL(processResults(QString, QString, QString)), this, SLOT(processResults(QString, QString, QString)));
+    connect(localApp,SIGNAL(processResults(QString)), this, SLOT(processResults(QString)));
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
@@ -141,23 +193,26 @@ WorkflowAppOpenSRA::WorkflowAppOpenSRA(QWidget *parent) : WorkflowAppWidget(pare
     theComponentSelection->setItemWidthHeight(130,60);
 
     theComponentSelection->displayComponent("Decision\nVariable");
-
-    // access a web page which will increment the usage count for this tool
-    manager = new QNetworkAccessManager(this);
-
-    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
-
-    manager->get(QNetworkRequest(QUrl("http://opensees.berkeley.edu/OpenSees/developer/eeuq/use.php")));
 }
 
 
-WorkflowAppOpenSRA::~WorkflowAppOpenSRA()
+
+void WorkflowAppOpenSRA::loadExamples()
 {
+    auto pathToExample = QCoreApplication::applicationDirPath() + QDir::separator() + "Examples" + QDir::separator();
+    pathToExample += QObject::sender()->property("InputFile").toString();
 
+    if(pathToExample.isNull())
+    {
+        qDebug()<<"Error loading examples";
+        return;
+    }
+
+    this->loadFile(pathToExample);
 }
 
 
-void WorkflowAppOpenSRA::replyFinished(QNetworkReply *pReply)
+void WorkflowAppOpenSRA::replyFinished(QNetworkReply */*pReply*/)
 {
     return;
 }
@@ -190,7 +245,7 @@ bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
 }
 
 
-void WorkflowAppOpenSRA::processResults(QString dakotaOut, QString dakotaTab, QString inputFile)
+void WorkflowAppOpenSRA::processResults(QString pathToResults)
 {
 
 
@@ -199,7 +254,15 @@ void WorkflowAppOpenSRA::processResults(QString dakotaOut, QString dakotaTab, QS
 
 void WorkflowAppOpenSRA::clear(void)
 {
-
+    theGenInfoWidget->clear();
+    theUQWidget->clear();
+    thePipelineNetworkWidget->clear();
+    theIntensityMeasureWidget->clear();
+    theDecisionVariableWidget->clear();
+    theDamageMeasureWidget->clear();
+    theEDPWidget->clear();
+    theResultsWidget->clear();
+    theVisualizationWidget->clear();
 }
 
 
@@ -260,7 +323,7 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
     QString tmpDirName = QString("tmp.SimCenter") + strUnique;
     *********************************************** */
 
-    QString tmpDirName = QString("tmp.SimCenter");
+    QString tmpDirName = QString("tmp.OpenSRA");
     qDebug() << "TMP_DIR: " << tmpDirName;
     QDir workDir(workingDir);
 
@@ -272,21 +335,20 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
     } else
         destinationDirectory.mkpath(tmpDirectory);
 
-    QString templateDirectory  = destinationDirectory.absoluteFilePath(subDir);
-    destinationDirectory.mkpath(templateDirectory);
+    destinationDirectory.mkpath(tmpDirectory);
 
     // copyPath(path, tmpDirectory, false);
-    theIntensityMeasureWidget->copyFiles(templateDirectory);
-    theDamageMeasureWidget->copyFiles(templateDirectory);
-    thePipelineNetworkWidget->copyFiles(templateDirectory);
-    theEDPWidget->copyFiles(templateDirectory);
+    theIntensityMeasureWidget->copyFiles(tmpDirectory);
+    theDamageMeasureWidget->copyFiles(tmpDirectory);
+    thePipelineNetworkWidget->copyFiles(tmpDirectory);
+    theEDPWidget->copyFiles(tmpDirectory);
 
     //
     // in new templatedir dir save the UI data into dakota.json file (same result as using saveAs)
     // NOTE: we append object workingDir to this which points to template dir
     //
 
-    QString inputFile = templateDirectory + QDir::separator() + tr("dakota.json");
+    QString inputFile = tmpDirectory + QDir::separator() + tr("SetupConfig.json");
 
     QFile file(inputFile);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
@@ -305,7 +367,9 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
 
     statusMessage("SetUp Done .. Now starting application");
 
-    emit setUpForApplicationRunDone(tmpDirectory, inputFile);
+    QString inputDirectory = tmpDirectory + QDir::separator();
+
+    emit setUpForApplicationRunDone(tmpDirectory, inputDirectory);
 }
 
 

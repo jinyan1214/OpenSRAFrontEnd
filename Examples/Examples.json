@@ -1,0 +1,10 @@
+{
+    "Examples": {
+        "OpenSHA Example": {
+            "InputFile": "Ex1_OpenSHA/Input/SetupConfig.json"
+        },
+        "ShakeMap Example": {
+            "InputFile": "Ex2_ShakeMap/Input/SetupConfig.json"
+        }
+    }
+}

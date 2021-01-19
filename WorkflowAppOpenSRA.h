@@ -75,11 +75,11 @@ public:
 
     static WorkflowAppOpenSRA *getInstance(void);
 
+    void initialize(void);
+
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
-    void clear(void);
 
-    //void setMainWindow(MainWindow* window);
     void onRunButtonClicked();
     void onRemoteRunButtonClicked();
     void onRemoteGetButtonClicked();
@@ -94,12 +94,16 @@ signals:
     void sendLoadFile(QString filename);
 
 public slots:  
+    void clear(void);
 
     void setUpForApplicationRun(QString &, QString &);
-    void processResults(QString dakotaOut, QString dakotaTab, QString inputFile);
+    void processResults(QString pathToResults);
 
     void loadFile(QString filename);
     void replyFinished(QNetworkReply*);
+
+    // Examples
+    void loadExamples();
 
 private:
 
@@ -122,7 +126,6 @@ private:
     Application* localApp;
 
     QJsonObject* jsonObjOrig;
-    QNetworkAccessManager* manager;
 };
 
 #endif // WORKFLOW_APP_EE_UQ_H

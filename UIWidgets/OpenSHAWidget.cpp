@@ -35,8 +35,8 @@ OpenSHAWidget::OpenSHAWidget(QWidget* parent) : SimCenterAppWidget(parent)
 
     auto vs30Label = new QLabel("Source for Vs30:");
     vs30Combo = new QComboBox(this);
-    vs30Combo->addItem("User-Defined (Preferred)", "UserDefined");
-    vs30Combo->addItem("Infer from CGS/Wills VS30 Map (2015) through OpenSHA", "Inferred");
+    vs30Combo->addItem("Wills et al. (2015) (Preferred)", "Inferred");
+    vs30Combo->addItem("User-Defined", "UserDefined");
 
     connect(vs30Combo, QOverload<int>::of(&QComboBox::currentIndexChanged),this,&OpenSHAWidget::handleVS30Change);
 

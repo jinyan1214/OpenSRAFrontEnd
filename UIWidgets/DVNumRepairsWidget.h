@@ -4,8 +4,10 @@
 #include "SimCenterAppWidget.h"
 
 #include <QGroupBox>
+#include <QMap>
 
 class CustomListWidget;
+class TreeItem;
 
 class QCheckBox;
 class QComboBox;
@@ -32,9 +34,13 @@ private:
     QCheckBox* PGVCheckBox;
     QCheckBox* PGDCheckBox;
 
+    TreeItem* PGVTreeItem;
+    TreeItem* PGDTreeItem;
+
     QCheckBox* toAssessCheckBox;
     QComboBox* modelSelectCombo;
     QLineEdit* weightLineEdit;
+
 };
 
 #endif // DVNumRepairsWidget_H

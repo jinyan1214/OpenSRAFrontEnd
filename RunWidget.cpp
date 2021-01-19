@@ -53,7 +53,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 extern int getNumParallelTasks();
 
 RunWidget::RunWidget(Application *localA, SimCenterWidget **theWidgets, int numWidget, QWidget *parent)
-: SimCenterWidget(parent), localApp(localA), theCurrentApplication(0)
+    : SimCenterWidget(parent), localApp(localA), theCurrentApplication(0)
 {
     theStackedWidget = new QStackedWidget();
 
@@ -94,7 +94,6 @@ void RunWidget::showLocalApplication(void)
 
 void RunWidget::setupForRunApplicationDone(QString &tmpDirectory, QString &inputFile)
 {
-    qDebug() << "RunWidget::setupForRunApplicationDone";
-    //this->hide();
+    // qDebug() << "RunWidget::setupForRunApplicationDone";
     theCurrentApplication->setupDoneRunApplication(tmpDirectory, inputFile);
 }

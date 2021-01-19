@@ -59,6 +59,7 @@ SOURCES += main.cpp \
     WorkflowAppOpenSRA.cpp \
     WorkflowAppWidget.cpp \
     MainWindowWorkflowApp.cpp \
+    LocalApplication.cpp \
     UIWidgets/DecisionVariableWidget.cpp \
     UIWidgets/SourceCharacterizationWidget.cpp \
     UIWidgets/ResultsWidget.cpp \
@@ -84,9 +85,9 @@ HEADERS  += \
     UIWidgets/OpenSHAWidget.h \
     UIWidgets/UncertaintyQuantificationWidget.h \
     WorkflowAppOpenSRA.h \
-    DecisionVariableWidget.h \
     WorkflowAppWidget.h \
     MainWindowWorkflowApp.h \
+    LocalApplication.h \
     RunWidget.h \
     UIWidgets/DecisionVariableWidget.h \
     UIWidgets/SourceCharacterizationWidget.h \
@@ -105,3 +106,18 @@ INCLUDEPATH += $$PWD/Utils \
                $$PWD/styles \
                $$PWD/UIWidgets \
 
+
+# Copies over the examples folder into the build directory
+win32 {
+PATH_TO_BINARY=$$DESTDIR/Examples
+} else {
+    mac {
+    PATH_TO_BINARY=$$OUT_PWD/OpenSRA.app/Contents/MacOS
+    }
+}
+
+copydata.commands = $(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\"
+first.depends = $(first) copydata
+export(first.depends)
+export(copydata.commands)
+QMAKE_EXTRA_TARGETS += first copydata
