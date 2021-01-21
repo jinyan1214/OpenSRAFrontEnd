@@ -73,7 +73,7 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
-    label->setText(QString("Infrastructure"));
+    label->setText(QString("Infrastructure (Limited to a maximum of 1,000 sites)"));
     label->setMinimumWidth(150);
 
     theHeaderLayout->addWidget(label);

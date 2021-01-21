@@ -52,6 +52,7 @@ public:
     virtual ~WorkflowAppWidget();
 
     void setMainWindow(MainWindowWorkflowApp* window);
+    MainWindowWorkflowApp *getTheMainWindow() const;
 
     virtual bool outputToJSON(QJsonObject &rvObject) = 0;
     virtual bool inputFromJSON(QJsonObject &rvObject) = 0;

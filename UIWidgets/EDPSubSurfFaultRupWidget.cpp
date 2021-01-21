@@ -31,7 +31,7 @@ EDPSubSurfFaultRupWidget::EDPSubSurfFaultRupWidget(QWidget* parent) : SimCenterA
 
 QGroupBox* EDPSubSurfFaultRupWidget::getWidgetBox(void)
 {
-    QGroupBox* groupBox = new QGroupBox("Subsurface Fault Rupture");
+    QGroupBox* groupBox = new QGroupBox("Subsurface Fault Rupture  (Currently Disabled)");
     groupBox->setFlat(true);
 
     auto smallVSpacer = new QSpacerItem(0,20);
@@ -96,7 +96,8 @@ bool EDPSubSurfFaultRupWidget::outputToJSON(QJsonObject &jsonObj)
 {
     QJsonObject outputObj;
 
-    outputObj.insert("ToAssess", toAssessCheckBox->isChecked());
+    outputObj.insert("ToAssess", false);
+//    outputObj.insert("ToAssess", toAssessCheckBox->isChecked());
 
     auto modelsList = listWidget->getListOfModels();
     auto weightsList = listWidget->getListOfWeights();

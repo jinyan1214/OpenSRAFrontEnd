@@ -46,8 +46,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PipelineNetworkWidget.h"
 #include "RunLocalWidget.h"
 #include "RunWidget.h"
+#include "ResultsWidget.h"
 #include "SimCenterComponentSelection.h"
-#include "UIWidgets/ResultsWidget.h"
+#include "UIWidgets/CustomVisualizationWidget.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppOpenSRA.h"
 #include "UncertaintyQuantificationWidget.h"
@@ -146,15 +147,16 @@ void WorkflowAppOpenSRA::initialize(void)
 
     theVisualizationWidget = new VisualizationWidget(this);
 
-    // create the various widgets
+    // Create the various widgets
     theGenInfoWidget = new GeneralInformationWidget(this);
     theUQWidget = new UncertaintyQuantificationWidget(this);
     theIntensityMeasureWidget = new IntensityMeasureWidget(theVisualizationWidget, this);
     theDamageMeasureWidget = new DamageMeasureWidget(this);
     thePipelineNetworkWidget = new PipelineNetworkWidget(this,theVisualizationWidget);
     theEDPWidget = new EngDemandParamWidget(this);
-    theResultsWidget = new ResultsWidget(this,theVisualizationWidget);
+    theCustomVisualizationWidget = new CustomVisualizationWidget(this,theVisualizationWidget);
     theDecisionVariableWidget = new DecisionVariableWidget(this);
+    theResultsWidget = new ResultsWidget(this,theVisualizationWidget);
 
     SimCenterWidget *theWidgets[1];
 
@@ -181,7 +183,7 @@ void WorkflowAppOpenSRA::initialize(void)
     theComponentSelection = new SimCenterComponentSelection();
     horizontalLayout->addWidget(theComponentSelection);
 
-    theComponentSelection->addComponent(QString("Visualization"), theResultsWidget);
+    theComponentSelection->addComponent(QString("Visualization"), theCustomVisualizationWidget);
     theComponentSelection->addComponent(QString("General\nInformation"), theGenInfoWidget);
     theComponentSelection->addComponent(QString("Uncertainty\nQuantification"), theUQWidget);
     theComponentSelection->addComponent(QString("Infrastructure"), thePipelineNetworkWidget);
@@ -189,10 +191,11 @@ void WorkflowAppOpenSRA::initialize(void)
     theComponentSelection->addComponent(QString("Engineering\nDemand\nParameter"), theEDPWidget);
     theComponentSelection->addComponent(QString("Damage\nMeasure"), theDamageMeasureWidget);
     theComponentSelection->addComponent(QString("Decision\nVariable"), theDecisionVariableWidget);
+    theComponentSelection->addComponent(QString("Results"), theResultsWidget);
     theComponentSelection->setWidth(130);
     theComponentSelection->setItemWidthHeight(130,60);
 
-    theComponentSelection->displayComponent("Decision\nVariable");
+    theComponentSelection->displayComponent("Results");
 }
 
 
@@ -245,10 +248,13 @@ bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
 }
 
 
-void WorkflowAppOpenSRA::processResults(QString pathToResults)
+void WorkflowAppOpenSRA::processResults(QString /*pathToResults*/)
 {
+    theResultsWidget->processResults();
+    theRunWidget->hide();
+    theComponentSelection->displayComponent("Results");
 
-
+    statusMessage("Analysis complete");
 }
 
 
@@ -261,7 +267,7 @@ void WorkflowAppOpenSRA::clear(void)
     theDecisionVariableWidget->clear();
     theDamageMeasureWidget->clear();
     theEDPWidget->clear();
-    theResultsWidget->clear();
+    theCustomVisualizationWidget->clear();
     theVisualizationWidget->clear();
 }
 

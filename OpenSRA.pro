@@ -55,6 +55,8 @@ SOURCES += main.cpp \
     UIWidgets/EDPSurfFaultRupWidget.cpp \
     UIWidgets/MonteCarloSamplingWidget.cpp \
     UIWidgets/OpenSHAWidget.cpp \
+    UIWidgets/OpenSRAPostProcessor.cpp \
+    UIWidgets/ResultsWidget.cpp \
     UIWidgets/UncertaintyQuantificationWidget.cpp \
     WorkflowAppOpenSRA.cpp \
     WorkflowAppWidget.cpp \
@@ -62,7 +64,7 @@ SOURCES += main.cpp \
     LocalApplication.cpp \
     UIWidgets/DecisionVariableWidget.cpp \
     UIWidgets/SourceCharacterizationWidget.cpp \
-    UIWidgets/ResultsWidget.cpp \
+    UIWidgets/CustomVisualizationWidget.cpp \
     UIWidgets/PipelineNetworkWidget.cpp \
     UIWidgets/EngDemandParamWidget.cpp \
     UIWidgets/GeneralInformationWidget.cpp \
@@ -83,6 +85,8 @@ HEADERS  += \
     UIWidgets/EDPSurfFaultRupWidget.h \
     UIWidgets/MonteCarloSamplingWidget.h \
     UIWidgets/OpenSHAWidget.h \
+    UIWidgets/OpenSRAPostProcessor.h \
+    UIWidgets/ResultsWidget.h \
     UIWidgets/UncertaintyQuantificationWidget.h \
     WorkflowAppOpenSRA.h \
     WorkflowAppWidget.h \
@@ -91,7 +95,7 @@ HEADERS  += \
     RunWidget.h \
     UIWidgets/DecisionVariableWidget.h \
     UIWidgets/SourceCharacterizationWidget.h \
-    UIWidgets/ResultsWidget.h \
+    UIWidgets/CustomVisualizationWidget.h \
     UIWidgets/PipelineNetworkWidget.h \
     UIWidgets/EngDemandParamWidget.h \
     UIWidgets/GeneralInformationWidget.h \

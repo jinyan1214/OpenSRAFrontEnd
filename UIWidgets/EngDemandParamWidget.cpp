@@ -85,6 +85,7 @@ EngDemandParamWidget::EngDemandParamWidget(QWidget *parent) : SimCenterAppWidget
     EDPSubSurfFaultRup = new EDPSubSurfFaultRupWidget(this);
 
     theComponentSelection->setWidth(120);
+    theComponentSelection->setItemWidthHeight(120,70);
 
     theComponentSelection->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
@@ -94,7 +95,7 @@ EngDemandParamWidget::EngDemandParamWidget(QWidget *parent) : SimCenterAppWidget
     theComponentSelection->addComponent("Landslide",EDPLandslide);
     theComponentSelection->addComponent("Surface\nFault Rupture",EDPSurfFaultRup);
     theComponentSelection->addComponent("Subsurface\nFault Rupture",EDPSubSurfFaultRup);
-    theComponentSelection->addComponent("Ground\nStrain",EDPGroundStrain);
+    theComponentSelection->addComponent("Transient\nGround\nStrain",EDPGroundStrain);
 
     theComponentSelection->displayComponent("Liquefaction");
 

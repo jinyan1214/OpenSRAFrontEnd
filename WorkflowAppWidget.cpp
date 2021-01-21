@@ -22,6 +22,12 @@ void WorkflowAppWidget::setMainWindow(MainWindowWorkflowApp* window)
 }
 
 
+MainWindowWorkflowApp *WorkflowAppWidget::getTheMainWindow() const
+{
+    return theMainWindow;
+}
+
+
 void WorkflowAppWidget::statusMessage(const QString msg)
 {
     qDebug() << "WorkflowAppWidget::statusMessage" << msg;

@@ -1,3 +1,5 @@
+#ifndef CustomVisualizationWidget_H
+#define CustomVisualizationWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -37,103 +39,79 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 // Latest revision: 10.01.2020
 
-#include "DamageMeasureWidget.h"
-#include "DMPipeStrainWidget.h"
-#include "sectiontitle.h"
-#include "SimCenterComponentSelection.h"
+#include <SimCenterAppWidget.h>
 
-#include <QListWidget>
-#include <QGroupBox>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QStackedWidget>
-#include <QComboBox>
-#include <QPushButton>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QLabel>
-#include <QLineEdit>
-#include <QDebug>
-#include <QFileDialog>
-#include <QPushButton>
+#include <QNetworkAccessManager>
 
-DamageMeasureWidget::DamageMeasureWidget(QWidget *parent): SimCenterAppWidget(parent)
+namespace Esri
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setMargin(0);
-
-    QHBoxLayout *theHeaderLayout = new QHBoxLayout();
-    SectionTitle *label = new SectionTitle();
-    label->setText(QString("Damage Measure (DM)"));
-    label->setMinimumWidth(150);
-
-    theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
-    theHeaderLayout->addItem(spacer);
-
-    theHeaderLayout->addStretch(1);
-    mainLayout->addLayout(theHeaderLayout);
-
-    auto theComponentSelection = new SimCenterComponentSelection(this);
-
-    DMPipeStrain = new DMPipeStrainWidget(this);
-
-    theComponentSelection->addComponent("Transient\nPipe Strain",DMPipeStrain);
-    theComponentSelection->addComponent("DM 2",this->getDM2Widget());
-
-    theComponentSelection->displayComponent("Transient\nPipe Strain");
-
-    theComponentSelection->setWidth(120);
-
-    mainLayout->addWidget(theComponentSelection);
-
+namespace ArcGISRuntime
+{
+class ArcGISMapImageLayer;
+class GroupLayer;
+class FeatureCollectionLayer;
+class KmlLayer;
+}
 }
 
+class QGroupBox;
+class QPushButton;
+class VisualizationWidget;
+class ShakeMapWidget;
+class QNetworkReply;
 
-DamageMeasureWidget::~DamageMeasureWidget()
+class CustomVisualizationWidget : public SimCenterAppWidget
 {
 
-}
+    Q_OBJECT
+
+public:
+
+    explicit CustomVisualizationWidget(QWidget *parent, VisualizationWidget* visWidget);
+    virtual ~CustomVisualizationWidget();
+
+    virtual bool outputToJSON(QJsonObject &rvObject);
+    virtual bool inputFromJSON(QJsonObject &rvObject);
+
+    virtual int processResults(QString &filenameResults);
+
+signals:
 
 
-bool DamageMeasureWidget::outputToJSON(QJsonObject &jsonObject)
-{
-    QJsonObject outputObj;
+public slots:
+    void processNetworkReply(QNetworkReply* pReply);
 
-    QJsonObject typeObj;
+    void showCGSGeologicMap(bool state);
 
-    DMPipeStrain->outputToJSON(typeObj);
+    void showCGSLandslideMap(bool state);
 
-    outputObj.insert("Type",typeObj);
+    void showCGSLiquefactionMap(bool state);
 
-    jsonObject.insert("DamageMeasure",outputObj);
+    void showShakeMapLayer(bool state);
 
-    return true;
-}
+    void setCurrentlyViewable(bool status);
+
+protected:
+
+private:
+
+    void createGSGLayers();
+
+    QGroupBox* getVisSelectionGroupBox(void);
+    QPushButton* loadShakeMapButton;
+    std::unique_ptr<ShakeMapWidget> theShakeMapWidget;
+
+    VisualizationWidget* theVisualizationWidget;
+
+    QNetworkAccessManager m_WebCtrl;
+    QNetworkReply* downloadJsonReply;
+    QString baseCGSURL;
+
+    Esri::ArcGISRuntime::ArcGISMapImageLayer* landslideLayer;
+    Esri::ArcGISRuntime::ArcGISMapImageLayer* liquefactionLayer;
+    Esri::ArcGISRuntime::ArcGISMapImageLayer* geologicMapLayer;
 
 
-bool DamageMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
-{
-    return false;
-}
+};
 
-
-bool DamageMeasureWidget::copyFiles(QString &destDir)
-{
-    return false;
-}
-
-
-QGroupBox* DamageMeasureWidget::getDM2Widget(void)
-{
-    QGroupBox* groupBox = new QGroupBox("DM 2");
-    groupBox->setFlat(true);
-
-    return groupBox;
-}
-
-void DamageMeasureWidget::clear(void)
-{
-    DMPipeStrain->clear();
-}
-
+#endif // CustomVisualizationWidget

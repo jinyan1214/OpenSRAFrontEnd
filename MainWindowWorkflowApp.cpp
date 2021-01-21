@@ -495,10 +495,9 @@ void MainWindowWorkflowApp::setVersion(QString &newText)
 }
 
 
-void MainWindowWorkflowApp::setAbout(QString &newText)
+void MainWindowWorkflowApp::setAbout(QString &/*newText*/)
 {
-    aboutText = newText +QString("<p> This work is based on material supported by the National Science Foundation under grant 1612843<p>");
-    qDebug() << "ABOUT: " << aboutText;
+
 }
 
 

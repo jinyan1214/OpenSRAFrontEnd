@@ -41,7 +41,7 @@ QGroupBox* EDPLandslideWidget::getWidgetBox(void)
     auto ModelLabel = new QLabel("Model:");
     modelSelectCombo = new QComboBox(this);
     modelSelectCombo->addItem("Bray and Macedo (2019)","BrayMacedo2019");
-    modelSelectCombo->addItem("Jibson (2007)","Jibson2007");
+//    modelSelectCombo->addItem("Jibson (2007)","Jibson2007");
     modelSelectCombo->setCurrentIndex(0);
 
     auto notesLabel = new QLabel("");

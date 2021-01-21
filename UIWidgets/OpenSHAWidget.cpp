@@ -28,9 +28,9 @@ OpenSHAWidget::OpenSHAWidget(QWidget* parent) : SimCenterAppWidget(parent)
 
     auto seismicSourceLabel = new QLabel("Seismic Source Model:");
     seismicSourceCombo = new QComboBox(this);
-    seismicSourceCombo->addItem("Mean UCERF3","Mean UCERF3");
+    seismicSourceCombo->addItem("Mean UCERF3 (Currently Disabled)","Mean UCERF3");
     seismicSourceCombo->addItem("Mean UCERF3 FM3.1 (Preferred)","Mean UCERF3 FM3.1");
-    seismicSourceCombo->addItem("Mean UCERF3 FM3.2","Mean UCERF3 FM3.2");
+    seismicSourceCombo->addItem("Mean UCERF3 FM3.2 (Currently Disabled)","Mean UCERF3 FM3.2");
     seismicSourceCombo->setCurrentText("Mean UCERF3 FM3.1 (Preferred)");
 
     auto vs30Label = new QLabel("Source for Vs30:");

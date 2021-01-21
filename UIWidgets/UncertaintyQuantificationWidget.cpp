@@ -93,9 +93,9 @@ UncertaintyQuantificationWidget::UncertaintyQuantificationWidget(QWidget *parent
     samplingMethod = new QComboBox();
     //samplingMethod->setMaximumWidth(800);
     //samplingMethod->setMinimumWidth(800);
-    samplingMethod->addItem(tr("LHS"));
-    samplingMethod->addItem(tr("Monte Carlo"));
-    samplingMethod->addItem(tr("Polynomial Chaos Expansion"));
+    samplingMethod->addItem(tr("Latin Hypercube Sampling"));
+    samplingMethod->addItem(tr("Monte Carlo Random Sampling"));
+    samplingMethod->addItem(tr("Polynomial Chaos Expansion (Currently Disabled)"));
 
     methodLayout->addWidget(label1);
     methodLayout->addWidget(samplingMethod,2);

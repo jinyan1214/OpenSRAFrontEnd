@@ -1,5 +1,5 @@
 /* *****************************************************************************
-Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -35,54 +35,48 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 11.03.2020
 
+#include "AssetInputDelegate.h"
+#include "GeneralInformationWidget.h"
+#include "OpenSRAPostProcessor.h"
 #include "ResultsWidget.h"
+#include "SimCenterPreferences.h"
 #include "VisualizationWidget.h"
+#include "WorkflowAppR2D.h"
 #include "sectiontitle.h"
-#include "ShakeMapWidget.h"
 
-// GIS headers
-#include "GroupLayer.h"
-#include "LayerListModel.h"
-#include "FeatureLayer.h"
-#include "ArcGISMapImageLayer.h"
-#include "RasterLayer.h"
-
-#include <QListWidget>
-#include <QVBoxLayout>
-#include <QGroupBox>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QJsonObject>
 #include <QCheckBox>
-#include <QMessageBox>
 #include <QDebug>
-#include <QJsonDocument>
-#include <QNetworkReply>
-#include <QJsonArray>
-#include <QTreeView>
+#include <QDir>
+#include <QMenu>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QJsonObject>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QMessageBox>
+#include <QPaintEngine>
 #include <QPushButton>
-
+#include <QStandardPaths>
+#include <QStackedWidget>
+#include <QVBoxLayout>
+#include <QFileDialog>
 
 using namespace Esri::ArcGISRuntime;
 
-ResultsWidget::ResultsWidget(QWidget *parent,  VisualizationWidget* visWidget)
-    : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
-{
-    landslideLayer = nullptr;
-    liquefactionLayer = nullptr;
-    geologicMapLayer = nullptr;
+ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+{    
+    resultsMainLabel = new QLabel("No results to display", this);
 
-    downloadJsonReply = nullptr;
-    baseCGSURL = "https://gis.conservation.ca.gov/server/rest/services/CGS/Geologic_Map_of_California/MapServer";
+    mainStackedWidget = new QStackedWidget(this);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout();
-    mainLayout->setMargin(0);
+    mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(5,0,0,0);
 
+    // Header layout and objects
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
-    label->setText(QString("Visualization"));
+    label->setText(tr("Regional Results Summary"));
     label->setMinimumWidth(150);
 
     theHeaderLayout->addWidget(label);
@@ -90,54 +84,76 @@ ResultsWidget::ResultsWidget(QWidget *parent,  VisualizationWidget* visWidget)
     theHeaderLayout->addItem(spacer);
     theHeaderLayout->addStretch(1);
 
-    QHBoxLayout *theVizLayout = new QHBoxLayout();
+    // Layout to display the results
+    resultsPageWidget = new QWidget();
 
-    auto visSelectBox = this->getVisSelectionGroupBox();
+    mainStackedWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
-    theVizLayout->addWidget(visSelectBox);
+    mainStackedWidget->addWidget(resultsPageWidget);
 
-    auto theVisWidget = theVisualizationWidget->getVisWidget();
+    QVBoxLayout* resultsPlaceHolderLayout = new QVBoxLayout(resultsPageWidget);
+    resultsPlaceHolderLayout->addStretch();
+    resultsPlaceHolderLayout->addWidget(resultsMainLabel,0,Qt::AlignCenter);
+    resultsPlaceHolderLayout->addStretch();
 
-    theVizLayout->addWidget(theVisWidget);
+    theOpenSRAPostProcessor = std::make_unique<OpenSRAPostProcessor>(parent,theVisualizationWidget);
 
-    // Export objects
-    QHBoxLayout *theExportLayout = new QHBoxLayout();
+    mainStackedWidget->addWidget(theOpenSRAPostProcessor.get());
 
-    QLabel* exportLabel = new QLabel("Export folder:");
+    // Export layout and objects
+    QGridLayout *theExportLayout = new QGridLayout();
 
-    auto exportPathLineEdit = new QLineEdit();
-    exportPathLineEdit->setMaximumWidth(1000);
-    exportPathLineEdit->setMinimumWidth(400);
+    exportLabel = new QLabel("Export folder:", this);
+    exportPathLineEdit = new QLineEdit(this);
+    //exportPathLineEdit->setMaximumWidth(1000);
+    //exportPathLineEdit->setMinimumWidth(400);
     exportPathLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-    QPushButton *exportBrowseFileButton = new QPushButton();
+    QString defaultOutput = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QDir::separator() + QString("Results.pdf");
+    exportPathLineEdit->setText(defaultOutput);
+
+    exportBrowseFileButton = new QPushButton(this);
     exportBrowseFileButton->setText(tr("Browse"));
     exportBrowseFileButton->setMaximumWidth(150);
 
-    QPushButton *exportFileButton = new QPushButton();
-    exportFileButton->setText(tr("Export to CSV"));
-    exportFileButton->setMaximumWidth(150);
+    connect(exportBrowseFileButton,&QPushButton::clicked,this,&ResultsWidget::chooseResultsDirDialog);
 
-    theExportLayout->addStretch();
-    theExportLayout->addWidget(exportLabel);
-    theExportLayout->addWidget(exportPathLineEdit);
-    theExportLayout->addWidget(exportBrowseFileButton);
-    theExportLayout->addWidget(exportFileButton);
+    exportPDFFileButton = new QPushButton(this);
+    exportPDFFileButton->setText(tr("Export to PDF"));
+
+    connect(exportPDFFileButton,&QPushButton::clicked,this,&ResultsWidget::printToPDF);
+
+    selectComponentsText = new QLabel("Select a subset of buildings to display the results:",this);
+    selectComponentsLineEdit = new AssetInputDelegate();
+
+    connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ResultsWidget::handleComponentSelection);
+
+    selectComponentsButton = new QPushButton();
+    selectComponentsButton->setText(tr("Select"));
+    selectComponentsButton->setMaximumWidth(150);
+
+    connect(selectComponentsButton,SIGNAL(clicked()),this,SLOT(selectComponents()));
+
+    // theExportLayout->addStretch();
+    theExportLayout->addWidget(selectComponentsText,     0,0);
+    theExportLayout->addWidget(selectComponentsLineEdit, 0,1);
+    theExportLayout->addWidget(selectComponentsButton,   0,2);
+    // theExportLayout->addStretch();
+    theExportLayout->addWidget(exportLabel,            1,0);
+    theExportLayout->addWidget(exportPathLineEdit,     1,1);
+    theExportLayout->addWidget(exportBrowseFileButton, 1,2);
+    theExportLayout->addWidget(exportPDFFileButton,    2,0,1,3);
+
+    // theExportLayout->addStretch();
+    theExportLayout->setRowStretch(3,1);
 
     mainLayout->addLayout(theHeaderLayout);
-    mainLayout->addLayout(theVizLayout);
+    mainLayout->addWidget(mainStackedWidget,1);
     mainLayout->addLayout(theExportLayout);
 
-    this->setLayout(mainLayout);
-    this->setMinimumWidth(640);
+    this->resultsShow(false);
 
-    //    QString mapServerUrl =  "/Users/steve/Desktop/SimCenter/OpenSRA/Examples/CA_Precip_1981-2010_30m_WGS84_clip_mm.tif";
-
-    //    auto shpLayer = theVisualizationWidget->createAndAddRasterLayer(mapServerUrl,"Precipitation Map",nullptr);
-
-    //    if(shpLayer != nullptr)
-    //        theVisualizationWidget->addLayerToMap(shpLayer);
-
+    this->processResults();
 }
 
 
@@ -147,241 +163,166 @@ ResultsWidget::~ResultsWidget()
 }
 
 
-bool ResultsWidget::outputToJSON(QJsonObject &jsonObject)
+void ResultsWidget::resultsShow(bool value)
+{
+    if(!value)
+    {
+        mainStackedWidget->setCurrentWidget(resultsPageWidget);
+        selectComponentsButton->hide();
+        selectComponentsLineEdit->hide();
+        selectComponentsText->hide();
+        exportPDFFileButton->hide();
+        exportBrowseFileButton->hide();
+        exportPathLineEdit->hide();
+        exportLabel->hide();
+    }
+    else
+    {
+        mainStackedWidget->setCurrentWidget(theOpenSRAPostProcessor.get());
+        selectComponentsButton->show();
+        selectComponentsLineEdit->show();
+        selectComponentsText->show();
+        exportPDFFileButton->show();
+        exportBrowseFileButton->show();
+        exportPathLineEdit->show();
+        exportLabel->show();
+    }
+}
+
+
+bool ResultsWidget::outputToJSON(QJsonObject &/*jsonObject*/)
 {
     return true;
 }
 
 
-bool ResultsWidget::inputFromJSON(QJsonObject &jsonObject)
+bool ResultsWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 {
     return true;
 }
 
 
-int ResultsWidget::processResults(QString &filenameResults) {
+void ResultsWidget::setCurrentlyViewable(bool status){
+
+    if (status == true)
+        theOpenSRAPostProcessor->setCurrentlyViewable(status);
+}
+
+
+int ResultsWidget::processResults()
+{
+
+    //    auto SCPrefs = SimCenterPreferences::getInstance();
+    //    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.OpenSRA" + QDir::separator() + "Results";
+
+    QString resultsDirectory = "/Users/steve/Desktop/SimCenter/OpenSRA/Examples/DV";
+
+    try
+    {
+        theOpenSRAPostProcessor->importResults(resultsDirectory);
+
+        this->resultsShow(true);
+    }
+    catch (const QString msg)
+    {
+        this->userMessageDialog(msg);
+
+        return -1;
+    }
+
 
     return 0;
 }
 
 
-
-QGroupBox* ResultsWidget::getVisSelectionGroupBox(void)
+int ResultsWidget::printToPDF(void)
 {
-    QGroupBox* groupBox = new QGroupBox("Select Data to Visualize");
-    groupBox->setMaximumWidth(250);
-    //    groupBox->setStyleSheet("background-color: white;");
+    auto outputFileName = exportPathLineEdit->text();
 
-    auto layout = new QVBoxLayout();
-    groupBox->setLayout(layout);
-
-    auto mapDataLabel = new QLabel("Pre-packaged maps and data sets:");
-    mapDataLabel->setStyleSheet("font-weight: bold; color: black");
-
-    QCheckBox* CGS1Checkbox = new QCheckBox("CGS Geologic Map (Ref.)");
-    QCheckBox* CGS2Checkbox = new QCheckBox("CGS Liquefaction Susceptibility\nMap (Ref.)");
-    QCheckBox* CGS3Checkbox = new QCheckBox("CGS Landslide Susceptibility\nMap (Ref.)");
-
-    connect(CGS1Checkbox,&QCheckBox::clicked,this,&ResultsWidget::showCGSGeologicMap);
-    connect(CGS2Checkbox,&QCheckBox::clicked,this,&ResultsWidget::showCGSLiquefactionMap);
-    connect(CGS3Checkbox,&QCheckBox::clicked,this,&ResultsWidget::showCGSLandslideMap);
-
-    auto DVLabel = new QLabel("Decision Variables:");
-    DVLabel->setStyleSheet("font-weight: bold; color: black");
-
-    auto allRepairsLabel = new QLabel("Annual number of repairs \n(breaks and leaks)");
-    allRepairsLabel->setStyleSheet("text-decoration: underline; color: black");
-
-    QCheckBox* GMCheckbox = new QCheckBox("Ground Motion");
-    QCheckBox* LatSpreadCheckbox = new QCheckBox("Lateral Spreading");
-    QCheckBox* LandslideCheckbox = new QCheckBox("Landslide");
-    GMCheckbox->setChecked(true);
-
-    auto breaksLabel = new QLabel("Annual number of breaks");
-    breaksLabel->setStyleSheet("text-decoration: underline; color: black");
-    QCheckBox* GMCheckbox2 = new QCheckBox("Ground Motion");
-    QCheckBox* LatSpreadCheckbox2 = new QCheckBox("Lateral Spreading");
-    QCheckBox* LandslideCheckbox2 = new QCheckBox("Landslide");
-
-    auto othersLabel = new QLabel("Others:");
-    othersLabel->setStyleSheet("font-weight: bold; color: black");
-    QCheckBox* shakeMapCheckbox = new QCheckBox("ShakeMap");
-    connect(shakeMapCheckbox,&QCheckBox::clicked,this,&ResultsWidget::showShakeMapLayer);
-
-    loadShakeMapButton = new QPushButton ("Add ShakeMap", this);
-    loadShakeMapButton->setVisible(false);
-
-    theShakeMapWidget = std::make_unique<ShakeMapWidget>(theVisualizationWidget);
-    connect(loadShakeMapButton,&QPushButton::pressed,theShakeMapWidget.get(),&ShakeMapWidget::showLoadShakeMapDialog);
-
-    layout->addWidget(mapDataLabel);
-    layout->addWidget(CGS1Checkbox);
-    layout->addWidget(CGS2Checkbox);
-    layout->addWidget(CGS3Checkbox);
-    layout->addWidget(DVLabel);
-    layout->addWidget(allRepairsLabel);
-    layout->addWidget(GMCheckbox);
-    layout->addWidget(LatSpreadCheckbox);
-    layout->addWidget(LandslideCheckbox);
-    layout->addWidget(breaksLabel);
-    layout->addWidget(GMCheckbox2);
-    layout->addWidget(LatSpreadCheckbox2);
-    layout->addWidget(LandslideCheckbox2);
-    layout->addWidget(othersLabel);
-    layout->addWidget(shakeMapCheckbox);
-    layout->addWidget(loadShakeMapButton);
-
-    layout->addStretch();
-
-    return groupBox;
-}
-
-
-void ResultsWidget::processNetworkReply(QNetworkReply* pReply)
-{
-    if(pReply->error() != QNetworkReply::NoError)
+    if(outputFileName.isEmpty())
     {
-        QString err = "Error in connecting to the server at: " + pReply->url().toString();
+        QString errMsg = "The file name is empty";
+        this->userMessageDialog(errMsg);
+        return -1;
+    }
+
+
+    auto res = theOpenSRAPostProcessor->printToPDF(outputFileName);
+
+    if(res != 0)
+    {
+        QString err = "Error printing the PDF";
         this->userMessageDialog(err);
-        return;
+        return -1;
     }
 
-    if(pReply == downloadJsonReply)
-    {
-        this->createGSGLayers();
-    }
 
+    return 0;
 }
 
 
-void ResultsWidget::createGSGLayers()
+void ResultsWidget::selectComponents(void)
 {
-    //    auto eventLayer = new GroupLayer(QList<Layer*>{});
-    //    eventLayer->setName("California Geo Map");
+    selectComponentsLineEdit->clear();
 
-    //    auto data = downloadJsonReply->readAll();
-
-    //    QJsonDocument doc = QJsonDocument::fromJson(data);
-
-    //    auto jsonObject = doc.object();
-
-    //    QJsonValue nameValue = jsonObject["layers"];
-
-    //    auto layerArray = nameValue.toArray();
-
-    //    if(layerArray.size() == 0)
-    //        return;
-
-    //    auto urlToLayer = baseCGSURL;
-
-
-    //    for(auto&& it : layerArray)
-    //    {
-    //        auto ID = it.toObject()["id"];
-
-    //        auto name = it.toObject()["name"];
-
-    //        //      auto urlToLayer = baseCGSURL +"/" + QString::number(ID.toInt());
-
-    //        //      auto shpLayer = theVisualizationWidget->createAndAddMapServerLayer(urlToLayer,name.toString(),eventItem);
-
-    //        //      if(shpLayer != nullptr)
-    //        //          theVisualizationWidget->addLayerToMap(shpLayer);
-    //    }
-
+    try
+    {
+        selectComponentsLineEdit->selectComponents();
+    }
+    catch (const QString msg)
+    {
+        this->userMessageDialog(msg);
+    }
 }
 
 
-void ResultsWidget::showCGSLandslideMap(bool state)
+void ResultsWidget::handleComponentSelection(void)
 {
-    if(state == false)
+
+    try
     {
-        if(landslideLayer != nullptr)
-        {
-            theVisualizationWidget->removeLayerFromMap(landslideLayer);
-        }
-
-        return;
+        auto IDSet = selectComponentsLineEdit->getSelectedComponentIDs();
+        theOpenSRAPostProcessor->processResultsSubset(IDSet);
     }
-
-
-    if(landslideLayer == nullptr)
+    catch (const QString msg)
     {
-        QString mapServerUrl =  "https://gis.conservation.ca.gov/server/rest/services/CGS/MS58_LandslideSusceptibility_Classes/MapServer";
-        landslideLayer = theVisualizationWidget->createAndAddMapServerLayer(mapServerUrl,"Landslide Susceptibility Map",nullptr);
+        this->userMessageDialog(msg);
     }
-
-    if(landslideLayer != nullptr)
-        theVisualizationWidget->addLayerToMap(landslideLayer);
-
 }
 
 
-void ResultsWidget::showCGSGeologicMap(bool state)
+void ResultsWidget::chooseResultsDirDialog(void)
 {
-    if(state == false)
-    {
-        if(geologicMapLayer != nullptr)
-            theVisualizationWidget->removeLayerFromMap(geologicMapLayer);
 
+    QFileDialog dialog(this);
+
+    dialog.setFileMode(QFileDialog::Directory);
+    QString newPath = dialog.getExistingDirectory(this, tr("Directory to Save Results PDF"));
+    dialog.close();
+
+    // Return if the user cancels or enters same dir
+    if(newPath.isEmpty())
+    {
         return;
     }
 
-    if(geologicMapLayer == nullptr)
-        geologicMapLayer = theVisualizationWidget->createAndAddMapServerLayer(baseCGSURL,"California Geo. Map",nullptr);
+    newPath += QDir::separator() + QString("Results.pdf");
 
+    exportPathLineEdit->setText(newPath);
 
-    if(geologicMapLayer != nullptr)
-        theVisualizationWidget->addLayerToMap(geologicMapLayer);
-
-
-    //    QString addToJson = baseCGSURL + "?f=pjson";
-
-    //    QUrl addressToJson(addToJson);
-
-    //    QNetworkRequest request(addressToJson);
-
-    //    downloadJsonReply = m_WebCtrl.get(request);
-
-    //    connect(&m_WebCtrl, &QNetworkAccessManager::finished, this, &ResultsWidget::processNetworkReply);
-
+    return;
 }
 
 
-void ResultsWidget::showCGSLiquefactionMap(bool state)
+void ResultsWidget::clear(void)
 {
-    if(state == false)
-    {
-        if(liquefactionLayer != nullptr)
-            theVisualizationWidget->removeLayerFromMap(liquefactionLayer);
+    QString defaultOutput = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QDir::separator() + QString("Results.pdf");
+    exportPathLineEdit->setText(defaultOutput);
+    selectComponentsLineEdit->clear();
 
-        return;
-    }
+    theOpenSRAPostProcessor->clear();
 
-    if(liquefactionLayer == nullptr)
-    {
-        QString mapServerUrl =  "https://gis.conservation.ca.gov/server/rest/services/CGS_Earthquake_Hazard_Zones/SHP_Liquefaction_Zones/MapServer";
-        liquefactionLayer = theVisualizationWidget->createAndAddMapServerLayer(mapServerUrl,"Liquefaction Zones Map",nullptr);
-    }
-
-    if(liquefactionLayer != nullptr)
-        theVisualizationWidget->addLayerToMap(liquefactionLayer);
-}
-
-
-void ResultsWidget::showShakeMapLayer(bool state)
-{
-
-    theShakeMapWidget->showShakeMapLayers(state);
-
-    if(state == false)
-    {
-        loadShakeMapButton->setVisible(false);
-
-        return;
-    }
-
-    loadShakeMapButton->setVisible(true);
+    resultsShow(false);
 }
 
 

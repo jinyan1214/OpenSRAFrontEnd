@@ -51,6 +51,7 @@ class DecisionVariableWidget;
 class DamageMeasureWidget;
 class UQOptions;
 class ResultsWidget;
+class CustomVisualizationWidget;
 class EngDemandParamWidget;
 class GeneralInformationWidget;
 class IntensityMeasureWidget;
@@ -118,8 +119,9 @@ private:
     DecisionVariableWidget* theDecisionVariableWidget;
     DamageMeasureWidget* theDamageMeasureWidget;
     EngDemandParamWidget* theEDPWidget;
-    ResultsWidget* theResultsWidget;
+    CustomVisualizationWidget* theCustomVisualizationWidget;
     VisualizationWidget* theVisualizationWidget;
+    ResultsWidget* theResultsWidget;
 
     // objects for running the workflow and obtaining results
     RunWidget* theRunWidget;

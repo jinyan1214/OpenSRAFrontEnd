@@ -1,7 +1,7 @@
 #ifndef ResultsWidget_H
 #define ResultsWidget_H
 /* *****************************************************************************
-Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without 
@@ -37,34 +37,23 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 10.01.2020
 
-#include <SimCenterAppWidget.h>
+#include "SimCenterAppWidget.h"
 
-#include <QNetworkAccessManager>
-
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class ArcGISMapImageLayer;
-class GroupLayer;
-class FeatureCollectionLayer;
-class KmlLayer;
-}
-}
-
-class QGroupBox;
-class QPushButton;
+class AssetInputDelegate;
+class OpenSRAPostProcessor;
 class VisualizationWidget;
-class ShakeMapWidget;
-class QNetworkReply;
+
+class QStackedWidget;
+class QVBoxLayout;
+class QLabel;
+class QLineEdit;
+class QPushButton;
 
 class ResultsWidget : public SimCenterAppWidget
 {
 
     Q_OBJECT
-
 public:
 
     explicit ResultsWidget(QWidget *parent, VisualizationWidget* visWidget);
@@ -73,42 +62,40 @@ public:
     virtual bool outputToJSON(QJsonObject &rvObject);
     virtual bool inputFromJSON(QJsonObject &rvObject);
 
-    virtual int processResults(QString &filenameResults);
+    virtual int processResults();
 
-signals:
+    void setCurrentlyViewable(bool status);
 
+    void clear(void);
 
-public slots:
-    void processNetworkReply(QNetworkReply* pReply);
+    void resultsShow(bool value);
 
-    void showCGSGeologicMap(bool state);
+private slots:
 
-    void showCGSLandslideMap(bool state);
-
-    void showCGSLiquefactionMap(bool state);
-
-    void showShakeMapLayer(bool state);
-
-protected:
+    int printToPDF(void);
+    void selectComponents(void);
+    void handleComponentSelection(void);
+    void chooseResultsDirDialog(void);
 
 private:
 
-    void createGSGLayers();
+    QStackedWidget* mainStackedWidget;
+    QLabel* resultsMainLabel;
 
-    QGroupBox* getVisSelectionGroupBox(void);
-    QPushButton* loadShakeMapButton;
-    std::unique_ptr<ShakeMapWidget> theShakeMapWidget;
+    QLabel* selectComponentsText;
+    QPushButton *selectComponentsButton;
+    QPushButton *exportPDFFileButton;
+    QPushButton *exportBrowseFileButton;
+    QLabel* exportLabel;
 
+    QLineEdit* exportPathLineEdit;
+    QVBoxLayout* mainLayout;
+    QWidget* resultsPageWidget;
+
+    AssetInputDelegate* selectComponentsLineEdit;
     VisualizationWidget* theVisualizationWidget;
 
-    QNetworkAccessManager m_WebCtrl;
-    QNetworkReply* downloadJsonReply;
-    QString baseCGSURL;
-
-    Esri::ArcGISRuntime::ArcGISMapImageLayer* landslideLayer;
-    Esri::ArcGISRuntime::ArcGISMapImageLayer* liquefactionLayer;
-    Esri::ArcGISRuntime::ArcGISMapImageLayer* geologicMapLayer;
-
+    std::unique_ptr<OpenSRAPostProcessor> theOpenSRAPostProcessor;
 
 };
 

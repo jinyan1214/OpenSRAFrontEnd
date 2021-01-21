@@ -31,7 +31,7 @@ EDPGroundStrainWidget::EDPGroundStrainWidget(QWidget* parent) : SimCenterAppWidg
 
 QGroupBox* EDPGroundStrainWidget::getWidgetBox(void)
 {
-    QGroupBox* groupBox = new QGroupBox("Ground Strain");
+    QGroupBox* groupBox = new QGroupBox("Transient Ground Strain (Currently Disabled)");
     groupBox->setFlat(true);
 
     auto smallVSpacer = new QSpacerItem(0,20);
@@ -96,7 +96,8 @@ bool EDPGroundStrainWidget::outputToJSON(QJsonObject &jsonObj)
 {
     QJsonObject outputObj;
 
-    outputObj.insert("ToAssess", toAssessCheckBox->isChecked());
+    outputObj.insert("ToAssess", false);
+//    outputObj.insert("ToAssess", toAssessCheckBox->isChecked());
 
     auto modelsList = listWidget->getListOfModels();
     auto weightsList = listWidget->getListOfWeights();

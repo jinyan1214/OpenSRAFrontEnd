@@ -31,7 +31,7 @@ DMPipeStrainWidget::DMPipeStrainWidget(QWidget* parent) : SimCenterAppWidget(par
 
 QGroupBox* DMPipeStrainWidget::getWidgetBox(void)
 {
-    QGroupBox* groupBox = new QGroupBox("Pipe Strain");
+    QGroupBox* groupBox = new QGroupBox("Transient Pipe Strain");
     groupBox->setFlat(true);
 
     auto smallVSpacer = new QSpacerItem(0,20);
@@ -40,7 +40,7 @@ QGroupBox* DMPipeStrainWidget::getWidgetBox(void)
 
     auto ModelLabel = new QLabel("Model:", this);
     modelSelectCombo = new QComboBox(this);
-    modelSelectCombo->addItem("Median model (preferred, reference)");
+    modelSelectCombo->addItem("Currently Disabled");
     modelSelectCombo->setCurrentIndex(0);
     modelSelectCombo->setMinimumWidth(300);
     modelSelectCombo->setMaximumWidth(450);

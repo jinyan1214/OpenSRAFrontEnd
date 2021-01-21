@@ -85,9 +85,8 @@ DecisionVariableWidget::DecisionVariableWidget(QWidget *parent): SimCenterAppWid
     QGroupBox* DM4Box = this->getDM4Widget();
 
     theComponentSelection->addComponent("Annual Number\nof Repairs",DVNumRepairs);
-    theComponentSelection->addComponent("Test",numRepairsBox);
-
-    theComponentSelection->addComponent("Serviceability\nIndex",serviceabilityBox);
+//    theComponentSelection->addComponent("Test",numRepairsBox);
+//    theComponentSelection->addComponent("Serviceability\nIndex",serviceabilityBox);
 
     theComponentSelection->displayComponent("Annual Number\nof Repairs");
 
