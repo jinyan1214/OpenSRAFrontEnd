@@ -1,4 +1,4 @@
-/* *****************************************************************************
+﻿/* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
@@ -38,6 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "ComponentInputWidget.h"
 #include "MonteCarloSamplingWidget.h"
+#include "FixedResidualsSamplingWidget.h"
 #include "NoneWidget.h"
 #include "SecondaryComponentSelection.h"
 #include "SimCenterAppSelection.h"
@@ -91,11 +92,11 @@ UncertaintyQuantificationWidget::UncertaintyQuantificationWidget(QWidget *parent
     QLabel *label1 = new QLabel();
     label1->setText(QString("Method"));
     samplingMethod = new QComboBox();
-    //samplingMethod->setMaximumWidth(800);
-    //samplingMethod->setMinimumWidth(800);
-    samplingMethod->addItem(tr("Latin Hypercube Sampling"));
-    samplingMethod->addItem(tr("Monte Carlo Random Sampling"));
-    samplingMethod->addItem(tr("Polynomial Chaos Expansion (Currently Disabled)"));
+    samplingMethod->addItem("Latin Hypercube Sampling","Latin Hypercube Sampling");
+    samplingMethod->addItem("Monte Carlo Random Sampling","MonteCarlo");
+    samplingMethod->addItem("Fixed Residuals","FixedResiduals");
+    samplingMethod->addItem("Polynomial Chaos Expansion (Currently Disabled)");
+    samplingMethod->setCurrentIndex(0);
 
     methodLayout->addWidget(label1);
     methodLayout->addWidget(samplingMethod,2);
@@ -109,8 +110,11 @@ UncertaintyQuantificationWidget::UncertaintyQuantificationWidget(QWidget *parent
 
     theStackedWidget = new QStackedWidget();
 
-    theMC = new MonteCarloSamplingWidget();
-    theStackedWidget->addWidget(theMC);
+    theMonteCarloWidget = new MonteCarloSamplingWidget();
+    theFixedResidualsWidget = new FixedResidualsSamplingWidget();
+
+    theStackedWidget->addWidget(theMonteCarloWidget);
+    theStackedWidget->addWidget(theFixedResidualsWidget);
 
     layout->addWidget(theStackedWidget);
 
@@ -127,35 +131,72 @@ UncertaintyQuantificationWidget::~UncertaintyQuantificationWidget()
 
 void UncertaintyQuantificationWidget::onTextChanged(const QString &text)
 {
-    if (text=="LHS") {
-        theStackedWidget->setCurrentIndex(0);
+    if (text=="Latin Hypercube Sampling") {
+        theStackedWidget->setCurrentWidget(theMonteCarloWidget);
     }
-    else if (text=="Monte Carlo") {
-        theStackedWidget->setCurrentIndex(1);
+    else if (text=="Monte Carlo Random Sampling" || text=="MonteCarlo") {
+        theStackedWidget->setCurrentWidget(theMonteCarloWidget);
     }
+    else if (text=="Fixed Residuals" || text=="FixedResiduals") {
+        theStackedWidget->setCurrentWidget(theFixedResidualsWidget);
+    }
+}
+
+
+void  UncertaintyQuantificationWidget::clear()
+{
+    theFixedResidualsWidget->clear();
+    theMonteCarloWidget->clear();
+    samplingMethod->setCurrentIndex(0);
 }
 
 
 bool UncertaintyQuantificationWidget::outputToJSON(QJsonObject &jsonObject)
-{
-    bool result = true;
+{    
+    auto uqType = samplingMethod->currentData().toString();
 
-//    QJsonObject uq;
-//    uq["method"]=samplingMethod->currentText();
-//    theCurrentMethod->outputToJSON(uq);
+    QJsonObject uq;
 
-//    jsonObject["samplingMethodData"]=uq;
+    uq.insert("Type","MonteCarlo");
 
-    return result;
+    uq.insert("Algorithm",uqType);
+
+    if(uqType == "Latin Hypercube Sampling" || uqType == "MonteCarlo")
+    {
+
+        theMonteCarloWidget->outputToJSON(uq);
+    }
+    else if (uqType == "FixedResiduals")
+    {
+        theFixedResidualsWidget->outputToJSON(uq);
+    }
+
+    jsonObject.insert("UncertaintyQuantification",uq);
+
+    return true;
 }
 
 
 bool UncertaintyQuantificationWidget::inputFromJSON(QJsonObject &jsonObject)
-{
-    bool result = false;
+{ 
+    auto uqType = jsonObject["Algorithm"].toString();
 
+    int index = samplingMethod->findData(uqType);
+    if ( index != -1 )
+    {
+       samplingMethod->setCurrentIndex(index);
+    }
 
-    return result;
+    if(uqType == "Latin Hypercube Sampling" || uqType == "MonteCarlo")
+    {
+        theMonteCarloWidget->inputFromJSON(jsonObject);
+    }
+    else if (uqType == "FixedResiduals")
+    {
+        theFixedResidualsWidget->inputFromJSON(jsonObject);
+    }
+
+    return true;
 }
 
 

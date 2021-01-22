@@ -192,50 +192,10 @@ QGroupBox* CustomVisualizationWidget::getVisSelectionGroupBox(void)
     connect(CGS2Checkbox,&QCheckBox::clicked,this,&CustomVisualizationWidget::showCGSLiquefactionMap);
     connect(CGS3Checkbox,&QCheckBox::clicked,this,&CustomVisualizationWidget::showCGSLandslideMap);
 
-    auto DVLabel = new QLabel("Decision Variables:");
-    DVLabel->setStyleSheet("font-weight: bold; color: black");
-
-    auto allRepairsLabel = new QLabel("Annual number of repairs \n(breaks and leaks)");
-    allRepairsLabel->setStyleSheet("text-decoration: underline; color: black");
-
-    QCheckBox* GMCheckbox = new QCheckBox("Ground Motion");
-    QCheckBox* LatSpreadCheckbox = new QCheckBox("Lateral Spreading");
-    QCheckBox* LandslideCheckbox = new QCheckBox("Landslide");
-    GMCheckbox->setChecked(true);
-
-    auto breaksLabel = new QLabel("Annual number of breaks");
-    breaksLabel->setStyleSheet("text-decoration: underline; color: black");
-    QCheckBox* GMCheckbox2 = new QCheckBox("Ground Motion");
-    QCheckBox* LatSpreadCheckbox2 = new QCheckBox("Lateral Spreading");
-    QCheckBox* LandslideCheckbox2 = new QCheckBox("Landslide");
-
-    auto othersLabel = new QLabel("Others:");
-    othersLabel->setStyleSheet("font-weight: bold; color: black");
-    QCheckBox* shakeMapCheckbox = new QCheckBox("ShakeMap");
-    connect(shakeMapCheckbox,&QCheckBox::clicked,this,&CustomVisualizationWidget::showShakeMapLayer);
-
-    loadShakeMapButton = new QPushButton ("Add ShakeMap", this);
-    loadShakeMapButton->setVisible(false);
-
-    theShakeMapWidget = std::make_unique<ShakeMapWidget>(theVisualizationWidget);
-    connect(loadShakeMapButton,&QPushButton::pressed,theShakeMapWidget.get(),&ShakeMapWidget::showLoadShakeMapDialog);
-
     layout->addWidget(mapDataLabel);
     layout->addWidget(CGS1Checkbox);
     layout->addWidget(CGS2Checkbox);
     layout->addWidget(CGS3Checkbox);
-    layout->addWidget(DVLabel);
-    layout->addWidget(allRepairsLabel);
-    layout->addWidget(GMCheckbox);
-    layout->addWidget(LatSpreadCheckbox);
-    layout->addWidget(LandslideCheckbox);
-    layout->addWidget(breaksLabel);
-    layout->addWidget(GMCheckbox2);
-    layout->addWidget(LatSpreadCheckbox2);
-    layout->addWidget(LandslideCheckbox2);
-    layout->addWidget(othersLabel);
-    layout->addWidget(shakeMapCheckbox);
-    layout->addWidget(loadShakeMapButton);
 
     layout->addStretch();
 

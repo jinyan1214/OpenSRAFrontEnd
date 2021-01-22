@@ -121,7 +121,14 @@ bool DecisionVariableWidget::outputToJSON(QJsonObject &jsonObject)
 
 bool DecisionVariableWidget::inputFromJSON(QJsonObject &jsonObject)
 {
-    return false;
+    QJsonObject typeObj = jsonObject["Type"].toObject();
+
+    if(typeObj.isEmpty())
+        return false;
+
+    DVNumRepairs->inputFromJSON(typeObj);
+
+    return true;
 }
 
 

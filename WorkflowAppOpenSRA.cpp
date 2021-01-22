@@ -46,7 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PipelineNetworkWidget.h"
 #include "RunLocalWidget.h"
 #include "RunWidget.h"
-#include "ResultsWidget.h"
+#include "UIWidgets/ResultsWidget.h"
 #include "SimCenterComponentSelection.h"
 #include "UIWidgets/CustomVisualizationWidget.h"
 #include "VisualizationWidget.h"
@@ -160,7 +160,8 @@ void WorkflowAppOpenSRA::initialize(void)
 
     SimCenterWidget *theWidgets[1];
 
-    localApp = new LocalApplication("OpenSRA.py");
+
+    localApp = new LocalApplication("OpenSRA.py",theMainWindow);
     theRunWidget = new RunWidget(localApp, theWidgets, 0);
 
     connect(theRunWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
@@ -274,6 +275,27 @@ void WorkflowAppOpenSRA::clear(void)
 
 bool WorkflowAppOpenSRA::inputFromJSON(QJsonObject &jsonObject)
 {
+    auto genJsonObj = jsonObject["General"].toObject();
+    theGenInfoWidget->inputFromJSON(genJsonObj);
+
+    auto UQJsonObj = jsonObject["UncertaintyQuantification"].toObject();
+    theUQWidget->inputFromJSON(UQJsonObj);
+
+    auto InfraJsonObj = jsonObject["Infrastructure"].toObject();
+    thePipelineNetworkWidget->inputFromJSON(InfraJsonObj);
+
+    auto IntensityMeasObj = jsonObject["IntensityMeasure"].toObject();
+    theIntensityMeasureWidget->inputFromJSON(IntensityMeasObj);
+
+    auto EDPObj = jsonObject["EngineeringDemandParameter"].toObject();
+    theEDPWidget->inputFromJSON(EDPObj);
+
+    auto DamageMeasureObj = jsonObject["DamageMeasure"].toObject();
+    theDamageMeasureWidget->inputFromJSON(DamageMeasureObj);
+
+    auto DecisionVarObj = jsonObject["DecisionVariable"].toObject();
+    theDecisionVariableWidget->inputFromJSON(DecisionVarObj);
+
     return true;
 }
 
@@ -313,21 +335,11 @@ int WorkflowAppOpenSRA::getMaxNumParallelTasks()
 
 void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &subDir)
 {
-    errorMessage("");
 
     //
     // create temporary directory in working dir
     // and copy all files needed to this directory by invoking copyFiles() on app widgets
     //
-
-    // designsafe will need a unique name
-    /* *********************************************
-    will let ParallelApplication rename dir
-    QUuid uniqueName = QUuid::createUuid();
-    QString strUnique = uniqueName.toString();
-    strUnique = strUnique.mid(1,36);
-    QString tmpDirName = QString("tmp.SimCenter") + strUnique;
-    *********************************************** */
 
     QString tmpDirName = QString("tmp.OpenSRA");
     qDebug() << "TMP_DIR: " << tmpDirName;

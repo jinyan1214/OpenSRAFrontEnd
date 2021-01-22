@@ -16,6 +16,8 @@ public:
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
 
+    void clear();
+
 public slots:
     void handleVS30Change(int index);
 

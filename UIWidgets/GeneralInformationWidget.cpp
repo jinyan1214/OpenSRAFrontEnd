@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic, UC Berkeley
 
 #include "GeneralInformationWidget.h"
-#include "SimCenterPreferences.h"
+#include "OpenSRAPreferences.h"
 #include "sectiontitle.h"
 
 #include <QGridLayout>
@@ -98,10 +98,7 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     outputObj.insert("AnalysisID",analysisLineEdit->text());
     outputObj.insert("UnitSystem",unitsCombo->currentText());
     outputObj.insert("Directory", directoryObj);
-    outputObj.insert("OutputFileType", "txt");
-
-    // To delete test:
-    outputObj.insert("SiteDataFile","SiteData.csv");
+    outputObj.insert("OutputFileType", "csv");
 
     jsonObj.insert("General",outputObj);
 
@@ -109,8 +106,21 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
 }
 
 
-bool GeneralInformationWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
+bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject)
 {
+    auto dirObj = jsonObject["Directory"].toObject();
+
+    auto workingDir = dirObj["Working"].toString();
+
+    if(!workingDir.isEmpty())
+        workingDirectoryLineEdit->setText(workingDir);
+
+    auto analysisID = jsonObject["AnalysisID"].toString();
+    analysisLineEdit->setText(analysisID);
+
+    auto unitsSystem = jsonObject["UnitSystem"].toString();
+    unitsCombo->setCurrentText(unitsSystem);
+
 
     return false;
 }
@@ -119,6 +129,8 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
 void GeneralInformationWidget::clear(void)
 {
     analysisLineEdit->clear();
+    auto loclWorkDir = OpenSRAPreferences::getInstance()->getLocalWorkDir();
+    workingDirectoryLineEdit->setText(loclWorkDir);
 }
 
 
@@ -143,38 +155,10 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     workingDirectoryLineEdit->setMaximumWidth(400);
 
     // Set the local work dir as default
-    auto loclWorkDir =SimCenterPreferences::getInstance()->getLocalWorkDir();
+    auto loclWorkDir =OpenSRAPreferences::getInstance()->getLocalWorkDir();
     workingDirectoryLineEdit->setText(loclWorkDir);
 
     connect(loadFileButton,&QPushButton::clicked, this, &GeneralInformationWidget::chooseDirectoryDialog);
-
-    auto UQLabel = new QLabel("Uncertainty Quantification (UQ)");
-    UQLabel->setStyleSheet("font-weight: bold; color: black");
-
-    auto dataGenLabel = new QLabel("Method for Data Generation");
-    dataGenCombo = new QComboBox(this);
-    dataGenCombo->addItem("Latin Hypercube Sampling");
-    dataGenCombo->setCurrentIndex(0);
-    dataGenCombo->setMaximumWidth(250);
-
-    auto numSamplesLabel = new QLabel("Number of Samples:", this);
-    numSamplesLineEdit = new QLineEdit();
-    numSamplesLineEdit->setText("100");
-    numSamplesLineEdit->setMaximumWidth(100);
-
-    auto seedLabel = new QLabel("Seed:", this);
-    seedLineEdit = new QLineEdit(this);
-    seedLineEdit->setText("1");
-    seedLineEdit->setMaximumWidth(100);
-
-
-    UQLabel->hide();
-    dataGenLabel->hide();
-    dataGenCombo->hide();
-    numSamplesLabel->hide();
-    numSamplesLineEdit->hide();
-    seedLabel->hide();
-    seedLineEdit->hide();
 
     auto assessmentSetupLabel = new QLabel("Assessment Setup", this);
     assessmentSetupLabel->setStyleSheet("font-weight: bold; color: black");
@@ -200,23 +184,13 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     layout->addWidget(workingDirectoryLineEdit, 2, 1);
     layout->addWidget(loadFileButton, 2, 2);
 
-    layout->addWidget(UQLabel, 3, 0);
 
-    layout->addWidget(dataGenLabel, 4, 0);
-    layout->addWidget(dataGenCombo, 4, 1);
+    layout->addWidget(assessmentSetupLabel, 3, 0);
 
-    layout->addWidget(numSamplesLabel, 5, 0);
-    layout->addWidget(numSamplesLineEdit, 5, 1);
+    layout->addWidget(button1, 4, 0, 1, 3);
+    layout->addWidget(button2, 5, 0, 1, 3);
 
-    layout->addWidget(seedLabel, 6, 0);
-    layout->addWidget(seedLineEdit, 6, 1);
-
-    layout->addWidget(assessmentSetupLabel, 7, 0);
-
-    layout->addWidget(button1, 8, 0, 1, 3);
-    layout->addWidget(button2, 9, 0, 1, 3);
-
-    layout->addWidget(warningLabel, 10, 0, 1, 3);
+    layout->addWidget(warningLabel, 6, 0, 1, 3);
 
     return layout;
 }

@@ -150,9 +150,40 @@ bool DMPipeStrainWidget::outputToJSON(QJsonObject &jsonObj)
 }
 
 
-bool DMPipeStrainWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
+bool DMPipeStrainWidget::inputFromJSON(QJsonObject &jsonObject)
 {
+    auto toAssess = jsonObject["ToAssess"].toBool();
+    toAssessCheckBox->setChecked(toAssess);
 
-    return false;
+    auto methodsArray = jsonObject["ListOfMethods"].toArray();
+    auto weightsArray = jsonObject["ListOfWeights"].toArray();
+
+    if(methodsArray.size() != weightsArray.size())
+    {
+        QString msg = "The number of methods " + QString::number(methodsArray.size()) + " is not the same as the number of weights " + QString::number(weightsArray.size());
+        this->userMessageDialog(msg);
+    }
+
+    for(int i = 0; i<methodsArray.size(); ++i)
+    {
+        QString model = methodsArray.at(i).toString();
+
+        int index = modelSelectCombo->findData(model);
+        if (index != -1)
+        {
+           modelSelectCombo->setCurrentIndex(index);
+        }
+
+        QString item = modelSelectCombo->currentText();
+
+        double weight = weightsArray.at(i).toDouble();
+
+        listWidget->addItem(item, model, weight);
+    }
+
+    // auto otherParamObj = jsonObject["OtherParameters"].toObject();
+    // auto dcVal = otherParamObj["dc_cutoff"].toDouble();
+
+    return true;
 }
 

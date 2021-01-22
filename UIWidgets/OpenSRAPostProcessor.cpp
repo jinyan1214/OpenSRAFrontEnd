@@ -192,22 +192,28 @@ void OpenSRAPostProcessor::importResults(const QString& pathToResults)
 
     CSVReaderWriter csvTool;
 
-    RepairRatePGV = csvTool.parseCSVFile(pathToResults + QDir::separator() + PGDResultsSheet,errMsg);
-    if(!errMsg.isEmpty())
-        throw errMsg;
-
-    RepairRatePGD = csvTool.parseCSVFile(pathToResults + QDir::separator() + PGVResultsSheet,errMsg);
-    if(!errMsg.isEmpty())
-        throw errMsg;
-
-
-    if(!RepairRatePGV.empty())
-        this->processPGVResults(RepairRatePGV);
-    else
+    if(!PGVResultsSheet.isEmpty())
     {
-        errMsg = "The DV results are empty";
-        throw errMsg;
+        RepairRatePGV = csvTool.parseCSVFile(pathToResults + QDir::separator() + PGVResultsSheet,errMsg);
+        if(!errMsg.isEmpty())
+            throw errMsg;
+
+        if(!RepairRatePGV.empty())
+            this->processPGVResults(RepairRatePGV);
+        else
+        {
+            errMsg = "The DV results are empty";
+            throw errMsg;
+        }
     }
+
+    if(!PGDResultsSheet.isEmpty())
+    {
+        RepairRatePGD = csvTool.parseCSVFile(pathToResults + QDir::separator() + PGDResultsSheet,errMsg);
+        if(!errMsg.isEmpty())
+            throw errMsg;
+    }
+
 
 }
 

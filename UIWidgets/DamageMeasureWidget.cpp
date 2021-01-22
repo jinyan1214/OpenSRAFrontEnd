@@ -114,7 +114,16 @@ bool DamageMeasureWidget::outputToJSON(QJsonObject &jsonObject)
 
 bool DamageMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
 {
-    return false;
+    auto typeObj = jsonObject["Type"].toObject();
+
+    if(typeObj.isEmpty())
+        return false;
+
+    auto transPipeStrainObj = typeObj["TransientPipeStrain"].toObject();
+    if(!transPipeStrainObj.isEmpty())
+        DMPipeStrain->inputFromJSON(transPipeStrainObj);
+
+    return true;
 }
 
 

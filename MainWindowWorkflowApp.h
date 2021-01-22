@@ -11,7 +11,7 @@ class WorkflowAppWidget;
 class SimCenterWidget;
 class QPushButton;
 class QLabel;
-class SimCenterPreferences;
+class OpenSRAPreferences;
 
 
 class MainWindowWorkflowApp : public QMainWindow
@@ -93,7 +93,7 @@ public:
     QString feedbackURL;
     QString citeText;
 
-    SimCenterPreferences *thePreferences;
+    OpenSRAPreferences *thePreferences;
 };
 
 #endif // MAIN_WINDOW_WORKFLOW_APP_H

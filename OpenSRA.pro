@@ -44,6 +44,7 @@ include(OpenSRACommon.pri)
 include($$PATH_TO_COMMON/Common/Common.pri)
 
 SOURCES += main.cpp \
+    PythonProgressDialog.cpp \
     UIWidgets/DMPipeStrainWidget.cpp \
     UIWidgets/DVNumRepairsWidget.cpp \
     UIWidgets/EDPGroundSettlementWidget.cpp \
@@ -54,6 +55,7 @@ SOURCES += main.cpp \
     UIWidgets/EDPSubSurfFaultRupWidget.cpp \
     UIWidgets/EDPSurfFaultRupWidget.cpp \
     UIWidgets/MonteCarloSamplingWidget.cpp \
+    UIWidgets/FixedResidualsSamplingWidget.cpp \
     UIWidgets/OpenSHAWidget.cpp \
     UIWidgets/OpenSRAPostProcessor.cpp \
     UIWidgets/ResultsWidget.cpp \
@@ -62,6 +64,7 @@ SOURCES += main.cpp \
     WorkflowAppWidget.cpp \
     MainWindowWorkflowApp.cpp \
     LocalApplication.cpp \
+    OpenSRAPreferences.cpp \
     UIWidgets/DecisionVariableWidget.cpp \
     UIWidgets/SourceCharacterizationWidget.cpp \
     UIWidgets/CustomVisualizationWidget.cpp \
@@ -74,6 +77,7 @@ SOURCES += main.cpp \
 
 HEADERS  += \
     OpenSRAUserPass.h \
+    PythonProgressDialog.h \
     UIWidgets/DMPipeStrainWidget.h \
     UIWidgets/DVNumRepairsWidget.h \
     UIWidgets/EDPGroundSettlementWidget.h \
@@ -84,6 +88,7 @@ HEADERS  += \
     UIWidgets/EDPSubSurfFaultRupWidget.h \
     UIWidgets/EDPSurfFaultRupWidget.h \
     UIWidgets/MonteCarloSamplingWidget.h \
+    UIWidgets/FixedResidualsSamplingWidget.h \
     UIWidgets/OpenSHAWidget.h \
     UIWidgets/OpenSRAPostProcessor.h \
     UIWidgets/ResultsWidget.h \
@@ -92,6 +97,7 @@ HEADERS  += \
     WorkflowAppWidget.h \
     MainWindowWorkflowApp.h \
     LocalApplication.h \
+    OpenSRAPreferences.h \
     RunWidget.h \
     UIWidgets/DecisionVariableWidget.h \
     UIWidgets/SourceCharacterizationWidget.h \

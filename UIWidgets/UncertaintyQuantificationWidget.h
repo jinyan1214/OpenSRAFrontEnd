@@ -41,8 +41,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppWidget.h"
 
 class SimCenterAppWidget;
-class DakotaResults;
 class MonteCarloSamplingWidget;
+class FixedResidualsSamplingWidget;
 
 class QVBoxLayout;
 class QComboBox;
@@ -61,21 +61,18 @@ public:
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
 
+    void clear();
+
 private slots:
     void onTextChanged(const QString &text);
 
 private:
     QVBoxLayout *layout;
-    QWidget     *methodSpecific;
+
     QComboBox   *samplingMethod;
-    QLineEdit   *numSamples;
-    QLineEdit   *randomSeed;
-
-    QComboBox   *uqSelection;
-    QWidget     *uqSpecific;
-
     QStackedWidget *theStackedWidget;
-    MonteCarloSamplingWidget *theMC;
+    MonteCarloSamplingWidget *theMonteCarloWidget;
+    FixedResidualsSamplingWidget *theFixedResidualsWidget;
 
 };
 

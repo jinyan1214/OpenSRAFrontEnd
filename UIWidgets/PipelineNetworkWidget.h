@@ -62,9 +62,6 @@ public:
     explicit PipelineNetworkWidget(QWidget *parent, VisualizationWidget* visWidget);
     ~PipelineNetworkWidget();
 
-    bool outputAppDataToJSON(QJsonObject &jsonObject);
-    bool inputAppDataFromJSON(QJsonObject &jsonObject);
-
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
     bool copyFiles(QString &destName);

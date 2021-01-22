@@ -2,7 +2,7 @@
 #include "sectiontitle.h"
 #include "WorkflowAppWidget.h"
 #include "HeaderWidget.h"
-#include "SimCenterPreferences.h"
+#include "OpenSRAPreferences.h"
 #include "Utils/RelativePathResolver.h"
 #include "Utils/dialogabout.h"
 
@@ -364,7 +364,7 @@ void MainWindowWorkflowApp::createActions() {
     connect(saveAsAction, &QAction::triggered, this, &MainWindowWorkflowApp::saveAs);
     fileMenu->addAction(saveAsAction);
 
-    thePreferences = SimCenterPreferences::getInstance(this);
+    thePreferences = OpenSRAPreferences::getInstance(this);
     QAction *preferenceAction = new QAction(tr("&Preferences"), this);
     preferenceAction->setStatusTip(tr("Set application preferences"));
     connect(preferenceAction, &QAction::triggered, this, &MainWindowWorkflowApp::preferences);

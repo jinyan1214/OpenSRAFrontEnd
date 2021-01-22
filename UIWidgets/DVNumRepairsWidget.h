@@ -37,7 +37,6 @@ private:
     TreeItem* PGVTreeItem;
     TreeItem* PGDTreeItem;
 
-    QCheckBox* toAssessCheckBox;
     QComboBox* modelSelectCombo;
     QLineEdit* weightLineEdit;
 

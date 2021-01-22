@@ -41,25 +41,32 @@ MonteCarloSamplingWidget::~MonteCarloSamplingWidget()
 }
 
 
-bool MonteCarloSamplingWidget::outputToJSON(QJsonObject &jsonObj){
+bool MonteCarloSamplingWidget::outputToJSON(QJsonObject &jsonObj)
+{
+    jsonObj.insert("NumberOfSamples",numSamples->text().toInt());
+    jsonObj.insert("Seed",randomSeed->text().toDouble());
 
-    bool result = true;
-    jsonObj["samples"]=numSamples->text().toInt();
-    jsonObj["seed"]=randomSeed->text().toDouble();
-    return result;
+    return true;
+}
+
+
+void MonteCarloSamplingWidget::clear()
+{
+    numSamples->clear();
+
+    int randomNumber = rand() % 1000 + 1;
+    randomSeed->setText(QString::number(randomNumber));
 }
 
 
 bool MonteCarloSamplingWidget::inputFromJSON(QJsonObject &jsonObject){
 
-  bool result = false;
-  if (jsonObject.contains("samples") && jsonObject.contains("seed")) {
-    int samples=jsonObject["samples"].toInt();
-    double seed=jsonObject["seed"].toDouble();
+    int samples=jsonObject["NumberOfSamples"].toInt();
+
+    double seed=jsonObject["Seed"].toDouble();
+
     numSamples->setText(QString::number(samples));
     randomSeed->setText(QString::number(seed));
-    result = true;
-  }
 
-  return result;
+    return true;
 }

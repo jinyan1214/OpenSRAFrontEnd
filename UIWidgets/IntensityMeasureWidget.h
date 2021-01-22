@@ -65,6 +65,8 @@ public:
 
     bool copyFiles(QString &destName);
 
+    void clear();
+
 signals:
 
 public slots:

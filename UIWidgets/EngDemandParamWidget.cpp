@@ -132,7 +132,39 @@ bool EngDemandParamWidget::outputToJSON(QJsonObject &jsonObject)
 
 
 bool EngDemandParamWidget::inputFromJSON(QJsonObject &jsonObject)
-{
+{  
+    auto typeObj = jsonObject["Type"].toObject();
+
+    if(typeObj.isEmpty())
+        return false;
+
+    auto liquefactionObj = typeObj["Liquefaction"].toObject();
+    if(!liquefactionObj.isEmpty())
+        EDPLiquefaction->inputFromJSON(liquefactionObj);
+
+    auto landslideObj = typeObj["Landslide"].toObject();
+    if(!landslideObj.isEmpty())
+        EDPLandslide->inputFromJSON(landslideObj);
+
+    auto latSpreadObj = typeObj["LateralSpread"].toObject();
+    if(!latSpreadObj.isEmpty())
+        EDPLatSpread->inputFromJSON(latSpreadObj);
+
+    auto groundSpreadObj = typeObj["GroundSettlement"].toObject();
+    if(!groundSpreadObj.isEmpty())
+        EDPGroundSettlement->inputFromJSON(groundSpreadObj);
+
+    auto surfFaultObj = typeObj["SurfaceFaultRupture"].toObject();
+    if(!surfFaultObj.isEmpty())
+        EDPSurfFaultRup->inputFromJSON(surfFaultObj);
+
+    auto subSurfObj = typeObj["SubsurfaceFaultRupture"].toObject();
+    if(!subSurfObj.isEmpty())
+        EDPSubSurfFaultRup->inputFromJSON(subSurfObj);
+
+    auto groundStrainObj = typeObj["TransientGroundStrain"].toObject();
+    if(!groundStrainObj.isEmpty())
+        EDPGroundStrain->inputFromJSON(groundStrainObj);
 
     return false;
 }

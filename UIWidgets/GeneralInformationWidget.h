@@ -66,11 +66,8 @@ private:
 
     QLineEdit* analysisLineEdit;
     QLineEdit* workingDirectoryLineEdit;
-    QLineEdit* numSamplesLineEdit;
-    QLineEdit* seedLineEdit;
 
     QComboBox* unitsCombo;
-    QComboBox* dataGenCombo;
 };
 
 

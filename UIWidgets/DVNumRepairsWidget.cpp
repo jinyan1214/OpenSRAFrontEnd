@@ -48,8 +48,6 @@ QGroupBox* DVNumRepairsWidget::getWidgetBox(void)
     demandBoxLayout->addWidget(PGVCheckBox);
     demandBoxLayout->addWidget(PGDCheckBox);
 
-    toAssessCheckBox = new QCheckBox("Include in analysis",this);
-
     auto ModelLabel = new QLabel("Model:", this);
     modelSelectCombo = new QComboBox(this);
     modelSelectCombo->addItem("O'Rourke (2020)","ORourke2020");
@@ -79,7 +77,6 @@ QGroupBox* DVNumRepairsWidget::getWidgetBox(void)
 
     QGridLayout* gridLayout = new QGridLayout(groupBox);
 
-    gridLayout->addWidget(toAssessCheckBox,0,0,1,2);
     gridLayout->addItem(smallVSpacer,0,1);
     gridLayout->addWidget(demandBox,1,0,1,2);
     gridLayout->addWidget(ModelLabel,2,0);
@@ -129,13 +126,12 @@ void DVNumRepairsWidget::handleAddButtonPressed(void)
 
 bool DVNumRepairsWidget::outputToJSON(QJsonObject &jsonObj)
 {
-
     QJsonObject PGVObj;
 
     PGVObj.insert("ToAssess", PGVCheckBox->isChecked());
 
-    auto modelsListPGV = listWidget->getListOfModels();
-    auto weightsListPGV = listWidget->getListOfWeights();
+    auto modelsListPGV = listWidget->getListOfModels(PGVTreeItem);
+    auto weightsListPGV = listWidget->getListOfWeights(PGVTreeItem);
 
     QJsonArray methodsPGV = QJsonArray::fromVariantList(modelsListPGV);
     QJsonArray weightsPGV = QJsonArray::fromVariantList(weightsListPGV);
@@ -150,8 +146,8 @@ bool DVNumRepairsWidget::outputToJSON(QJsonObject &jsonObj)
 
     PGDObj.insert("ToAssess", PGDCheckBox->isChecked());
 
-    auto modelsListPGD = listWidget->getListOfModels();
-    auto weightsListPGD = listWidget->getListOfWeights();
+    auto modelsListPGD = listWidget->getListOfModels(PGDTreeItem);
+    auto weightsListPGD = listWidget->getListOfWeights(PGDTreeItem);
 
     QJsonArray methodsPGD = QJsonArray::fromVariantList(modelsListPGD);
     QJsonArray weightsPGD = QJsonArray::fromVariantList(weightsListPGD);
@@ -160,7 +156,7 @@ bool DVNumRepairsWidget::outputToJSON(QJsonObject &jsonObj)
     PGDObj.insert("ListOfWeights",weightsPGD);
 
     QJsonObject otherParamsObjPGD;
-    otherParamsObjPGD.insert("flag_rup_depend", true);
+    // otherParamsObjPGD.insert("flag_rup_depend", true);
     otherParamsObjPGD.insert("pgd_cutoff", 10.16);
     PGDObj.insert("OtherParameters",otherParamsObjPGD);
 
@@ -171,9 +167,83 @@ bool DVNumRepairsWidget::outputToJSON(QJsonObject &jsonObj)
 }
 
 
-bool DVNumRepairsWidget::inputFromJSON(QJsonObject &/*jsonObject*/)
+bool DVNumRepairsWidget::inputFromJSON(QJsonObject &jsonObject)
 {
+    QJsonObject PGVObj = jsonObject["RepairRatePGV"].toObject();
 
-    return false;
+    auto toAssessPGV = PGVObj["ToAssess"].toBool();
+    PGVCheckBox->setChecked(toAssessPGV);
+
+    if(toAssessPGV)
+    {
+        QJsonArray methodsPGV = PGVObj["ListOfMethods"].toArray();
+        QJsonArray weightsPGV = PGVObj["ListOfWeights"].toArray();
+
+        if(weightsPGV.size() != methodsPGV.size())
+        {
+            QString msg = "The PGV number of methods " + QString::number(methodsPGV.size()) + " is not the same as the number of weights " + QString::number(weightsPGV.size());
+            this->userMessageDialog(msg);
+        }
+
+        for(int i = 0; i<weightsPGV.size(); ++i)
+        {
+            QString model = methodsPGV.at(i).toString();
+
+            int index = modelSelectCombo->findData(model);
+            if (index != -1)
+            {
+               modelSelectCombo->setCurrentIndex(index);
+            }
+
+            QString item = modelSelectCombo->currentText();
+
+            double weight = weightsPGV.at(i).toDouble();
+
+            if(!PGVTreeItem)
+                PGVTreeItem = listWidget->addItem("Shaking Induced");
+
+            listWidget->addItem(item, model, weight, PGVTreeItem);
+        }
+    }
+
+
+    QJsonObject PGDObj = jsonObject["RepairRatePGD"].toObject();
+
+    auto toAssessPGD = PGDObj["ToAssess"].toBool();
+    PGDCheckBox->setChecked(toAssessPGD);
+
+    if(toAssessPGD)
+    {
+        QJsonArray methodsPGD = PGDObj["ListOfMethods"].toArray();
+        QJsonArray weightsPGD = PGDObj["ListOfWeights"].toArray();
+
+        if(weightsPGD.size() != methodsPGD.size())
+        {
+            QString msg = "The PGD number of methods " + QString::number(methodsPGD.size()) + " is not the same as the number of weights " + QString::number(weightsPGD.size());
+            this->userMessageDialog(msg);
+        }
+
+        for(int i = 0; i<weightsPGD.size(); ++i)
+        {
+            QString model = methodsPGD.at(i).toString();
+
+            int index = modelSelectCombo->findData(model);
+            if (index != -1)
+            {
+               modelSelectCombo->setCurrentIndex(index);
+            }
+
+            QString item = modelSelectCombo->currentText();
+
+            double weight = weightsPGD.at(i).toDouble();
+
+            if(!PGDTreeItem)
+                PGDTreeItem = listWidget->addItem("Deformation Induced");
+
+            listWidget->addItem(item, model, weight, PGDTreeItem);
+        }
+    }
+
+    return true;
 }
 

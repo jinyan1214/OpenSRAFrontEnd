@@ -69,9 +69,9 @@ IntensityMeasureWidget::IntensityMeasureWidget(VisualizationWidget* visWidget, Q
     PGVCheckbox = nullptr;
 
     IMSelectCombo = new QComboBox(this);
-    IMSelectCombo->addItem("OpenSHA (Preferred)");
-    IMSelectCombo->addItem("ShakeMap");
-    IMSelectCombo->addItem("User-defined");
+    IMSelectCombo->addItem("OpenSHA (Preferred)","OpenSHA");
+    IMSelectCombo->addItem("ShakeMap","ShakeMap");
+    //    IMSelectCombo->addItem("User-defined");
     IMSelectCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
     connect(IMSelectCombo,QOverload<int>::of(&QComboBox::currentIndexChanged),this,&IntensityMeasureWidget::IMSelectionChanged);
@@ -169,8 +169,97 @@ bool IntensityMeasureWidget::outputToJSON(QJsonObject &jsonObject)
 }
 
 
+void IntensityMeasureWidget::clear()
+{
+    IMSelectCombo->setCurrentIndex(0);
+
+    openSHA->clear();
+    shakeMap->clear();
+    theSourceCharacterizationWidget->clear();
+
+    PGACheckbox->setChecked(false);
+    PGVCheckbox->setChecked(false);
+    spatialCorrCheckbox->setChecked(false);
+    spectralCorrCheckbox->setChecked(false);
+
+    spatialCorrComboBox->setCurrentIndex(0);
+    spectralCorrComboBox->setCurrentIndex(0);
+}
+
+
 bool IntensityMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
 {
+
+    auto IMSource = jsonObject["SourceForIM"].toString();
+
+    auto sourceParamObj = jsonObject["SourceParameters"].toObject();
+
+    if(sourceParamObj.isEmpty() || IMSource.isEmpty())
+        return false;
+
+    int index = IMSelectCombo->findData(IMSource);
+    if (index != -1)
+    {
+       IMSelectCombo->setCurrentIndex(index);
+    }
+
+    if(IMSource == "OpenSHA")
+    {
+        openSHA->inputFromJSON(sourceParamObj);
+    }
+    else if(IMSource == "ShakeMap")
+    {
+        shakeMap->inputFromJSON(sourceParamObj);
+    }
+    else
+        return false;
+
+    auto typeObj = jsonObject["Type"].toObject();
+
+    if(typeObj.isEmpty())
+        return false;
+
+    auto PGAObj = typeObj["PGA"].toObject();
+    auto PGVObj = typeObj["PGV"].toObject();
+
+    if(PGAObj.isEmpty() || PGVObj.isEmpty())
+        return false;
+
+    auto PGAChecked = PGAObj["ToAssess"].toBool();
+    PGACheckbox->setChecked(PGAChecked);
+
+    auto PGVChecked = PGVObj["ToAssess"].toBool();
+    PGVCheckbox->setChecked(PGVChecked);
+
+    QJsonObject corrObj = jsonObject["Correlation"].toObject();
+    if(corrObj.isEmpty())
+        return false;
+
+    QJsonObject spatCorrObj = corrObj["Spatial"].toObject();
+    QJsonObject specCorrObj = corrObj["Spectral"].toObject();
+
+    auto includeSpatCorr = spatCorrObj["ToInclude"].toBool();
+    spatialCorrCheckbox->setChecked(includeSpatCorr);
+
+    auto spatCorrType = spatCorrObj["Method"].toString();
+
+    int index2 = spatialCorrComboBox->findData(spatCorrType);
+    if (index2 != -1)
+    {
+       spatialCorrComboBox->setCurrentIndex(index);
+    }
+
+    auto includeSpecCorr = specCorrObj["ToInclude"].toBool();
+    spectralCorrCheckbox->setChecked(includeSpecCorr);
+
+    auto specCorrType = specCorrObj["Method"].toString();
+
+    int index3 = spectralCorrComboBox->findData(specCorrType);
+    if (index3 != -1)
+    {
+       spectralCorrComboBox->setCurrentIndex(index2);
+    }
+
     return false;
 }
 
@@ -195,7 +284,9 @@ void IntensityMeasureWidget::IMSelectionChanged(int index)
 bool IntensityMeasureWidget::copyFiles(QString &destDir)
 {
 
-    return false;
+    shakeMap->copyFiles(destDir);
+
+    return true;
 }
 
 

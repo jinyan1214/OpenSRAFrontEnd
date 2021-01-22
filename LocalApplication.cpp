@@ -36,11 +36,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 
 // Written: fmckenna
+// Modified by: Stevan Gavrilovic
 
 // Purpose: a widget for managing submiited jobs by uqFEM tool
 //  - allow for refresh of status, deletion of submitted jobs, and download of results from finished job
 
 #include "LocalApplication.h"
+#include "PythonProgressDialog.h"
+#include "OpenSRAPreferences.h"
+
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QGridLayout>
@@ -50,10 +54,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonObject>
 #include <QStandardPaths>
 #include <QCoreApplication>
-#include <QProcess>
 #include <QStringList>
 #include <QSettings>
-#include <SimCenterPreferences.h>
 #include <AgaveCurl.h>
 #include <QDebug>
 #include <QDir>
@@ -64,15 +66,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 LocalApplication::LocalApplication(QString workflowScriptName, QWidget *parent)
 : Application(parent)
 {
-    QVBoxLayout *layout = new QVBoxLayout();
-    messageLabel = new QLabel();
-    messageLabel->setText(QString("The quick brown fox jumps over the lazy moon"));
-    layout->addStretch();
-    layout->addWidget(messageLabel);
-    layout->addStretch();
 
-    this->setLayout(layout);
+    proc = new QProcess(this);
+    progressDialog = new PythonProgressDialog(parent,proc);
+    connect(proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), progressDialog, &PythonProgressDialog::handleProcessFinished);
+    connect(proc, &QProcess::readyReadStandardOutput, progressDialog, &PythonProgressDialog::handleProcessTextOutput);
+    connect(proc, &QProcess::started, progressDialog, &PythonProgressDialog::handleProcessStarted);
     
+    connect(proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &LocalApplication::handleProcessFinished);
+
     this->workflowScript = workflowScriptName;
 }
 
@@ -82,9 +84,9 @@ LocalApplication::outputToJSON(QJsonObject &jsonObject)
     //    jsonObject["localAppDir"]=appDirName->text();
     //    jsonObject["remoteAppDir"]=appDirName->text();
     //    jsonObject["workingDir"]=workingDirName->text();
-    jsonObject["localAppDir"]=SimCenterPreferences::getInstance()->getAppDir();
-    jsonObject["remoteAppDir"]=SimCenterPreferences::getInstance()->getAppDir();
-    jsonObject["workingDir"]=SimCenterPreferences::getInstance()->getLocalWorkDir();
+    jsonObject["localAppDir"]=OpenSRAPreferences::getInstance()->getAppDir();
+    jsonObject["remoteAppDir"]=OpenSRAPreferences::getInstance()->getAppDir();
+    jsonObject["workingDir"]=OpenSRAPreferences::getInstance()->getLocalWorkDir();
 
     jsonObject["runType"]=QString("runningLocal");
 
@@ -104,16 +106,15 @@ LocalApplication::inputFromJSON(QJsonObject &dataObject) {
 void
 LocalApplication::onRunButtonPressed(void)
 {
-  messageLabel->setText("Setting up temporary directory");
+  progressDialog->appendText("Setting up temporary directory");
 
-  QString workingDir = SimCenterPreferences::getInstance()->getLocalWorkDir();
+  QString workingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir();
   QDir dirWork(workingDir);
   if (!dirWork.exists())
       if (!dirWork.mkpath(workingDir)) {
           QString errorMessage = QString("Could not create Working Dir: ") + workingDir
                   + QString(". Change the Local Jobs Directory location in preferences.");
-          messageLabel->setText(errorMessage);
-
+          progressDialog->appendText(errorMessage);
           emit sendErrorMessage(errorMessage);;
 
           return;
@@ -121,16 +122,16 @@ LocalApplication::onRunButtonPressed(void)
     
   
   //   QString appDir = appDirName->text();
-  QString appDir = SimCenterPreferences::getInstance()->getAppDir();
+  QString appDir = OpenSRAPreferences::getInstance()->getAppDir();
   QDir dirApp(appDir);
   if (!dirApp.exists()) {
-      QString errorMessage = QString("The application directory, ") + appDir +QString(" specified does not exist!. Check Local Application Directory im Preferences");
-      messageLabel->setText(errorMessage);
+      QString errorMessage = QString("The application directory, ") + appDir +QString(" specified does not exist!. Check Local Application Directory im Preferences");  
+      progressDialog->appendText(errorMessage);
       emit sendErrorMessage(errorMessage);;
       return;
   }
   
-  messageLabel->setText("Gathering files to local workdir"); messageLabel->repaint();
+  progressDialog->appendText("Gathering files to local workdir");
   emit sendStatusMessage("Gathering Files to local workdir");
   emit setupForRun(workingDir, workingDir);
 }
@@ -147,7 +148,7 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
     // qDebug() << "RUNTYPE" << runType;
     QString runType("runningLocal");
     qDebug() << "RUNTYPE" << runType;
-    QString appDir = SimCenterPreferences::getInstance()->getAppDir();
+    QString appDir = OpenSRAPreferences::getInstance()->getAppDir();
 
     //TODO: recognize if it is PBE or EE-UQ -> probably smarter to do it inside the python file
     QString pySCRIPT;
@@ -167,9 +168,12 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
 
     qDebug() << "SCRIPT: " << pySCRIPT;
 
-    QString msg = "Starting the analysis... this may take a while!";
+    progressDialog->clear();
+    progressDialog->showDialog(true);
 
-    messageLabel->setText(msg); messageLabel->repaint();
+    QString msg = "Starting the analysis... this may take a while!";
+    progressDialog->appendText(msg);
+
     qDebug() << msg;
     emit sendStatusMessage(msg);
 
@@ -177,7 +181,6 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
     // now invoke dakota, done via a python script in tool app dircetory
     //
 
-    QProcess *proc = new QProcess();
 
     proc->setProcessChannelMode(QProcess::SeparateChannels);
     auto procEnv = QProcessEnvironment::systemEnvironment();
@@ -251,18 +254,11 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
 
     qDebug() << "PYTHON COMMAND" << command;
 
-    proc->execute("bash", QStringList() << "-c" <<  command);
+//    proc->execute("bash", QStringList() << "-c" <<  command);
+    proc->start("bash", QStringList() << "-c" <<  command);
     proc->waitForStarted();
 
 #endif
-
-    //
-    // process the results
-    //
-
-    QString filenameOUT = tmpDirectory + QDir::separator();
-
-    emit processResults(filenameOUT);
 
     return 0;
 }
@@ -271,3 +267,19 @@ void
 LocalApplication::displayed(void){
    this->onRunButtonPressed();
 }
+
+void LocalApplication::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    if(exitStatus == QProcess::ExitStatus::CrashExit || exitCode != 0)
+    {
+        return;
+    }
+
+    //
+    // process the results
+    //
+
+    emit processResults("NA");
+}
+
+

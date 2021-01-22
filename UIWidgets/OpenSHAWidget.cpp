@@ -24,18 +24,18 @@ OpenSHAWidget::OpenSHAWidget(QWidget* parent) : SimCenterAppWidget(parent)
     modelSelectCombo->addItem("Chiou & Youngs (2014)","Chiou & Youngs (2014)");
     modelSelectCombo->addItem("NGAWest2 2014 Averaged Attenuation Relationship","NGAWest2 2014 Averaged Attenuation Relationship");
     modelSelectCombo->addItem("NGAWest2 2014 Averaged No Idriss (Preferred)","NGAWest2 2014 Averaged No Idriss");
-    modelSelectCombo->setCurrentText("NGAWest2 2014 Averaged No Idriss (Preferred)");
+    modelSelectCombo->setCurrentIndex(5);
 
     auto seismicSourceLabel = new QLabel("Seismic Source Model:");
     seismicSourceCombo = new QComboBox(this);
-    seismicSourceCombo->addItem("Mean UCERF3 (Currently Disabled)","Mean UCERF3");
     seismicSourceCombo->addItem("Mean UCERF3 FM3.1 (Preferred)","Mean UCERF3 FM3.1");
+    seismicSourceCombo->addItem("Mean UCERF3 (Currently Disabled)","Mean UCERF3");
     seismicSourceCombo->addItem("Mean UCERF3 FM3.2 (Currently Disabled)","Mean UCERF3 FM3.2");
-    seismicSourceCombo->setCurrentText("Mean UCERF3 FM3.1 (Preferred)");
+    seismicSourceCombo->setCurrentIndex(0);
 
     auto vs30Label = new QLabel("Source for Vs30:");
     vs30Combo = new QComboBox(this);
-    vs30Combo->addItem("Wills et al. (2015) (Preferred)", "Inferred");
+    vs30Combo->addItem("Wills et al. (2015) (Preferred)", "Wills et al. (2015)");
     vs30Combo->addItem("User-Defined", "UserDefined");
 
     connect(vs30Combo, QOverload<int>::of(&QComboBox::currentIndexChanged),this,&OpenSHAWidget::handleVS30Change);
@@ -129,40 +129,40 @@ bool OpenSHAWidget::outputToJSON(QJsonObject &jsonObj)
 
     QJsonObject sourceParamObj;
 
-    sourceParamObj.insert("SeismicSourceModel",seismicSourceCombo->currentText());
-    sourceParamObj.insert("Vs30",vs30Combo->currentText());
+    sourceParamObj.insert("SeismicSourceModel",seismicSourceCombo->currentData().toString());
+    sourceParamObj.insert("SourceForVs30",vs30Combo->currentData().toString());
 
     QJsonObject filterObj;
 
     QJsonObject returnPeriodObj;
     returnPeriodObj.insert("ToInclude",RpCheckBox->isChecked());
-    returnPeriodObj.insert("Maximum",RpLineEdit->text());
+    returnPeriodObj.insert("Maximum",RpLineEdit->text().toDouble());
 
     filterObj.insert("ReturnPeriod",returnPeriodObj);
 
     QJsonObject distanceObj;
     distanceObj.insert("ToInclude",distCheckBox->isChecked());
-    distanceObj.insert("Maximum",distLineEdit->text());
+    distanceObj.insert("Maximum",distLineEdit->text().toDouble());
 
     filterObj.insert("Distance",distanceObj);
 
     QJsonObject magObj;
     magObj.insert("ToInclude",magCheckBox->isChecked());
-    magObj.insert("Minimum",magLineEditMin->text());
-    magObj.insert("Maximum",magLineEditMax->text());
+    magObj.insert("Minimum",magLineEditMin->text().toDouble());
+    magObj.insert("Maximum",magLineEditMax->text().toDouble());
 
     filterObj.insert("Magnitude",magObj);
 
     QJsonObject psObj;
 
-    bool ToInclude = pointSourceCheckBox->isChecked() ? false : true;
+    bool ToInclude = pointSourceCheckBox->isChecked() ? true : false;
     psObj.insert("ToInclude", ToInclude);
 
     filterObj.insert("PointSource",psObj);
 
     sourceParamObj.insert("Filter",filterObj);
 
-    sourceParamObj.insert("GroundMotionModel",modelSelectCombo->currentText());
+    sourceParamObj.insert("GroundMotionModel",modelSelectCombo->currentData().toString());
 
     jsonObj.insert("SourceParameters",sourceParamObj);
 
@@ -170,8 +170,82 @@ bool OpenSHAWidget::outputToJSON(QJsonObject &jsonObj)
 }
 
 
-bool OpenSHAWidget::inputFromJSON(QJsonObject &/*jsonObject*/){
+void OpenSHAWidget::clear()
+{
+    modelSelectCombo->setCurrentIndex(0);
+    seismicSourceCombo->setCurrentIndex(0);
+    vs30Combo->setCurrentIndex(0);
 
+    RpCheckBox->setChecked(false);
+    RpLineEdit->clear();
+
+    distCheckBox->setChecked(false);
+    distLineEdit->clear();
+
+    magCheckBox->setChecked(false);
+    magLineEditMin->clear();
+    magLineEditMax->clear();
+
+    pointSourceCheckBox->setChecked(false);
+}
+
+bool OpenSHAWidget::inputFromJSON(QJsonObject &jsonObject)
+{
+    auto sourceModel = jsonObject["SeismicSourceModel"].toString();
+    int index = seismicSourceCombo->findData(sourceModel);
+    if (index != -1)
+    {
+       seismicSourceCombo->setCurrentIndex(index);
+    }
+
+    auto sourceVs30 = jsonObject["SourceForVs30"].toString();
+    int index2 = vs30Combo->findData(sourceVs30);
+    if (index2 != -1)
+    {
+       vs30Combo->setCurrentIndex(index);
+    }
+
+    QJsonObject filterObj = jsonObject["Filter"].toObject();
+
+    if(filterObj.isEmpty())
+        return false;
+
+    // Return period
+    QJsonObject returnPeriodObj = filterObj["ReturnPeriod"].toObject();
+
+    auto returnPeriodObjIsChecked = returnPeriodObj["ToInclude"].toBool();
+    RpCheckBox->setChecked(returnPeriodObjIsChecked);
+
+    auto returnPeriodObjText = returnPeriodObj["Maximum"].toDouble();
+    RpLineEdit->setText(QString::number(returnPeriodObjText));
+
+
+    // Distance
+    QJsonObject distanceObj = filterObj["Distance"].toObject();
+
+    auto distanceObjIsChecked = distanceObj["ToInclude"].toBool();
+    distCheckBox->setChecked(distanceObjIsChecked);
+
+    auto distObjText = distanceObj["Maximum"].toDouble();
+    distLineEdit->setText(QString::number(distObjText));
+
+
+    // Magnitude
+    QJsonObject magObj = filterObj["Magnitude"].toObject();
+
+    auto magObjIsChecked = magObj["ToInclude"].toBool();
+    magCheckBox->setChecked(magObjIsChecked);
+
+    auto magObjMaxText = magObj["Maximum"].toDouble();
+    magLineEditMax->setText(QString::number(magObjMaxText));
+
+    auto magObjMinText = magObj["Minimum"].toDouble();
+    magLineEditMin->setText(QString::number(magObjMinText));
+
+    QJsonObject psObj = filterObj["PointSource"].toObject();
+
+    auto psIsChecked = psObj["ToInclude"].toBool();
+    pointSourceCheckBox->setChecked(psIsChecked);
 
     return false;
 }

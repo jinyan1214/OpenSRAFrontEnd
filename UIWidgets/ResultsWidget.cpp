@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GeneralInformationWidget.h"
 #include "OpenSRAPostProcessor.h"
 #include "ResultsWidget.h"
-#include "SimCenterPreferences.h"
+#include "OpenSRAPreferences.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppR2D.h"
 #include "sectiontitle.h"
@@ -152,8 +152,6 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     mainLayout->addLayout(theExportLayout);
 
     this->resultsShow(false);
-
-    this->processResults();
 }
 
 
@@ -212,10 +210,8 @@ void ResultsWidget::setCurrentlyViewable(bool status){
 int ResultsWidget::processResults()
 {
 
-    //    auto SCPrefs = SimCenterPreferences::getInstance();
-    //    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "tmp.OpenSRA" + QDir::separator() + "Results";
-
-    QString resultsDirectory = "/Users/steve/Desktop/SimCenter/OpenSRA/Examples/DV";
+    auto SCPrefs = OpenSRAPreferences::getInstance();
+    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "DV";
 
     try
     {

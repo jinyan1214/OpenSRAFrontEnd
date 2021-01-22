@@ -39,12 +39,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 
 // Written: fmckenna
+// Modified by: Stevan Gavrilovic
 
 // Purpose: a widget for submitting uqFEM jobs to HPC resource (specifically DesignSafe at moment)
 //  - the widget aasks for additional info needed and provide a submit button to submit the jb when clicked.
 
-#include <SimCenterWidget.h>
-#include <Application.h>
+#include "SimCenterWidget.h"
+#include "Application.h"
+
+#include <QProcess>
+
+class PythonProgressDialog;
 
 class QLabel;
 
@@ -64,10 +69,15 @@ signals:
 public slots:
    void onRunButtonPressed(void);
 
+   void handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
 private:
     void submitJob(void);
-    QLabel *messageLabel;
     QString workflowScript;
+
+    QProcess *proc;
+
+    PythonProgressDialog *progressDialog;
 };
 
 #endif // LOCAL_APPLICATION_H
