@@ -184,9 +184,9 @@ QGroupBox* CustomVisualizationWidget::getVisSelectionGroupBox(void)
     auto mapDataLabel = new QLabel("Pre-packaged maps and data sets:");
     mapDataLabel->setStyleSheet("font-weight: bold; color: black");
 
-    QCheckBox* CGS1Checkbox = new QCheckBox("CGS Geologic Map (Ref.)");
-    QCheckBox* CGS2Checkbox = new QCheckBox("CGS Liquefaction Susceptibility\nMap (Ref.)");
-    QCheckBox* CGS3Checkbox = new QCheckBox("CGS Landslide Susceptibility\nMap (Ref.)");
+    CGS1Checkbox = new QCheckBox("CGS Geologic Map (Ref.)");
+    CGS2Checkbox = new QCheckBox("CGS Liquefaction Susceptibility\nMap (Ref.)");
+    CGS3Checkbox = new QCheckBox("CGS Landslide Susceptibility\nMap (Ref.)");
 
     connect(CGS1Checkbox,&QCheckBox::clicked,this,&CustomVisualizationWidget::showCGSGeologicMap);
     connect(CGS2Checkbox,&QCheckBox::clicked,this,&CustomVisualizationWidget::showCGSLiquefactionMap);
@@ -350,4 +350,12 @@ void CustomVisualizationWidget::showShakeMapLayer(bool state)
     loadShakeMapButton->setVisible(true);
 }
 
+
+void CustomVisualizationWidget::clear()
+{
+    theVisualizationWidget->clear();
+    CGS1Checkbox->setChecked(false);
+    CGS2Checkbox->setChecked(false);
+    CGS3Checkbox->setChecked(false);
+}
 

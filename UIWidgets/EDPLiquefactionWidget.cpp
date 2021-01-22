@@ -155,3 +155,12 @@ bool EDPLiquefactionWidget::inputFromJSON(QJsonObject &jsonObject)
 
     return true;
 }
+
+
+void EDPLiquefactionWidget::clear()
+{
+    listWidget->clear();
+    toAssessCheckBox->setChecked(false);
+    modelSelectCombo->setCurrentIndex(0);
+    weightLineEdit->clear();
+}

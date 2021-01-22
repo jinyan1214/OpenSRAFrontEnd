@@ -21,6 +21,8 @@ public:
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
 
+    void clear();
+
 public slots:
 
     void handleAddButtonPressed(void);

@@ -41,7 +41,7 @@ QGroupBox* EDPLandslideWidget::getWidgetBox(void)
     auto ModelLabel = new QLabel("Model:");
     modelSelectCombo = new QComboBox(this);
     modelSelectCombo->addItem("Bray and Macedo (2019)","BrayMacedo2019");
-//    modelSelectCombo->addItem("Jibson (2007)","Jibson2007");
+    //    modelSelectCombo->addItem("Jibson (2007)","Jibson2007");
     modelSelectCombo->setCurrentIndex(0);
 
     auto notesLabel = new QLabel("");
@@ -142,7 +142,7 @@ bool EDPLandslideWidget::inputFromJSON(QJsonObject &jsonObject)
         int index = modelSelectCombo->findData(model);
         if (index != -1)
         {
-           modelSelectCombo->setCurrentIndex(index);
+            modelSelectCombo->setCurrentIndex(index);
         }
 
         QString item = modelSelectCombo->currentText();
@@ -156,4 +156,13 @@ bool EDPLandslideWidget::inputFromJSON(QJsonObject &jsonObject)
     // auto dcVal = otherParamObj["dc_cutoff"].toDouble();
 
     return true;
+}
+
+
+void EDPLandslideWidget::clear()
+{
+    listWidget->clear();
+    toAssessCheckBox->setChecked(false);
+    modelSelectCombo->setCurrentIndex(0);
+    weightLineEdit->clear();
 }

@@ -55,6 +55,7 @@ class KmlLayer;
 }
 
 class QGroupBox;
+class QCheckBox;
 class QPushButton;
 class VisualizationWidget;
 class ShakeMapWidget;
@@ -74,6 +75,8 @@ public:
     virtual bool inputFromJSON(QJsonObject &rvObject);
 
     virtual int processResults(QString &filenameResults);
+
+    void clear();
 
 signals:
 
@@ -110,6 +113,10 @@ private:
     Esri::ArcGISRuntime::ArcGISMapImageLayer* landslideLayer;
     Esri::ArcGISRuntime::ArcGISMapImageLayer* liquefactionLayer;
     Esri::ArcGISRuntime::ArcGISMapImageLayer* geologicMapLayer;
+
+    QCheckBox* CGS1Checkbox;
+    QCheckBox* CGS2Checkbox;
+    QCheckBox* CGS3Checkbox;
 
 
 };

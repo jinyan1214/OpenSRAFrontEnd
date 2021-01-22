@@ -86,32 +86,18 @@ using namespace QtCharts;
 
 OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
+    thePipelineDb = nullptr;
+
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
     // Create a view menu for the dockable windows
     mainWidget = new QSplitter(this);
     mainWidget->setOrientation(Qt::Horizontal);
-    mainWidget->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
 
     listWidget = new MutuallyExclusiveListWidget(this, "Results");
 
-    PGVTreeItem = listWidget->addItem("Shaking Induced");
-    PGDTreeItem = listWidget->addItem("Deformation Induced");
-
-    listWidget->addItem("PGV (Low)",PGVTreeItem);
-    listWidget->addItem("PGV (Med)",PGVTreeItem);
-    listWidget->addItem("PGV (High)",PGVTreeItem);
-
-    listWidget->addItem("Lateral Spreading (Low)",PGDTreeItem);
-    listWidget->addItem("Lateral Spreading (Med)",PGDTreeItem);
-    listWidget->addItem("Lateral Spreading (High)",PGDTreeItem);
-
-    listWidget->addItem("Liquefaction (Low)",PGDTreeItem);
-    listWidget->addItem("Liquefaction (Med)",PGDTreeItem);
-    listWidget->addItem("Liquefaction (High)",PGDTreeItem);
-
-    PGVTreeItem->setIsCheckable(false);
-    PGDTreeItem->setIsCheckable(false);
+    connect(listWidget, &MutuallyExclusiveListWidget::itemChecked, this, &OpenSRAPostProcessor::handleListSelection);
+    connect(listWidget, &MutuallyExclusiveListWidget::clearAll, this, &OpenSRAPostProcessor::clearAll);
 
     connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&OpenSRAPostProcessor::assemblePDF);
 
@@ -121,16 +107,22 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
     PGVResultsTableWidget = new QTableWidget(this);
     PGVResultsTableWidget->verticalHeader()->setVisible(false);
     PGVResultsTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
     PGVResultsTableWidget->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
     PGVResultsTableWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
-
     PGVResultsTableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     PGVResultsTableWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-
     PGVResultsTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
     PGVResultsTableWidget->setVisible(false);
+
+    PGDResultsTableWidget = new QTableWidget(this);
+    PGDResultsTableWidget->verticalHeader()->setVisible(false);
+    PGDResultsTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    PGDResultsTableWidget->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
+    PGDResultsTableWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
+    PGDResultsTableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    PGDResultsTableWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    PGDResultsTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    PGDResultsTableWidget->setVisible(false);
 
     // Create a map view that will be used for selecting the grid points
     mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
@@ -141,8 +133,6 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
     // Once map is set, connect to MapQuickView mouse clicked signal
     // connect(mapViewSubWidget.get(), &ResultsMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
 
-    mapViewSubWidget->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
-
     mainWidget->addWidget(mapViewSubWidget.get());
     mainWidget->addWidget(listWidget);
 
@@ -151,13 +141,27 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
     // The number of header rows in the Pelicun results file
     numHeaderRows = 1;
 
-    this->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+    QList<int> Sizes;
+    Sizes.append(0.90 * sizeHint().width());
+    Sizes.append(0.10 * sizeHint().width());
+    mainWidget->setSizes(Sizes);
 }
 
 
 void OpenSRAPostProcessor::importResults(const QString& pathToResults)
 {
     qDebug() << "OpenSRAPostProcessor: " << pathToResults;
+
+    QString errMsg;
+
+    // Get the pipelines database
+    thePipelineDb = theVisualizationWidget->getPipelineDatabase();
+
+    if(thePipelineDb == nullptr)
+    {
+        errMsg = "Could not get the pipeline database";
+        throw errMsg;
+    }
 
     // Remove old csv files in the output pathToResults
     QDir resultsDir(pathToResults);
@@ -168,15 +172,14 @@ void OpenSRAPostProcessor::importResults(const QString& pathToResults)
     QStringList acceptableFileExtensions = {"*.csv"};
     QStringList existingCSVFiles = resultsDir.entryList(acceptableFileExtensions, QDir::Files);
 
-    QString errMsg;
-
     if(existingCSVFiles.empty())
     {
-        QStringList acceptableFileExtensions = {"*.*"};
-        QStringList existingFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
-        qDebug() << "FILES IN FOLDER: " << existingFiles;
-        errMsg = "The results folder is empty";
-        throw errMsg;
+        qDebug()<<"The results folder is empty";
+        return;
+        // QStringList acceptableFileExtensions = {"*.*"};
+        // QStringList existingFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
+        // qDebug() << "FILES IN FOLDER: " << existingFiles;
+        // throw errMsg;
     }
 
     QString PGDResultsSheet;
@@ -202,7 +205,7 @@ void OpenSRAPostProcessor::importResults(const QString& pathToResults)
             this->processPGVResults(RepairRatePGV);
         else
         {
-            errMsg = "The DV results are empty";
+            errMsg = "The PGV results are empty";
             throw errMsg;
         }
     }
@@ -212,15 +215,28 @@ void OpenSRAPostProcessor::importResults(const QString& pathToResults)
         RepairRatePGD = csvTool.parseCSVFile(pathToResults + QDir::separator() + PGDResultsSheet,errMsg);
         if(!errMsg.isEmpty())
             throw errMsg;
-    }
 
+        if(!RepairRatePGD.empty())
+            this->processPGDResults(RepairRatePGD);
+        else
+        {
+            errMsg = "The PGD results are empty";
+            throw errMsg;
+        }
+    }
 
 }
 
 
 int OpenSRAPostProcessor::processPGVResults(const QVector<QStringList>& DVResults)
 {
-    if(DVResults.size() < numHeaderRows)
+    // The first n columns is information about the component and not results
+    auto numInfoCols = 7;
+
+    auto numRows = DVResults.size();
+
+    // Check if there is data in the results, and not just the header rows
+    if(numRows < numHeaderRows)
     {
         QString msg = "No results to import!";
         throw msg;
@@ -228,64 +244,163 @@ int OpenSRAPostProcessor::processPGVResults(const QVector<QStringList>& DVResult
 
     auto numHeaderColumns = DVResults.at(0).size();
 
+    if(numHeaderColumns < numInfoCols)
+    {
+        QString msg = "No results to import!";
+        throw msg;
+    }
+
+    PGVTreeItem = listWidget->addItem("Shaking Induced");
+    PGVTreeItem->setIsCheckable(false);
+
     QStringList tableHeadings;
 
-    for(int i = 0; i<numHeaderColumns; ++i)
+    // Add the ID heading
+    tableHeadings<<DVResults.at(0).at(0);
+
+    // Add the result headings
+    for(int i = numInfoCols; i< numHeaderColumns; ++i)
     {
         QString headerStr =  DVResults.at(0).at(i);
 
         tableHeadings<<headerStr;
+
+        auto itemStr = headerStr;
+        itemStr.remove("PGV_");
+        auto item = listWidget->addItem(itemStr,PGVTreeItem);
+
+        // Set the header string as a property so I can find the header value later
+        item->setProperty("HeaderString",headerStr);
     }
 
     PGVResultsTableWidget->setColumnCount(tableHeadings.size());
     PGVResultsTableWidget->setHorizontalHeaderLabels(tableHeadings);
     PGVResultsTableWidget->setRowCount(DVResults.size()-numHeaderRows);
 
-    // Get the buildings database
-    auto thePipelineDB = theVisualizationWidget->getPipelineDatabase();
-
     // Start at the row where headers end
-    for(int i = numHeaderRows, count = 0; i<DVResults.size(); ++i, ++count)
+    for(int row = numHeaderRows, col = 0; row<numRows; ++row, ++col)
     {
-        auto inputRow = DVResults.at(i);
+        auto inputRow = DVResults.at(row);
 
         auto pipelineID = objectToInt(inputRow.at(0));
 
-        auto pipeline = thePipelineDB->getComponent(pipelineID);
+        Component& pipeline = thePipelineDb->getComponent(pipelineID);
 
         if(pipeline.ID == -1)
             throw QString("Could not find the pipeline ID " + QString::number(pipelineID) + " in the database");
 
-        for(int j = 1; j<numHeaderColumns; ++j)
-        {
-            pipeline.ResultsValues.insert(tableHeadings.at(j),inputRow.at(j).toDouble());
-        }
-
         pipeline.ID = pipelineID;
 
-        pipelinesVec.push_back(pipeline);
+        // Put the ID item in the table
+        auto tableIDItem = new QTableWidgetItem(QString::number(pipelineID));
+        PGVResultsTableWidget->setItem(row-1,0, tableIDItem);
 
-
-        // Populate the table
-        for(int j = 0; j<numHeaderColumns; ++j)
+        // Populate the table and database with the results
+        for(int j = 1, col = numInfoCols; col<numHeaderColumns; ++col, ++j)
         {
-            auto tableVal = QString(inputRow.at(j));
+            // Add add the result to the table
+            auto tableVal = QString(inputRow.at(col));
 
             auto tableItem = new QTableWidgetItem(tableVal);
 
-            PGVResultsTableWidget->setItem(count,j, tableItem);
+            PGVResultsTableWidget->setItem(row-1,j, tableItem);
+
+            // Add the result to the database
+            auto key = tableHeadings.at(j);
+            auto value = inputRow.at(col).toDouble();
+
+            pipeline.addResult(key,value);
         }
-
-        auto arcGISFeature = pipeline.ComponentFeature;
-
-        if(arcGISFeature == nullptr)
-            throw QString("ArcGIS feature is a null pointer for component ID " + QString::number(pipelineID));
-
-        arcGISFeature->attributes()->replaceAttribute("RepairRate",0.0);
-
-        arcGISFeature->featureTable()->updateFeature(arcGISFeature);
     }
 
+    return 0;
+}
+
+
+int OpenSRAPostProcessor::processPGDResults(const QVector<QStringList>& DVResults)
+{
+    // The first n columns is information about the component and not results
+    auto numInfoCols = 7;
+
+    auto numRows = DVResults.size();
+
+    // Check if there is data in the results, and not just the header rows
+    if(numRows < numHeaderRows)
+    {
+        QString msg = "No results to import!";
+        throw msg;
+    }
+
+    auto numHeaderColumns = DVResults.at(0).size();
+
+    if(numHeaderColumns < numInfoCols)
+    {
+        QString msg = "No results to import!";
+        throw msg;
+    }
+
+    PGDTreeItem = listWidget->addItem("Deformation Induced");
+    PGDTreeItem->setIsCheckable(false);
+
+    QStringList tableHeadings;
+
+    // Add the ID heading
+    tableHeadings<<DVResults.at(0).at(0);
+
+    // Add the result headings
+    for(int i = numInfoCols; i< numHeaderColumns; ++i)
+    {
+        QString headerStr =  DVResults.at(0).at(i);
+
+        tableHeadings<<headerStr;
+
+        auto itemStr = headerStr;
+        itemStr.remove("PGD_");
+        auto item = listWidget->addItem(itemStr,PGDTreeItem);
+
+        // Set the header string as a property so I can find the header value later
+        item->setProperty("HeaderString",headerStr);
+    }
+
+    PGDResultsTableWidget->setColumnCount(tableHeadings.size());
+    PGDResultsTableWidget->setHorizontalHeaderLabels(tableHeadings);
+    PGDResultsTableWidget->setRowCount(DVResults.size()-numHeaderRows);
+
+    // Start at the row where headers end
+    for(int row = numHeaderRows, col = 0; row<numRows; ++row, ++col)
+    {
+        auto inputRow = DVResults.at(row);
+
+        auto pipelineID = objectToInt(inputRow.at(0));
+
+        Component& pipeline = thePipelineDb->getComponent(pipelineID);
+
+        if(pipeline.ID == -1)
+            throw QString("Could not find the pipeline ID " + QString::number(pipelineID) + " in the database");
+
+        pipeline.ID = pipelineID;
+
+        // Put the ID item in the table
+        auto tableIDItem = new QTableWidgetItem(QString::number(pipelineID));
+        PGDResultsTableWidget->setItem(row-1,0, tableIDItem);
+
+        // Populate the table and database with the results
+        for(int j = 1, col = numInfoCols; col<numHeaderColumns; ++col, ++j)
+        {
+            // Add add the result to the table
+            auto tableVal = QString(inputRow.at(col));
+
+            auto tableItem = new QTableWidgetItem(tableVal);
+
+            PGDResultsTableWidget->setItem(row-1,j, tableItem);
+
+            // Add the result to the database
+            auto key = tableHeadings.at(j);
+            auto value = inputRow.at(col).toDouble();
+
+            pipeline.addResult(key,value);
+        }
+    }
 
     return 0;
 }
@@ -415,10 +530,33 @@ int OpenSRAPostProcessor::assemblePDF(QImage screenShot)
 
     cursor.insertText("Results Summary\n",boldFormat);
 
+    cursor.movePosition( QTextCursor::End );
+
+    // Ratio of the page width that is printable
+    auto useablePageWidth = printer.pageRect(QPrinter::Point).width()-(1.5*leftMargin);
+
+    QRect viewPortRect(0, mapViewMainWidget->height() - mapViewSubWidget->height(), mapViewSubWidget->width(), mapViewSubWidget->height());
+    QImage cropped = screenShot.copy(viewPortRect);
+    document->addResource(QTextDocument::ImageResource,QUrl("Figure1"),cropped);
+    QTextImageFormat imageFormatFig1;
+    imageFormatFig1.setName("Figure1");
+    imageFormatFig1.setQuality(600);
+    imageFormatFig1.setWidth(useablePageWidth);
+
+    cursor.setBlockFormat(alignCenter);
+
+    cursor.insertImage(imageFormatFig1);
+
+    cursor.insertText("Regional map visualization.\n",captionFormat);
+
     cursor.setBlockFormat(alignLeft);
 
     TablePrinter prettyTablePrinter;
-    prettyTablePrinter.printToTable(&cursor, PGVResultsTableWidget,"Asset Results");
+    prettyTablePrinter.printToTable(&cursor, PGVResultsTableWidget,"PGV Results");
+
+    cursor.insertText("\n\n",normalFormat);
+
+    prettyTablePrinter.printToTable(&cursor, PGDResultsTableWidget,"PGD Results");
 
     document->print(&printer);
 
@@ -447,10 +585,57 @@ void OpenSRAPostProcessor::clear(void)
 {
     RepairRatePGV.clear();
     RepairRatePGD.clear();
-    pipelinesVec.clear();
-
     outputFilePath.clear();
-
+    if(thePipelineDb)
+        thePipelineDb->clear();
     PGVResultsTableWidget->clear();
+    listWidget->clear();
 }
 
+
+void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
+{
+    auto headerString = itemSelected->property("HeaderString").toString();
+
+    if(headerString.isEmpty())
+    {
+        qDebug()<<"Could not find the property "<<"HeaderString"<<" in item "<<itemSelected->getName();
+        return;
+    }
+
+    auto componentMap = thePipelineDb->getComponentsMap();
+
+    for(auto&& it: componentMap)
+    {
+
+        auto val = it.getResultValue(headerString);
+
+        auto arcGISFeature = it.ComponentFeature;
+
+        if(arcGISFeature == nullptr)
+            throw QString("ArcGIS feature is a null pointer for component ID " + QString::number(it.ID));
+
+        arcGISFeature->attributes()->replaceAttribute("RepairRate",val);
+
+        arcGISFeature->featureTable()->updateFeature(arcGISFeature);
+    }
+}
+
+
+void OpenSRAPostProcessor::clearAll(void)
+{
+
+    auto componentMap = thePipelineDb->getComponentsMap();
+
+    for(auto&& it: componentMap)
+    {
+        auto arcGISFeature = it.ComponentFeature;
+
+        if(arcGISFeature == nullptr)
+            throw QString("ArcGIS feature is a null pointer for component ID " + QString::number(it.ID));
+
+        arcGISFeature->attributes()->replaceAttribute("RepairRate",0.0);
+
+        arcGISFeature->featureTable()->updateFeature(arcGISFeature);
+    }
+}

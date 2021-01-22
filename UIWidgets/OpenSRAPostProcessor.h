@@ -135,9 +135,15 @@ private slots:
 
     void sortTable(int index);
 
+    void handleListSelection(const TreeItem* itemSelected);
+
+    void clearAll(void);
+
 private:
 
     int processPGVResults(const QVector<QStringList>& DVResults);
+
+    int processPGDResults(const QVector<QStringList>& DVResults);
 
     QVector<QStringList> RepairRatePGD;
     QVector<QStringList> RepairRatePGV;
@@ -153,16 +159,17 @@ private:
 
     QWidget *tableWidget;
     QTableWidget* PGVResultsTableWidget;
+    QTableWidget* PGDResultsTableWidget;
 
     VisualizationWidget* theVisualizationWidget;
 
     std::unique_ptr<ResultsMapViewWidget> mapViewSubWidget;
     Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
 
-    QVector<Component> pipelinesVec;
-
     // The number of header rows in the Pelicun results file
     int numHeaderRows;
+
+    ComponentDatabase* thePipelineDb;
 };
 
 #endif // OpenSRAPostProcessor_H

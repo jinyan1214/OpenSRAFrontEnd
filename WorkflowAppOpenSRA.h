@@ -97,6 +97,8 @@ signals:
 public slots:  
     void clear(void);
 
+    void clearWorkDir(void);
+
     void setUpForApplicationRun(QString &, QString &);
     void processResults(QString pathToResults);
 

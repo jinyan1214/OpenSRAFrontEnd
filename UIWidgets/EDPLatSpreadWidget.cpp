@@ -155,3 +155,12 @@ bool EDPLatSpreadWidget::inputFromJSON(QJsonObject &jsonObject)
 
     return true;
 }
+
+
+void EDPLatSpreadWidget::clear()
+{
+    listWidget->clear();
+    toAssessCheckBox->setChecked(false);
+    modelSelectCombo->setCurrentIndex(0);
+    weightLineEdit->clear();
+}

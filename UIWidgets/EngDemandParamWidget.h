@@ -56,7 +56,7 @@ public:
     bool outputAppDataToJSON(QJsonObject &jsonObject) override;
     bool inputAppDataFromJSON(QJsonObject &jsonObject) override;
     bool copyFiles(QString &destName) override;
-    void clear(void);
+    void clear(void) override;
 
 signals:
 

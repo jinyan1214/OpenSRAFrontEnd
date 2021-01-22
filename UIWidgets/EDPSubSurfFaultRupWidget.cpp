@@ -154,3 +154,12 @@ bool EDPSubSurfFaultRupWidget::inputFromJSON(QJsonObject &jsonObject)
 
     return true;
 }
+
+
+void EDPSubSurfFaultRupWidget::clear()
+{
+    listWidget->clear();
+    toAssessCheckBox->setChecked(false);
+    modelSelectCombo->setCurrentIndex(0);
+    weightLineEdit->clear();
+}

@@ -152,6 +152,9 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     mainLayout->addLayout(theExportLayout);
 
     this->resultsShow(false);
+
+    // this->resultsShow(true);
+    // processResults();
 }
 
 

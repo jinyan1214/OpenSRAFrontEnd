@@ -152,3 +152,12 @@ bool EDPGroundSettlementWidget::inputFromJSON(QJsonObject &jsonObject)
 
     return true;
 }
+
+
+void EDPGroundSettlementWidget::clear()
+{
+    listWidget->clear();
+    toAssessCheckBox->setChecked(false);
+    modelSelectCombo->setCurrentIndex(0);
+    weightLineEdit->clear();
+}

@@ -53,6 +53,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "WorkflowAppOpenSRA.h"
 #include "UncertaintyQuantificationWidget.h"
 #include "MainWindowWorkflowApp.h"
+#include "OpenSRAPreferences.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -143,7 +144,8 @@ void WorkflowAppOpenSRA::initialize(void)
     // Clear action
     QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
     // Set the path to the input file
-    editMenu->addAction("Clear", this, &WorkflowAppOpenSRA::clear);
+    editMenu->addAction("Clear Inputs", this, &WorkflowAppOpenSRA::clear);
+    editMenu->addAction("Clear Working Directory", this, &WorkflowAppOpenSRA::clearWorkDir);
 
     theVisualizationWidget = new VisualizationWidget(this);
 
@@ -159,7 +161,6 @@ void WorkflowAppOpenSRA::initialize(void)
     theResultsWidget = new ResultsWidget(this,theVisualizationWidget);
 
     SimCenterWidget *theWidgets[1];
-
 
     localApp = new LocalApplication("OpenSRA.py",theMainWindow);
     theRunWidget = new RunWidget(localApp, theWidgets, 0);
@@ -196,7 +197,7 @@ void WorkflowAppOpenSRA::initialize(void)
     theComponentSelection->setWidth(130);
     theComponentSelection->setItemWidthHeight(130,60);
 
-    theComponentSelection->displayComponent("Results");
+    theComponentSelection->displayComponent("Visualization");
 }
 
 
@@ -269,7 +270,20 @@ void WorkflowAppOpenSRA::clear(void)
     theDamageMeasureWidget->clear();
     theEDPWidget->clear();
     theCustomVisualizationWidget->clear();
-    theVisualizationWidget->clear();
+    theResultsWidget->clear();
+}
+
+void WorkflowAppOpenSRA::clearWorkDir(void)
+{
+    auto thePreferences = OpenSRAPreferences::getInstance(this);
+
+    QString workDirectoryPath =  thePreferences->getLocalWorkDir();
+
+    QDir workDirectory(workDirectoryPath);
+
+    if(workDirectory.exists()) {
+        workDirectory.removeRecursively();
+    }
 }
 
 

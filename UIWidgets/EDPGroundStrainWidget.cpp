@@ -156,3 +156,12 @@ bool EDPGroundStrainWidget::inputFromJSON(QJsonObject &jsonObject)
 
     return true;
 }
+
+
+void EDPGroundStrainWidget::clear()
+{
+    listWidget->clear();
+    toAssessCheckBox->setChecked(false);
+    modelSelectCombo->setCurrentIndex(0);
+    weightLineEdit->clear();
+}
