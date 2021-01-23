@@ -113,7 +113,11 @@ bool PipelineNetworkWidget::outputToJSON(QJsonObject &jsonObject)
     QJsonObject infrastructureObj;
 
     auto siteDataPath = theComponentInputWidget->getPathToComponentFile();
-    infrastructureObj.insert("SiteDataFile",siteDataPath);
+
+    QFileInfo file(siteDataPath);
+
+
+    infrastructureObj.insert("SiteDataFile",file.absoluteFilePath());
 
     jsonObject.insert("Infrastructure",infrastructureObj);
 
@@ -125,11 +129,7 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
 {
     auto fileName = jsonObject["SiteDataFile"].toString();
 
-    QFileInfo fileInfo(fileName);
-
-    auto absPath = fileInfo.absoluteFilePath();
-
-    theComponentInputWidget->loadFileFromPath(absPath);
+    theComponentInputWidget->loadFileFromPath(fileName);
 
     return true;
 }

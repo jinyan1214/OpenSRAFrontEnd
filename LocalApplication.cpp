@@ -185,8 +185,14 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
         // If not look for the venv
         QDir pythonExeDir(appDir);
         pythonExeDir.cd("PythonEnv");
+
+#ifdef Q_OS_WIN
         pythonExeDir.cd("Scripts");
         python = pythonExeDir.absoluteFilePath("python.exe");
+#else
+        pythonExeDir.cd("bin");
+        python = pythonExeDir.absoluteFilePath("python");
+#endif
 
         QFileInfo checkPython(python);
 
@@ -277,6 +283,7 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
     proc->waitForStarted();
 
 #endif
+
 
     return 0;
 }

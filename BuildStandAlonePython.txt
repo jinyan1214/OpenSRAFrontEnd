@@ -1,7 +1,54 @@
-Building the standalone python.
+Building the standalone python virtual environment
 
 
-Windows:
+Mac OS
+
+1) Get Python source
+2) In Modules/Setup.dist Search for “SSL” and uncomment the code as shown below 
+
+_socket socketmodule.c
+
+# Socket module helper for SSL support; you must comment out the other
+# socket line above, and possibly edit the SSL variable:
+SSL=/usr/local/ssl
+_ssl _ssl.c \
+ -DUSE_SSL -I$(SSL)/include -I$(SSL)/include/openssl \
+ -L$(SSL)/lib -lssl -lcrypto
+
+3) Set the SSL=to the path to ssl in cellar or wherever on your system
+4) cd the source folder and run ./configure --enable-optimizations --prefix=/Users/steve/Desktop/PythonEnv -> make sure that the prefix is an accessible place where you want to build the virtual env. 
+5) Run make
+6) Run make install
+7) Use dylib bundler to bundle deps with the python 
+
+/usr/local/Cellar/dylibbundler/0.4.5/bin/dylibbundler -od -b -p @loader_path/ -x /Users/steve/Desktop/PythonENV/bin/python3.8 -d /Users/steve/Desktop/PythonENV/bin/libs
+
+8) It will save the deps to the lib folder. Copy and past them back to the bin folder and delete the libs folder.
+
+9) Rename python3 to python
+
+10) Run the below in pip
+
+Note that the newer GDAL does not work with Fiona, had to use the older 3.1.4 version 
+
+pip install wheel jpype1 - please first install this package first; incompatibility was observed when trying to install this package after the rest
+ 
+Or
+
+pip install wheel
+pip install SciPy
+pip install pandas 
+pip install shapely
+pip install GDAL==3.1.4
+pip install fiona
+pip install pyproj
+pip install six
+pip install rtree
+pip install geopandas
+pip install rasterio 
+
+
+Windows
 
 On a green system, need to install:
 - Visual Studio 2017+
@@ -22,8 +69,8 @@ Install the following dependencies thourgh pip in this exact order:
 pip install wheel
 pip install jpype1 - please first install this package first; incompatibility was observed when trying to install this package after the rest
 pip install SciPy
-
 pip install pipwin
+
 pipwin install pandas 
 pipwin install shapely
 pipwin install GDAL==3.1.4
