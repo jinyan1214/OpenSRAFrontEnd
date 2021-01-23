@@ -297,31 +297,7 @@ OpenSRAPreferences::resetPreferences(bool) {
     QSettings settingsCommon("SimCenter", "Common");
     settingsCommon.setValue("pythonExePath", python->text());
 
-
-#ifdef Q_OS_WIN
-    QStringList paths{QCoreApplication::applicationDirPath().append("/applications/python")};
-    QString pythonPath = QStandardPaths::findExecutable("python.exe", paths);
-    if(pythonPath.isEmpty())
-        pythonPath = QStandardPaths::findExecutable("python.exe");
-#else
-    QString pythonPath;// = QStandardPaths::findExecutable("python3");
-    // this is where python.org installer puts it
-    QFileInfo installedPython3("/Library/Frameworks/Python.framework/Versions/3.7/bin/python3");
-    if (installedPython3.exists()) {
-      pythonPath = installedPython3.filePath();
-    } else {
-      // maybe user has a local installed copy .. look in standard path
-      QFileInfo localPython3("/usr/local/bin/python3");
-      if (localPython3.exists()) {
-	pythonPath = localPython3.filePath();
-      } else {
-	// assume user has it correct in shell startup script 
-	pythonPath = QStandardPaths::findExecutable("python3");
-      }
-    }
-#endif
-    settingsCommon.setValue("pythonExePath", pythonPath);
-    python->setText(pythonPath);
+    python->clear();
 
     QSettings settingsApplication("SimCenter", QCoreApplication::applicationName());
 
@@ -347,32 +323,10 @@ OpenSRAPreferences::loadPreferences()
     QVariant  pythonPathVariant = settingsCommon.value("pythonExePath");
 
     // python
-    if (!pythonPathVariant.isValid()) {
-#ifdef Q_OS_WIN
-        QString pythonPath = QStandardPaths::findExecutable("python.exe");
-#else
-	QString pythonPath;// = QStandardPaths::findExecutable("python3");
-	// this is where python.org installer puts it
-	QFileInfo installedPython3("/Library/Frameworks/Python.framework/Versions/3.7/bin/python3");
-	if (installedPython3.exists()) {
-	  pythonPath = installedPython3.filePath();
-	} else {
-	  // maybe user has a local installed copy .. look in standard path
-	  QFileInfo localPython3("/usr/local/bin/python3");
-	  if (localPython3.exists()) {
-	    pythonPath = localPython3.filePath();
-	  } else {
-	    // assume user has it correct in shell startup script 
-	    pythonPath = QStandardPaths::findExecutable("python3");
-	  }
-	}
-#endif
-        settingsCommon.setValue("pythonExePath", pythonPath);
-        python->setText(pythonPath);
-    } else {
+    if (pythonPathVariant.isValid())
+    {
         python->setText(pythonPathVariant.toString());
     }
-
 
     QSettings settingsApplication("SimCenter", QCoreApplication::applicationName());
 
@@ -411,23 +365,6 @@ OpenSRAPreferences::getPython(void)
 {
     QSettings settingsCommon("SimCenter", "Common");
     QVariant  pythonPathVariant = settingsCommon.value("pythonExePath");
-
-    // if python not set .. get default
-    if (!pythonPathVariant.isValid()) {
-#ifdef Q_OS_WIN
-        QStringList paths{QCoreApplication::applicationDirPath().append("/applications/python")};
-        QString pythonPath = QStandardPaths::findExecutable("python.exe", paths);
-        if(pythonPath.isEmpty())
-            pythonPath = QStandardPaths::findExecutable("python.exe");
-#else
-        QString pythonPath = QStandardPaths::findExecutable("python");
-#endif
-	if (pythonPath.isEmpty()) 
-	  pythonPath = QString("python");
-
-        settingsCommon.setValue("pythonExePath", pythonPath);
-        return pythonPath;
-    } 
 
     return pythonPathVariant.toString();
 }
