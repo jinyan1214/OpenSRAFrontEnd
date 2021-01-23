@@ -48,10 +48,10 @@ class GeneralInformationWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
+public:
+
     explicit GeneralInformationWidget(QWidget *parent = 0);
     ~GeneralInformationWidget();
-
-public:
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
 

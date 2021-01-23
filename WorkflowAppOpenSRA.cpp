@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "DamageMeasureWidget.h"
 #include "DecisionVariableWidget.h"
 #include "EngDemandParamWidget.h"
-#include "GeneralInformationWidget.h"
+#include "UIWidgets/GeneralInformationWidget.h"
 #include "IntensityMeasureWidget.h"
 #include "LocalApplication.h"
 #include "PipelineNetworkWidget.h"

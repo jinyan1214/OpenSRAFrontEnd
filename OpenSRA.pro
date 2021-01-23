@@ -119,6 +119,12 @@ INCLUDEPATH += $$PWD/Utils \
 
 # Copies over the examples folder into the build directory
 win32 {
+DESTDIR = $$shell_path($$OUT_PWD)
+Release:DESTDIR = $$DESTDIR/release
+Debug:DESTDIR = $$DESTDIR/debug
+
+message($$DESTDIR)
+
 PATH_TO_BINARY=$$DESTDIR/Examples
 } else {
     mac {

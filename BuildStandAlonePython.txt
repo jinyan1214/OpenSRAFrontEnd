@@ -1,0 +1,38 @@
+Building the standalone python.
+
+
+Windows:
+
+On a green system, need to install:
+- Visual Studio 2017+
+- Windows SDK, and 
+- Cywgin with the following packages: autoconf, automake, libtool, and make 
+
+First cd the directory containing the Standalone Python source:
+
+Then from a Visual Studio 2017/2019 x64 native tools command prompt run:
+
+py.exe build-windows.py --profile static-noopt -–sh C:\cygwin64\bin\sh.exe
+
+Once Python is built, go the build folder and find it in the virtual env and scripts folder. 
+
+Run the SSLScript.py file in the repo, in admin cmd to configure the SSL. 
+
+Install the following dependencies thourgh pip in this exact order:
+pip install wheel
+pip install jpype1 - please first install this package first; incompatibility was observed when trying to install this package after the rest
+pip install SciPy
+
+pip install pipwin
+pipwin install pandas 
+pipwin install shapely
+pipwin install GDAL==3.1.4
+pipwin install fiona
+pipwin install pyproj
+pipwin install six
+pipwin install rtree
+pipwin install geopandas
+pipwin install rasterio 
+
+To deploy run:
+C:\Qt\5.15.1\msvc2019_64\bin\windeployqt.exe C:\Users\Office\Desktop\OpenSRA\build-OpenSRA-Desktop_Qt_5_15_1_MSVC2019_64bit-Release\release\OpenSRA.exe

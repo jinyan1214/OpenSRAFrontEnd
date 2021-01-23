@@ -79,6 +79,9 @@ void PythonProgressDialog::handleProcessFinished(int exitCode, QProcess::ExitSta
         QString errText("An error occurred in the Hazard Simulation script, the exit code is " + QString::number(exitCode));
 
         this->appendErrorMessage(errText);
+
+        this->appendText(proc->errorString());
+
         // Output to console and to text edit
         qDebug()<<errText;
 

@@ -35,12 +35,12 @@ SOURCES +=  $$PATH_TO_R2D/Tools/CSVReaderWriter.cpp \
             $$PATH_TO_COMMON/Workflow/EXECUTION/Application.cpp \
 
 
-HEADERS +=  $$PATH_TO_R2D/TOOLS/XMLAdaptor.h \
-            $$PATH_TO_R2D/TOOLS/CSVReaderWriter.h \
-            $$PATH_TO_R2D/TOOLS/AssetInputDelegate.h \
-            $$PATH_TO_R2D/TOOLS/ComponentDatabase.h \
-            $$PATH_TO_R2D/TOOLS/CustomListWidget.h \
-            $$PATH_TO_R2D/TOOLS/TablePrinter.h \
+HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
+            $$PATH_TO_R2D/Tools/CSVReaderWriter.h \
+            $$PATH_TO_R2D/Tools/AssetInputDelegate.h \
+            $$PATH_TO_R2D/Tools/ComponentDatabase.h \
+            $$PATH_TO_R2D/Tools/CustomListWidget.h \
+            $$PATH_TO_R2D/Tools/TablePrinter.h \
             $$PATH_TO_R2D/UIWidgets/PopUpWidget.h \
             $$PATH_TO_R2D/UIWidgets/VisualizationWidget.h \
             $$PATH_TO_R2D/UIWidgets/ComponentInputWidget.h \

@@ -56,7 +56,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QCoreApplication>
 #include <QStringList>
 #include <QSettings>
-#include <AgaveCurl.h>
 #include <QDebug>
 #include <QDir>
 #include <QFileDialog>
@@ -64,7 +63,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QCoreApplication>
 
 LocalApplication::LocalApplication(QString workflowScriptName, QWidget *parent)
-: Application(parent)
+    : Application(parent)
 {
 
     proc = new QProcess(this);
@@ -106,34 +105,34 @@ LocalApplication::inputFromJSON(QJsonObject &dataObject) {
 void
 LocalApplication::onRunButtonPressed(void)
 {
-  progressDialog->appendText("Setting up temporary directory");
+    progressDialog->appendText("Setting up temporary directory");
 
-  QString workingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir();
-  QDir dirWork(workingDir);
-  if (!dirWork.exists())
-      if (!dirWork.mkpath(workingDir)) {
-          QString errorMessage = QString("Could not create Working Dir: ") + workingDir
-                  + QString(". Change the Local Jobs Directory location in preferences.");
-          progressDialog->appendText(errorMessage);
-          emit sendErrorMessage(errorMessage);;
+    QString workingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir();
+    QDir dirWork(workingDir);
+    if (!dirWork.exists())
+        if (!dirWork.mkpath(workingDir)) {
+            QString errorMessage = QString("Could not create Working Dir: ") + workingDir
+                    + QString(". Change the Local Jobs Directory location in preferences.");
+            progressDialog->appendText(errorMessage);
+            emit sendErrorMessage(errorMessage);;
 
-          return;
-      }
+            return;
+        }
     
-  
-  //   QString appDir = appDirName->text();
-  QString appDir = OpenSRAPreferences::getInstance()->getAppDir();
-  QDir dirApp(appDir);
-  if (!dirApp.exists()) {
-      QString errorMessage = QString("The application directory, ") + appDir +QString(" specified does not exist!. Check Local Application Directory im Preferences");  
-      progressDialog->appendText(errorMessage);
-      emit sendErrorMessage(errorMessage);;
-      return;
-  }
-  
-  progressDialog->appendText("Gathering files to local workdir");
-  emit sendStatusMessage("Gathering Files to local workdir");
-  emit setupForRun(workingDir, workingDir);
+
+    //   QString appDir = appDirName->text();
+    QString appDir = OpenSRAPreferences::getInstance()->getAppDir();
+    QDir dirApp(appDir);
+    if (!dirApp.exists()) {
+        QString errorMessage = QString("The application directory, ") + appDir +QString(" specified does not exist!. Check Local Application Directory im Preferences");
+        progressDialog->appendText(errorMessage);
+        emit sendErrorMessage(errorMessage);;
+        return;
+    }
+
+    progressDialog->appendText("Gathering files to local workdir");
+    emit sendStatusMessage("Gathering Files to local workdir");
+    emit setupForRun(workingDir, workingDir);
 }
 
 
@@ -150,15 +149,12 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
     qDebug() << "RUNTYPE" << runType;
     QString appDir = OpenSRAPreferences::getInstance()->getAppDir();
 
-    //TODO: recognize if it is PBE or EE-UQ -> probably smarter to do it inside the python file
     QString pySCRIPT;
 
     QDir scriptDir(appDir);
-    scriptDir.cd("applications");
-    scriptDir.cd("Workflow");
+    scriptDir.cd("OpenSRABackend");
     pySCRIPT = scriptDir.absoluteFilePath(workflowScript);
 
-   // pySCRIPT = scriptDir.absoluteFilePath("EE-UQ.py");
     QFileInfo check_script(pySCRIPT);
     // check if file exists and if yes: Is it really a file and no directory?
     if (!check_script.exists() || !check_script.isFile()) {
@@ -168,35 +164,47 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
 
     qDebug() << "SCRIPT: " << pySCRIPT;
 
-    progressDialog->clear();
-    progressDialog->showDialog(true);
-
-    QString msg = "Starting the analysis... this may take a while!";
-    progressDialog->appendText(msg);
-
-    qDebug() << msg;
-    emit sendStatusMessage(msg);
-
-    //
-    // now invoke dakota, done via a python script in tool app dircetory
-    //
-
-
     proc->setProcessChannelMode(QProcess::SeparateChannels);
     auto procEnv = QProcessEnvironment::systemEnvironment();
     QString pathEnv = procEnv.value("PATH");
     QString pythonPathEnv = procEnv.value("PYTHONPATH");
 
-
     QString python = QString("python");
     QString exportPath("export PATH=$PATH");
 
+
+    // Check if a python path is given in common
     QSettings settings("SimCenter", "Common"); //These names will need to be constants to be shared
     QVariant  pythonLocationVariant = settings.value("pythonExePath");
     if (pythonLocationVariant.isValid()) {
       python = pythonLocationVariant.toString();
     }
 
+    if(python.isEmpty())
+    {
+        // If not look for the venv
+        QDir pythonExeDir(appDir);
+        pythonExeDir.cd("PythonEnv");
+        pythonExeDir.cd("Scripts");
+        python = pythonExeDir.absoluteFilePath("python.exe");
+
+        QFileInfo checkPython(python);
+
+        // check if exe exists and if yes: Is it really a exe and no directory?
+        if (!checkPython.exists() || !checkPython.isExecutable()) {
+            progressDialog->appendText("NO PYTHON FOUND");
+            emit sendErrorMessage(QString("NO PYTHON FOUND"));
+            return false;
+        }
+    }
+
+    progressDialog->clear();
+    progressDialog->showDialog(true);
+
+    QString msg = "Starting the analysis... this may take a while!";
+    progressDialog->appendText(msg);
+    qDebug() << msg;
+    emit sendStatusMessage(msg);
 
     procEnv.insert("PATH", pathEnv);
     procEnv.insert("PYTHONPATH", pythonPathEnv);
@@ -206,6 +214,9 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
     qDebug() << "PYTHON_PATH" << pythonPathEnv;
 
 #ifdef Q_OS_WIN
+
+    QStringList args{pySCRIPT,"-i",inputFile};
+
     python = QString("\"") + python + QString("\"");
 
     qDebug() << python;
@@ -218,7 +229,10 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
     {
         qDebug() << "Failed to start the workflow!!! exit code returned: " << proc->exitCode();
         qDebug() << proc->errorString().split('\n');
-        emit sendStatusMessage("Failed to start the workflow!!!");
+
+        progressDialog->appendText("Failed to start the workflow!!!");
+        progressDialog->appendText( proc->errorString());
+
         failed = true;
     }
 
@@ -226,6 +240,10 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
     {
         qDebug() << "Failed to finish running the workflow!!! exit code returned: " << proc->exitCode();
         qDebug() << proc->errorString();
+
+        progressDialog->appendText("Failed to finish running the workflow!!! exit code returned: " + QString::number(proc->exitCode()));
+        progressDialog->appendText(proc->errorString());
+
         emit sendStatusMessage("Failed to finish running the workflow!!!");
         failed = true;
     }
@@ -254,7 +272,7 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
 
     qDebug() << "PYTHON COMMAND" << command;
 
-//    proc->execute("bash", QStringList() << "-c" <<  command);
+    //    proc->execute("bash", QStringList() << "-c" <<  command);
     proc->start("bash", QStringList() << "-c" <<  command);
     proc->waitForStarted();
 
@@ -265,7 +283,7 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
 
 void
 LocalApplication::displayed(void){
-   this->onRunButtonPressed();
+    this->onRunButtonPressed();
 }
 
 void LocalApplication::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
