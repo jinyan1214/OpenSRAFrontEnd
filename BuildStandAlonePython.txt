@@ -27,12 +27,16 @@ _ssl _ssl.c \
 
 9) Rename python3 to python
 
-10) Run the below in pip
+10) Run the SSLScript.py file in the repo, in admin cmd to configure the SSL. 
+
+11) Run the below in pip
 
 Note that the newer GDAL does not work with Fiona, had to use the older 3.1.4 version 
 
 pip install wheel jpype1 - please first install this package first; incompatibility was observed when trying to install this package after the rest
  
+pip install SciPy pandas shapely GDAL==3.1.4 fiona pyproj six rtree geopandas rasterio 
+
 Or
 
 pip install wheel
@@ -50,20 +54,17 @@ pip install rasterio
 
 Windows
 
-On a green system, need to install:
-- Visual Studio 2017+
-- Windows SDK, and 
-- Cywgin with the following packages: autoconf, automake, libtool, and make 
+To build Python from source:
+1) Get Python source
+2) Cd the folder PCbuild in the source folder
+3) Run the command: build.bat --pgo -p x64
+3) Open the pcbuild.sln file in VS2017-19 and set to release and x64 and build
 
-First cd the directory containing the Standalone Python source:
+Better option is install from python.org and copy the installation directory  to a new folder called PythonEnv
 
-Then from a Visual Studio 2017/2019 x64 native tools command prompt run:
+4) Run the below in pip
 
-py.exe build-windows.py --profile static-noopt -–sh C:\cygwin64\bin\sh.exe
-
-Once Python is built, go the build folder and find it in the virtual env and scripts folder. 
-
-Run the SSLScript.py file in the repo, in admin cmd to configure the SSL. 
+Note that the newer GDAL does not work with Fiona, had to use the older 3.1.4 version 
 
 Install the following dependencies thourgh pip in this exact order:
 pip install wheel
@@ -81,5 +82,7 @@ pipwin install rtree
 pipwin install geopandas
 pipwin install rasterio 
 
-To deploy run:
-C:\Qt\5.15.1\msvc2019_64\bin\windeployqt.exe C:\Users\Office\Desktop\OpenSRA\build-OpenSRA-Desktop_Qt_5_15_1_MSVC2019_64bit-Release\release\OpenSRA.exe
+To deploy run on the exe in the build folder:
+C:\Qt\5.15.1\msvc2019_64\bin\windeployqt.exe C:\Users\Office\Desktop\SimCenter\OpenSRA\build-OpenSRA-Desktop_Qt_5_15_1_MSVC2019_64bit-Release\release\OpenSRA.exe
+
+

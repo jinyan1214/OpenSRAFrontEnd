@@ -121,6 +121,7 @@ void DVNumRepairsWidget::handleAddButtonPressed(void)
         this->userMessageDialog(msg);
     }
 
+    listWidget->expandAll();
 }
 
 
@@ -194,6 +195,10 @@ bool DVNumRepairsWidget::inputFromJSON(QJsonObject &jsonObject)
             {
                modelSelectCombo->setCurrentIndex(index);
             }
+            else{
+                qDebug()<<"Error, could not find the item "<<model;
+            }
+
 
             QString item = modelSelectCombo->currentText();
 
@@ -232,6 +237,9 @@ bool DVNumRepairsWidget::inputFromJSON(QJsonObject &jsonObject)
             {
                modelSelectCombo->setCurrentIndex(index);
             }
+            else{
+                qDebug()<<"Error, could not find the item "<<model;
+            }
 
             QString item = modelSelectCombo->currentText();
 
@@ -243,6 +251,8 @@ bool DVNumRepairsWidget::inputFromJSON(QJsonObject &jsonObject)
             listWidget->addItem(item, model, weight, PGDTreeItem);
         }
     }
+
+    listWidget->expandAll();
 
     return true;
 }

@@ -64,7 +64,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QHeaderView>
 #include <QLabel>
 #include <QLineSeries>
-#include <QMenuBar>
 #include <QPixmap>
 #include <QPrinter>
 #include <QSplitter>
@@ -225,6 +224,7 @@ void OpenSRAPostProcessor::importResults(const QString& pathToResults)
         }
     }
 
+    listWidget->expandAll();
 }
 
 

@@ -84,6 +84,7 @@ DamageMeasureWidget::DamageMeasureWidget(QWidget *parent): SimCenterAppWidget(pa
     theComponentSelection->displayComponent("Transient\nPipe Strain");
 
     theComponentSelection->setWidth(120);
+    theComponentSelection->setItemWidthHeight(120,70);
 
     mainLayout->addWidget(theComponentSelection);
 

@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 
     // create the main window
     WorkflowAppOpenSRA *theInputApp = new WorkflowAppOpenSRA();
-    MainWindowWorkflowApp w(QString("OpenSRA: Open-Source Seismic Risk Assessment Tool"), theInputApp, nullptr);
+    MainWindowWorkflowApp mainWindowApp(QString("OpenSRA: Open-Source Seismic Risk Assessment Tool"), theInputApp, nullptr);
 
     // Create the  menu bar and actions to run the examples
     theInputApp->initialize();
@@ -109,32 +109,32 @@ int main(int argc, char *argv[])
             This is the OpenSRA application. More to come here\
             <p>\  ";
 
-            w.setAbout(textAboutOpenSRA);
+            mainWindowApp.setAbout(textAboutOpenSRA);
 
     // This is the title displayed in the on About dialog
     QString aboutTitle = "About the OpenSRA Application";
 
     QString aboutSource = "About OpenSRA";
-    w.setAbout(aboutTitle, aboutSource);
+    mainWindowApp.setAbout(aboutTitle, aboutSource);
 
     QString version("Version 1.0.0");
-    w.setVersion(version);
+    mainWindowApp.setVersion(version);
 
     QString citeText("Cite text here");
-    w.setCite(citeText);
+    mainWindowApp.setCite(citeText);
 
     QString manualURL("Link to user manual here");
-    w.setDocumentationURL(manualURL);
+    mainWindowApp.setDocumentationURL(manualURL);
 
     QString messageBoardURL("Link to message");
-    w.setFeedbackURL(messageBoardURL);
+    mainWindowApp.setFeedbackURL(messageBoardURL);
 
     //
     // show the main window, set styles & start the event loop
     //
 
-    w.show();
-    w.statusBar()->showMessage("Ready", 5000);
+    mainWindowApp.show();
+    mainWindowApp.statusBar()->showMessage("Ready", 5000);
 
 #ifdef Q_OS_WIN
     QFile file(":/styles/stylesheetWIN.qss");

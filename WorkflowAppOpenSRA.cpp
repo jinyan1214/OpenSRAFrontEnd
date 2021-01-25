@@ -194,8 +194,8 @@ void WorkflowAppOpenSRA::initialize(void)
     theComponentSelection->addComponent(QString("Damage\nMeasure"), theDamageMeasureWidget);
     theComponentSelection->addComponent(QString("Decision\nVariable"), theDecisionVariableWidget);
     theComponentSelection->addComponent(QString("Results"), theResultsWidget);
-    theComponentSelection->setWidth(130);
-    theComponentSelection->setItemWidthHeight(130,60);
+    theComponentSelection->setWidth(120);
+    theComponentSelection->setItemWidthHeight(120,70);
 
     theComponentSelection->displayComponent("Visualization");
 }
@@ -355,7 +355,7 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
     // and copy all files needed to this directory by invoking copyFiles() on app widgets
     //
 
-    QString tmpDirName = QString("tmp.OpenSRA");
+    QString tmpDirName = QString("Input");
     qDebug() << "TMP_DIR: " << tmpDirName;
     QDir workDir(workingDir);
 

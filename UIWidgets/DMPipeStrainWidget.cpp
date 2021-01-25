@@ -173,6 +173,10 @@ bool DMPipeStrainWidget::inputFromJSON(QJsonObject &jsonObject)
         {
            modelSelectCombo->setCurrentIndex(index);
         }
+        else{
+            qDebug()<<"Error, could not find the item "<<model;
+        }
+
 
         QString item = modelSelectCombo->currentText();
 

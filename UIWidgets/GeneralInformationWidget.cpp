@@ -94,7 +94,10 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     QJsonObject outputObj;
 
     QJsonObject directoryObj;
-    directoryObj.insert("Working",workingDirectoryLineEdit->text());
+
+    QDir workDir(workingDirectoryLineEdit->text());
+    directoryObj.insert("Working",workDir.absolutePath());
+
     outputObj.insert("AnalysisID",analysisLineEdit->text());
     outputObj.insert("UnitSystem",unitsCombo->currentText());
     outputObj.insert("Directory", directoryObj);
@@ -113,7 +116,17 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject)
     auto workingDir = dirObj["Working"].toString();
 
     if(!workingDir.isEmpty())
-        workingDirectoryLineEdit->setText(workingDir);
+    {
+        QDir workDir(workingDir);
+
+        if(workDir.exists())
+        {
+            workingDirectoryLineEdit->setText(workDir.absolutePath());
+
+            // Set the file path to the preferences
+            OpenSRAPreferences::getInstance()->setLocalWorkDir(workDir.absolutePath());
+        }
+    }
 
     auto analysisID = jsonObject["AnalysisID"].toString();
     analysisLineEdit->setText(analysisID);
@@ -155,7 +168,7 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     workingDirectoryLineEdit->setMaximumWidth(400);
 
     // Set the local work dir as default
-    auto loclWorkDir =OpenSRAPreferences::getInstance()->getLocalWorkDir();
+    auto loclWorkDir = OpenSRAPreferences::getInstance()->getLocalWorkDir();
     workingDirectoryLineEdit->setText(loclWorkDir);
 
     connect(loadFileButton,&QPushButton::clicked, this, &GeneralInformationWidget::chooseDirectoryDialog);
@@ -211,6 +224,9 @@ void GeneralInformationWidget::chooseDirectoryDialog(void)
 
     // Set file name & entry in qLine edit
     workingDirectoryLineEdit->setText(pathToWorkingDirectoryFile);
+
+    // Set the file path to the preferences
+    OpenSRAPreferences::getInstance()->setLocalWorkDir(pathToWorkingDirectoryFile);
 
     return;
 }

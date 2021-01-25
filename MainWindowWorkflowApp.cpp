@@ -155,7 +155,7 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
     //    featureRequestURL = QString("https://docs.google.com/forms/d/e/1FAIpQLScTLkSwDjPNzH8wx8KxkyhoIT7AI9KZ16Wg9TuW1GOhSYFOag/viewform");
     versionText = QString("");
     citeText = QString("");
-    aboutText = QString(tr("This is a SimCenter Workflow Applicatios"));
+    aboutText = QString(tr("This is a SimCenter Workflow Application"));
 
     aboutTitle = "About this Application"; // this is the title displayed in the on About dialog
     aboutSource = ":/Resources/docs/textAbout.html";  // this is an HTML file stored under resources
@@ -332,7 +332,6 @@ void MainWindowWorkflowApp::loadFile(const QString &fileName)
 
 void MainWindowWorkflowApp::createActions() {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-
 
     //const QIcon openIcon = QIcon::fromTheme("document-open", QIcon(":/images/open.png"));
     //const QIcon saveIcon = QIcon::fromTheme("document-save", QIcon(":/images/save.png"));

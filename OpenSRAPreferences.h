@@ -59,6 +59,7 @@ public:
     QString getPython(void);
     QString getAppDir(void);
     QString getLocalWorkDir(void);
+    void setLocalWorkDir(const QString &value);
 
 public slots:
     void savePreferences(bool);
@@ -66,9 +67,14 @@ public slots:
     void quitPreferences(bool);
     void loadPreferences(void);
 
+signals:
+
+    void workDirReset(QString workDirName);
+
 private:
     QLineEdit *python;
-    QLineEdit *localWorkDir;
+    QString localWorkDir;
+//    QLineEdit *localWorkDir;
     QLineEdit *appDir;
     QVBoxLayout *layout;
     QCheckBox* customAppDirCheckBox;

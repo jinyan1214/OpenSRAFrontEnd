@@ -197,12 +197,29 @@ bool OpenSHAWidget::inputFromJSON(QJsonObject &jsonObject)
     {
        seismicSourceCombo->setCurrentIndex(index);
     }
+    else{
+        qDebug()<<"Error, could not find the item "<<sourceModel;
+    }
 
     auto sourceVs30 = jsonObject["SourceForVs30"].toString();
     int index2 = vs30Combo->findData(sourceVs30);
     if (index2 != -1)
     {
        vs30Combo->setCurrentIndex(index);
+    }
+    else{
+        qDebug()<<"Error, could not find the item "<<sourceVs30;
+    }
+
+
+    auto gmModel = jsonObject["GroundMotionModel"].toString();
+    int index3 = modelSelectCombo->findData(gmModel);
+    if (index3 != -1)
+    {
+       modelSelectCombo->setCurrentIndex(index);
+    }
+    else{
+        qDebug()<<"Error, could not find the item "<<gmModel;
     }
 
     QJsonObject filterObj = jsonObject["Filter"].toObject();

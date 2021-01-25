@@ -63,7 +63,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QCoreApplication>
 
 LocalApplication::LocalApplication(QString workflowScriptName, QWidget *parent)
-    : Application(parent)
 {
 
     proc = new QProcess(this);
@@ -187,7 +186,6 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
         pythonExeDir.cd("PythonEnv");
 
 #ifdef Q_OS_WIN
-        pythonExeDir.cd("Scripts");
         python = pythonExeDir.absoluteFilePath("python.exe");
 #else
         pythonExeDir.cd("bin");

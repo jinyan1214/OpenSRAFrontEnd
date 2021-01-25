@@ -54,10 +54,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 OpenSRAPreferences *
 OpenSRAPreferences::getInstance(QWidget *parent) {
-  if (theInstance == 0)
-    theInstance = new OpenSRAPreferences(parent);
+    if (theInstance == 0)
+        theInstance = new OpenSRAPreferences(parent);
 
-  return theInstance;
+    return theInstance;
 }
 
 OpenSRAPreferences *OpenSRAPreferences::theInstance = 0;
@@ -99,8 +99,8 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
         if (pythonPathVariant.isValid()) {
             QString existingF = pythonPathVariant.toString();
             QFileInfo existingFile(existingF);
-	    if (existingFile.exists())
-	      existingDir = existingFile.absolutePath();
+            if (existingFile.exists())
+                existingDir = existingFile.absolutePath();
         }
 
         QString selectedFile = QFileDialog::getOpenFileName(this,
@@ -120,41 +120,40 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
     // entry for localWorkDir location .. basically as before
     //
 
-    localWorkDir = new QLineEdit();
-    QHBoxLayout *localWorkDirLayout = new QHBoxLayout();
-    localWorkDirLayout->addWidget(localWorkDir);
-    QPushButton *localWorkDirButton = new QPushButton();
-    localWorkDirButton->setText("Browse");
-    localWorkDirButton->setToolTip(tr("Select Work directory where local jobs will run"));
-    localWorkDirLayout->addWidget(localWorkDirButton);
+    //    localWorkDir = new QLineEdit();
+    //    QHBoxLayout *localWorkDirLayout = new QHBoxLayout();
+    //    localWorkDirLayout->addWidget(localWorkDir);
+    //    QPushButton *localWorkDirButton = new QPushButton();
+    //    localWorkDirButton->setText("Browse");
+    //    localWorkDirButton->setToolTip(tr("Select Work directory where local jobs will run"));
+    //    localWorkDirLayout->addWidget(localWorkDirButton);
 
-    locationDirectoriesLayout->addRow(tr("Local Jobs Directory:"), localWorkDirLayout);
-    locationDirectoriesLayout->setAlignment(Qt::AlignLeft);
-    locationDirectoriesLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
-    locationDirectoriesLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
+    //    locationDirectoriesLayout->addRow(tr("Local Jobs Directory:"), localWorkDirLayout);
+    //    locationDirectoriesLayout->setAlignment(Qt::AlignLeft);
+    //    locationDirectoriesLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    //    locationDirectoriesLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
 
-    connect(localWorkDirButton, &QPushButton::clicked, this, [this](){
-        QSettings settings("SimCenter", QCoreApplication::applicationName()); 
-        QVariant  localWorkDirPathVariant = settings.value("localWorkDir");
-        QString   existingDir = QCoreApplication::applicationDirPath();
-        if (localWorkDirPathVariant.isValid()) {
-            QString existingDString = localWorkDirPathVariant.toString();
-            QDir existingD(existingDString);
-	    if (existingD.exists())
-	      existingDir = existingD.absolutePath();
-        }
+    //    connect(localWorkDirButton, &QPushButton::clicked, this, [this](){
+    //        QSettings settings("SimCenter", QCoreApplication::applicationName());
+    //        QVariant  localWorkDirPathVariant = settings.value("localWorkDir");
+    //        QString   existingDir = QCoreApplication::applicationDirPath();
+    //        if (localWorkDirPathVariant.isValid()) {
+    //            QString existingDString = localWorkDirPathVariant.toString();
+    //            QDir existingD(existingDString);
+    //	    if (existingD.exists())
+    //	      existingDir = existingD.absolutePath();
+    //        }
 
-        QString selectedDir = QFileDialog::getExistingDirectory(this,
-                                                                tr("Select Local Directory where local job data is staged, directory remains after job is run"),
-                                                                 existingDir,
-                                                                QFileDialog::ShowDirsOnly);
-        if(!selectedDir.isEmpty()) {
+    //        QString selectedDir = QFileDialog::getExistingDirectory(this,
+    //                                                                tr("Select Local Directory where local job data is staged, directory remains after job is run"),
+    //                                                                 existingDir,
+    //                                                                QFileDialog::ShowDirsOnly);
+    //        if(!selectedDir.isEmpty()) {
 
-            localWorkDir->setText(selectedDir);
-        }
-    }
-    );
-
+    //            localWorkDir->setText(selectedDir);
+    //        }
+    //    }
+    //    );
 
 
     //
@@ -179,14 +178,14 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
     locationDirectoriesLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
 
     connect(appDirButton, &QPushButton::clicked, this, [this](){
-        QSettings settings("SimCenter", QCoreApplication::applicationName()); 
+        QSettings settings("SimCenter", QCoreApplication::applicationName());
         QVariant  appDirPathVariant = settings.value("appDir");
         QString   existingDir = QCoreApplication::applicationDirPath();
         if (appDirPathVariant.isValid()) {
             QString existingDString = appDirPathVariant.toString();
             QDir existingD(existingDString);
-	    if (existingD.exists())
-	      existingDir = existingD.absolutePath();
+            if (existingD.exists())
+                existingDir = existingD.absolutePath();
         }
 
         QString selectedDir = QFileDialog::getExistingDirectory(this,
@@ -262,10 +261,10 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
     });
 
 
-    connect(localWorkDir, &QLineEdit::textChanged, this, [this](QString newValue){
-        if (newValue.contains('\\'))
-            localWorkDir->setText(newValue.replace('\\','/'));
-    });
+    //    connect(localWorkDir, &QLineEdit::textChanged, this, [this](QString newValue){
+    //        if (newValue.contains('\\'))
+    //            localWorkDir->setText(newValue.replace('\\','/'));
+    //    });
 }
 
 OpenSRAPreferences::~OpenSRAPreferences()
@@ -278,11 +277,10 @@ void
 OpenSRAPreferences::savePreferences(bool) {
     QSettings settingsCommon("SimCenter", "Common");
     settingsCommon.setValue("pythonExePath", python->text());
-
     QSettings settingsApp("SimCenter", QCoreApplication::applicationName());
     settingsApp.setValue("appDir", appDir->text());
+    settingsApp.setValue("localWorkDir", localWorkDir);
     settingsApp.setValue("customAppDir", customAppDirCheckBox->isChecked());
-
     this->close();
 }
 
@@ -305,7 +303,9 @@ OpenSRAPreferences::resetPreferences(bool) {
 
     QString localWorkDirLocation = workingDir.filePath(QCoreApplication::applicationName() + "/LocalWorkDir");
     settingsApplication.setValue("localWorkDir", localWorkDirLocation);
-    localWorkDir->setText(localWorkDirLocation);
+    localWorkDir = localWorkDirLocation;
+    emit workDirReset(localWorkDirLocation);
+    //    localWorkDir->setText(localWorkDirLocation);
 
     customAppDirCheckBox->setChecked(false);
     QString appDirLocation = getAppDir();
@@ -333,11 +333,13 @@ OpenSRAPreferences::loadPreferences()
     // localWorkDir
     QVariant  localWorkDirVariant = settingsApplication.value("localWorkDir");
     if (!localWorkDirVariant.isValid()) {
-      QString localWorkDirLocation = this->getLocalWorkDir();
-      settingsApplication.setValue("localWorkDir", localWorkDirLocation);
-      localWorkDir->setText(localWorkDirLocation);
+        QString localWorkDirLocation = this->getLocalWorkDir();
+        settingsApplication.setValue("localWorkDir", localWorkDirLocation);
+        localWorkDir = localWorkDirLocation;
+//        localWorkDir->setText(localWorkDirLocation);
     } else {
-        localWorkDir->setText(localWorkDirVariant.toString());
+        localWorkDir = localWorkDirVariant.toString();
+//        localWorkDir->setText(localWorkDirVariant.toString());
     }
 
 
@@ -358,6 +360,13 @@ OpenSRAPreferences::loadPreferences()
     appDir->setText(currentAppDir);
 
     
+}
+
+void OpenSRAPreferences::setLocalWorkDir(const QString &value)
+{
+    localWorkDir = value;
+    QSettings settingsApplication("SimCenter", QCoreApplication::applicationName());
+    settingsApplication.setValue("localWorkDir", localWorkDir);
 }
 
 QString
@@ -399,12 +408,13 @@ OpenSRAPreferences::getLocalWorkDir(void) {
 
     // if not set, use default & set default as application directory
     if (!localWorkDirVariant.isValid()) {
-      QDir workingDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
-      QString localWorkDirLocation = workingDir.filePath(QCoreApplication::applicationName() + "/LocalWorkDir");
-      settingsApplication.setValue("localWorkDir", localWorkDirLocation);
-      localWorkDir->setText(localWorkDirLocation);
-      return localWorkDirLocation;
-    } 
+        QDir workingDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+        QString localWorkDirLocation = workingDir.filePath(QCoreApplication::applicationName() + "/LocalWorkDir");
+        settingsApplication.setValue("localWorkDir", localWorkDirLocation);
+        //      localWorkDir->setText(localWorkDirLocation);
+        localWorkDir = localWorkDirLocation;
+        return localWorkDirLocation;
+    }
     
     return localWorkDirVariant.toString();
 }
