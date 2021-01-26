@@ -12,6 +12,7 @@ DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 # C++14 support
 CONFIG += c++14
 
+# Check for the required Qt version
 equals(QT_MAJOR_VERSION, 5) {
     lessThan(QT_MINOR_VERSION, 15) {
         error("$$TARGET requires Qt 5.15.0")
@@ -19,6 +20,10 @@ equals(QT_MAJOR_VERSION, 5) {
         equals(QT_MINOR_VERSION, 15) : lessThan(QT_PATCH_VERSION, 0) {
                 error("$$TARGET requires Qt 5.15.0")
         }
+}
+
+mac {
+QMAKE_MACOSX_DEPLOYMENT_TARGET=10.14
 }
 
 #Application Icons

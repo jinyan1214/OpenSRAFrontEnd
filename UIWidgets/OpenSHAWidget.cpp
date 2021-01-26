@@ -22,9 +22,9 @@ OpenSHAWidget::OpenSHAWidget(QWidget* parent) : SimCenterAppWidget(parent)
     modelSelectCombo->addItem("Boore, Stewart, Seyhan & Atkinson (2014)","Boore, Stewart, Seyhan & Atkinson (2014)");
     modelSelectCombo->addItem("Campbell & Bozorgnia (2014)","Campbell & Bozorgnia (2014)");
     modelSelectCombo->addItem("Chiou & Youngs (2014)","Chiou & Youngs (2014)");
-    modelSelectCombo->addItem("NGAWest2 2014 Averaged Attenuation Relationship","NGAWest2 2014 Averaged Attenuation Relationship");
-    modelSelectCombo->addItem("NGAWest2 2014 Averaged No Idriss (Preferred)","NGAWest2 2014 Averaged No Idriss");
-    modelSelectCombo->setCurrentIndex(5);
+    modelSelectCombo->addItem("NGAWest2 2014 Averaged Attenuation Relationship (Currently Disabled)","NGAWest2 2014 Averaged Attenuation Relationship");
+    modelSelectCombo->addItem("NGAWest2 2014 Averaged No Idriss (Preferred, but Currently Disabled)","NGAWest2 2014 Averaged No Idriss");
+    modelSelectCombo->setCurrentIndex(0);
 
     auto seismicSourceLabel = new QLabel("Seismic Source Model:");
     seismicSourceCombo = new QComboBox(this);
@@ -100,10 +100,10 @@ OpenSHAWidget::OpenSHAWidget(QWidget* parent) : SimCenterAppWidget(parent)
     //    addRunListButton->setMinimumWidth(250);
 
     theMainLayout->addWidget(GMCharacLabel,0,0,1,2);
-    theMainLayout->addWidget(ModelLabel,1,0);
-    theMainLayout->addWidget(modelSelectCombo,1,1);
-    theMainLayout->addWidget(seismicSourceLabel,2,0);
-    theMainLayout->addWidget(seismicSourceCombo,2,1);
+    theMainLayout->addWidget(seismicSourceLabel,1,0);
+    theMainLayout->addWidget(seismicSourceCombo,1,1);
+    theMainLayout->addWidget(ModelLabel,2,0);
+    theMainLayout->addWidget(modelSelectCombo,2,1);
     theMainLayout->addWidget(vs30Label,3,0);
     theMainLayout->addWidget(vs30Combo,3,1);
     theMainLayout->addWidget(vs30InfoLabel,4,0,1,2,Qt::AlignCenter);

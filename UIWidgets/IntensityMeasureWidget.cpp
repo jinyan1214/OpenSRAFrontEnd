@@ -246,7 +246,7 @@ bool IntensityMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
     int index2 = spatialCorrComboBox->findData(spatCorrType);
     if (index2 != -1)
     {
-       spatialCorrComboBox->setCurrentIndex(index);
+       spatialCorrComboBox->setCurrentIndex(index2);
     }
 
     auto includeSpecCorr = specCorrObj["ToInclude"].toBool();
@@ -257,7 +257,7 @@ bool IntensityMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
     int index3 = spectralCorrComboBox->findData(specCorrType);
     if (index3 != -1)
     {
-       spectralCorrComboBox->setCurrentIndex(index2);
+       spectralCorrComboBox->setCurrentIndex(index3);
     }
 
     return false;
@@ -283,8 +283,9 @@ void IntensityMeasureWidget::IMSelectionChanged(int index)
 
 bool IntensityMeasureWidget::copyFiles(QString &destDir)
 {
-
-    shakeMap->copyFiles(destDir);
+    auto numMapsLoaded = shakeMap->getNumShakeMapsLoaded();
+    if(numMapsLoaded != 0)
+        shakeMap->copyFiles(destDir);
 
     return true;
 }

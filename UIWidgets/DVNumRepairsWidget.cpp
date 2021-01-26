@@ -257,3 +257,13 @@ bool DVNumRepairsWidget::inputFromJSON(QJsonObject &jsonObject)
     return true;
 }
 
+
+void DVNumRepairsWidget::clear()
+{
+    weightLineEdit->clear();
+    listWidget->clear();
+    modelSelectCombo->setCurrentIndex(0);
+    PGVCheckBox->setChecked(false);
+    PGDCheckBox->setChecked(false);
+}
+
