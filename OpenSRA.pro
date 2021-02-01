@@ -6,7 +6,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
 
 TARGET = OpenSRA
 TEMPLATE = app
-VERSION=1.0.0
+VERSION=0.0.2
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 # C++14 support
@@ -23,7 +23,10 @@ equals(QT_MAJOR_VERSION, 5) {
 }
 
 mac {
-QMAKE_MACOSX_DEPLOYMENT_TARGET=10.14
+QMAKE_MAC_SDK = macosx10.14
+#Deployment target should be lower than SDK to make plugins useable in an older OS
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
+
 }
 
 #Application Icons
@@ -142,3 +145,6 @@ first.depends = $(first) copydata
 export(first.depends)
 export(copydata.commands)
 QMAKE_EXTRA_TARGETS += first copydata
+
+QMAKE_CXXFLAGS += -mmacosx-version-min=10.14
+

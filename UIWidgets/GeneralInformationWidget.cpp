@@ -165,6 +165,7 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     loadFileButton->setMaximumWidth(150);
     auto workingDirectoryLabel = new QLabel("Working Directory:");
     workingDirectoryLineEdit = new QLineEdit();
+    workingDirectoryLineEdit->setReadOnly(true);
     workingDirectoryLineEdit->setMaximumWidth(400);
 
     // Set the local work dir as default

@@ -262,6 +262,8 @@ void DVNumRepairsWidget::clear()
 {
     weightLineEdit->clear();
     listWidget->clear();
+    PGVTreeItem = nullptr;
+    PGDTreeItem = nullptr;
     modelSelectCombo->setCurrentIndex(0);
     PGVCheckBox->setChecked(false);
     PGDCheckBox->setChecked(false);

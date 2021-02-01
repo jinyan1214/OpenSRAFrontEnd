@@ -11,7 +11,7 @@
 
 # ********* THINGS TO CHANGE START *********
 # Set the path to your macdeployqt here
-pathMacDepQt="/Users/steve/Qt/5.15.1/clang_64/bin/macdeployqt"
+pathMacDepQt="/Users/steve/Qt/5.15.2/clang_64/bin/macdeployqt"
 
 # Name of the application
 AppName="OpenSRA"

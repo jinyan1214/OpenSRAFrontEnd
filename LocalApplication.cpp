@@ -141,11 +141,12 @@ LocalApplication::onRunButtonPressed(void)
 //
 
 bool
-LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputFile) {
+LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &inputFile)
+{
 
-    // qDebug() << "RUNTYPE" << runType;
-    QString runType("runningLocal");
-    qDebug() << "RUNTYPE" << runType;
+    progressDialog->clear();
+    progressDialog->showDialog(true);
+
     QString appDir = OpenSRAPreferences::getInstance()->getAppDir();
 
     QString pySCRIPT;
@@ -156,27 +157,48 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
 
     QFileInfo check_script(pySCRIPT);
     // check if file exists and if yes: Is it really a file and no directory?
-    if (!check_script.exists() || !check_script.isFile()) {
+    if (!check_script.exists() || !check_script.isFile())
+    {
+        progressDialog->appendText("Cannot find the Python script: " + pySCRIPT);
+
         emit sendErrorMessage(QString("NO SCRIPT FILE: ") + pySCRIPT);
         return false;
     }
 
-    qDebug() << "SCRIPT: " << pySCRIPT;
+
+    {
+        progressDialog->appendText("Looking for Java");
+        QProcess program;
+        QString commandToStart= "java -version";
+        program.start(commandToStart);
+        bool started = program.waitForStarted();
+        if (!program.waitForFinished(30000)) // 3 Second timeout
+            program.kill();
+
+        if(!started)
+        {
+            progressDialog->appendText("Could not start Java on the system");
+            return false; // Not found or which does not work
+        }
+
+        QString stdError = QString::fromLocal8Bit(program.readAllStandardError());
+        stdError.trimmed();
+        progressDialog->appendText(stdError);
+    }
+
+
+    progressDialog->appendText("Running script: " + pySCRIPT);
 
     proc->setProcessChannelMode(QProcess::SeparateChannels);
-    auto procEnv = QProcessEnvironment::systemEnvironment();
-    QString pathEnv = procEnv.value("PATH");
-    QString pythonPathEnv = procEnv.value("PYTHONPATH");
+    auto procEnv = QProcessEnvironment();
 
-    QString python = QString("python");
-    QString exportPath("export PATH=$PATH");
-
+    QString python;
 
     // Check if a python path is given in common
     QSettings settings("SimCenter", "Common"); //These names will need to be constants to be shared
     QVariant  pythonLocationVariant = settings.value("pythonExePath");
     if (pythonLocationVariant.isValid()) {
-      python = pythonLocationVariant.toString();
+        python = pythonLocationVariant.toString();
     }
 
     if(python.isEmpty())
@@ -188,8 +210,7 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
 #ifdef Q_OS_WIN
         python = pythonExeDir.absoluteFilePath("python.exe");
 #else
-        pythonExeDir.cd("bin");
-        python = pythonExeDir.absoluteFilePath("python");
+        python = appDir+QDir::separator()+"PythonEnv"+QDir::separator()+"bin"+QDir::separator()+"python";
 #endif
 
         QFileInfo checkPython(python);
@@ -202,20 +223,15 @@ LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &inputF
         }
     }
 
-    progressDialog->clear();
-    progressDialog->showDialog(true);
-
     QString msg = "Starting the analysis... this may take a while!";
     progressDialog->appendText(msg);
-    qDebug() << msg;
     emit sendStatusMessage(msg);
 
-    procEnv.insert("PATH", pathEnv);
-    procEnv.insert("PYTHONPATH", pythonPathEnv);
+    procEnv.insert("PATH", python);
+    procEnv.insert("PYTHONPATH", python);
     proc->setProcessEnvironment(procEnv);
 
-    qDebug() << "PATH: " << pathEnv;
-    qDebug() << "PYTHON_PATH" << pythonPathEnv;
+    qDebug() << "PATH: " << python;
 
 #ifdef Q_OS_WIN
 
