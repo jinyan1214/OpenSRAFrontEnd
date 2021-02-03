@@ -66,6 +66,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QLineSeries>
 #include <QPixmap>
+#include <QListView>
 #include <QPrinter>
 #include <QSplitter>
 #include <QStackedBarSeries>
@@ -134,7 +135,20 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
     // connect(mapViewSubWidget.get(), &ResultsMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
 
     mainWidget->addWidget(mapViewSubWidget.get());
-    mainWidget->addWidget(listWidget);
+
+    QWidget* rightHandWidget = new QWidget(this);
+    QVBoxLayout* rightHandLayout = new QVBoxLayout(rightHandWidget);
+
+    rightHandLayout->addWidget(listWidget);
+    auto legView = theVisualizationWidget->getLegendView();
+    if(legView != nullptr)
+    {
+        QLabel* legLabel = new QLabel("Legend",this);
+        rightHandLayout->addWidget(legLabel);
+        rightHandLayout->addWidget(legView);
+    }
+
+    mainWidget->addWidget(rightHandWidget);
 
     mainLayout->addWidget(mainWidget);
 

@@ -94,10 +94,19 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  Visualiza
 
     auto visSelectBox = this->getVisSelectionGroupBox();
 
-    theVizLayout->addWidget(visSelectBox);
-
     auto theVisWidget = theVisualizationWidget->getVisWidget();
 
+    legendView = new QListView(this);
+    legendView->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Minimum);
+    legendView->hide();
+    theVisualizationWidget->setLegendView(legendView);
+
+    QVBoxLayout *theLeftHandLayout = new QVBoxLayout();
+
+    theLeftHandLayout->addWidget(visSelectBox);
+    theLeftHandLayout->addWidget(legendView);
+
+    theVizLayout->addLayout(theLeftHandLayout);
     theVizLayout->addWidget(theVisWidget);
 
     mainLayout->addLayout(theHeaderLayout);
@@ -151,12 +160,13 @@ QGroupBox* CustomVisualizationWidget::getVisSelectionGroupBox(void)
 {
     QGroupBox* groupBox = new QGroupBox("Select Data to Visualize");
     groupBox->setMaximumWidth(250);
+    groupBox->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Minimum);
     //    groupBox->setStyleSheet("background-color: white;");
 
     auto layout = new QVBoxLayout();
     groupBox->setLayout(layout);
 
-    auto mapDataLabel = new QLabel("Pre-packaged maps and data sets:");
+    auto mapDataLabel = new QLabel("Pre-packaged maps and\ndata sets:");
     mapDataLabel->setStyleSheet("font-weight: bold; color: black");
 
     CGS1Checkbox = new QCheckBox("CGS Geologic Map (Ref.)");

@@ -56,6 +56,7 @@ class KmlLayer;
 
 class QGroupBox;
 class QCheckBox;
+class QListView;
 class QPushButton;
 class VisualizationWidget;
 class ShakeMapWidget;
@@ -118,6 +119,7 @@ private:
     QCheckBox* CGS2Checkbox;
     QCheckBox* CGS3Checkbox;
 
+    QListView* legendView;
 
 };
 

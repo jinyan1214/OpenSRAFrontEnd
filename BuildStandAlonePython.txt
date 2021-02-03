@@ -55,16 +55,18 @@ pip install rasterio
 Windows
 
 To build Python from source:
-1) Get Python source
+1) Get Python source, download from: https://github.com/python/cpython on the pulldown select the version of Python that you will be building, e.g., 3.8, and click on code and download a zip. 
 2) Cd the folder PCbuild in the source folder
 3) Run the command: build.bat --pgo -p x64
-3) Open the pcbuild.sln file in VS2017-19 and set to release and x64 and build
+4) Open the pcbuild.sln file in VS2017-19 in the PCbuild folder
+5) Under the menu Project->Properties, in the dropdown Configuration set to All Configurations and in the dropdown Platform set to All Platforms. Then click on General in the left pane and set the Output directory to the directory where Python will be built. 
+6) Set to release and x64 and build
 
-Better option is install from python.org and copy the installation directory  to a new folder called PythonEnv
+
 
 4) Run the below in pip
 
-Note that the newer GDAL does not work with Fiona, had to use the older 3.1.4 version 
+Note that the newer GDAL does not work with Fiona, had to use the older 3.1.4 version  
 
 Install the following dependencies thourgh pip in this exact order:
 pip install wheel

@@ -186,11 +186,26 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
         progressDialog->appendText(stdError);
     }
 
+    auto procEnv = QProcessEnvironment();
+
+    procEnv.clear();
+
+#ifdef Q_OS_WIN
+    auto sysEnv = QProcessEnvironment::systemEnvironment();
+    QString javaHomeVal = sysEnv.value("JAVA_HOME");
+    if(javaHomeVal.isEmpty())
+    {
+        progressDialog->appendText("NO JAVA_HOME VARIABLE FOUND");
+        qDebug() << "NO JAVA_HOME VARIABLE FOUND";
+        return false;
+    }
+
+    procEnv.insert("JAVA_HOME", javaHomeVal);
+#endif
 
     progressDialog->appendText("Running script: " + pySCRIPT);
 
     proc->setProcessChannelMode(QProcess::SeparateChannels);
-    auto procEnv = QProcessEnvironment();
 
     QString python;
 
@@ -199,16 +214,14 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
     QVariant  pythonLocationVariant = settings.value("pythonExePath");
     if (pythonLocationVariant.isValid()) {
         python = pythonLocationVariant.toString();
+
     }
 
     if(python.isEmpty())
     {
-        // If not look for the venv
-        QDir pythonExeDir(appDir);
-        pythonExeDir.cd("PythonEnv");
 
 #ifdef Q_OS_WIN
-        python = pythonExeDir.absoluteFilePath("python.exe");
+        python = appDir+QDir::separator()+"PythonEnv"+QDir::separator()+"python.exe";
 #else
         python = appDir+QDir::separator()+"PythonEnv"+QDir::separator()+"bin"+QDir::separator()+"python";
 #endif
@@ -231,6 +244,7 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
     procEnv.insert("PYTHONPATH", python);
     proc->setProcessEnvironment(procEnv);
 
+    qDebug() << "Env: "<< procEnv.toStringList();
     qDebug() << "PATH: " << python;
 
 #ifdef Q_OS_WIN
