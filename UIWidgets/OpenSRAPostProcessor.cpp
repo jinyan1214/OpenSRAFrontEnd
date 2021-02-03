@@ -37,6 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "CSVReaderWriter.h"
+#include "ComponentInputWidget.h"
 #include "GeneralInformationWidget.h"
 #include "MainWindowWorkflowApp.h"
 #include "OpenSRAPostProcessor.h"
@@ -154,7 +155,7 @@ void OpenSRAPostProcessor::importResults(const QString& pathToResults)
     QString errMsg;
 
     // Get the pipelines database
-    thePipelineDb = theVisualizationWidget->getPipelineDatabase();
+    thePipelineDb = theVisualizationWidget->getPipelineWidget()->getComponentDatabase();
 
     if(thePipelineDb == nullptr)
     {

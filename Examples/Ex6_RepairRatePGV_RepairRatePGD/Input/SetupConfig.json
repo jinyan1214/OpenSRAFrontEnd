@@ -83,7 +83,7 @@
             "LateralSpread": {
                 "ToAssess": true,
                 "ListOfMethods": [
-                    "GrantEtal2016"
+                    "Hazus2014"
                 ],
                 "ListOfWeights": [
                     1
