@@ -241,8 +241,8 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
 
     QString python;
 
-    // Check if a python path is given in common
-    QSettings settings("SimCenter", "Common"); //These names will need to be constants to be shared
+    // Check if a python path is given in the app
+    QSettings settings("SimCenter", QCoreApplication::applicationName()); //These names will need to be constants to be shared
     QVariant  pythonLocationVariant = settings.value("pythonExePath");
     if (pythonLocationVariant.isValid()) {
         python = pythonLocationVariant.toString();
