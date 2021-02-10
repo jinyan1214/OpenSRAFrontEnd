@@ -41,6 +41,7 @@ QGroupBox* EDPLatSpreadWidget::getWidgetBox(void)
     auto ModelLabel = new QLabel("Model:", this);
     modelSelectCombo = new QComboBox(this);
     modelSelectCombo->addItem("Grant et al. (2016)","GrantEtal2016");
+    modelSelectCombo->addItem("Hazus (2014)","Hazus2014");
     modelSelectCombo->setCurrentIndex(0);
 
     auto notesLabel = new QLabel("Values for model parameters will be extracted from available datasets");

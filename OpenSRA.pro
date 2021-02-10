@@ -23,7 +23,7 @@ equals(QT_MAJOR_VERSION, 5) {
 }
 
 mac {
-QMAKE_MAC_SDK = macosx10.14
+QMAKE_MAC_SDK = macosx10.15
 #Deployment target should be lower than SDK to make plugins useable in an older OS
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
 

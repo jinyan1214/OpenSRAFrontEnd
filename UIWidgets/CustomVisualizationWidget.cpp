@@ -96,7 +96,7 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  Visualiza
 
     auto theVisWidget = theVisualizationWidget->getVisWidget();
 
-    legendView = new QListView(this);
+    legendView = new QListView();
     legendView->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Minimum);
     legendView->hide();
     theVisualizationWidget->setLegendView(legendView);

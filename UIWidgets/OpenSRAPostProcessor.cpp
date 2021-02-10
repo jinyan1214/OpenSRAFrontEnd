@@ -136,7 +136,7 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
 
     mainWidget->addWidget(mapViewSubWidget.get());
 
-    QWidget* rightHandWidget = new QWidget(this);
+    QWidget* rightHandWidget = new QWidget();
     QVBoxLayout* rightHandLayout = new QVBoxLayout(rightHandWidget);
 
     rightHandLayout->addWidget(listWidget);

@@ -46,58 +46,11 @@ if [ -f "$pathdmg" ]; then
 	rm $pathdmg	
 fi
 
-# Run the macdeployqt to create the dmg
-$pathMacDepQt $pathApp -dmg
-
-# Check to see if the dmg was created and exists
-if [ ! -f "$pathdmg" ]; then   
-	
-	echo "Could not find the .dmg file at $appdmg. Exiting"
-	
-	exit
-fi
-
-# Convert the DMG into a new dmg with read/write mode enabled
-pathRWdmg="`pwd`/RW_New.dmg"
-
-hdiutil convert -format UDRW -o "`pwd`/RW_New.dmg" "$pathdmg" -ov
-
-# Check to see if the new writeable dmg was created and exists
-if [ ! -f "$pathRWdmg" ]; then   
-	
-	echo "Could not find the new .dmg file that should have been created at $pathRWdmg. Exiting"
-	
-	exit
-fi
-
-
-# use process redirection to capture the mount point and dev entry
-IFS=$'\n' read -rd '\n' mount_point < <(
-    
-	# mount the diskimage
-    hdiutil attach -plist "$pathRWdmg" | \
-
-    # extract mount point entry
-	xpath '(//key[.="mount-point"]/following-sibling::string[1]/node())'
-	
-)
-	
-IFS=$'\n' read -rd '\n' dev_entry < <(
-	# mount the diskimage
-	hdiutil attach -plist "$pathRWdmg" | \
-
-	# extract mount point and dev entry
-	xpath '(//key[.="dev-entry"]/following-sibling::string[1]/node())[2]'
-
-)
-		
-echo $mount_point
-echo $dev_entry
 	
 # Define the paths to the application and to libEsriCommonQt.dylib - this should not change
-pathAppBin=$mount_point/$appFile/Contents/MacOS/OpenSRA
+pathAppBin=$pathApp/Contents/MacOS/OpenSRA
 
-pathAppLib=$mount_point/$appFile/Contents/Frameworks/libEsriCommonQt.dylib
+pathAppLib=$pathApp/Contents/Frameworks/libEsriCommonQt.dylib
 
 # Get the paths that are in the libraries - these paths will be changed to relative paths instead of the absolute paths
 pathEsriCommonQt=$(otool -L $pathAppBin | grep libEsriCommonQt.dylib | awk '{print $1}')
@@ -126,13 +79,16 @@ fi
 
 echo "Path substitution complete!"
 
-# Detach the dmg 
-hdiutil detach "$dev_entry"
+# Run the macdeployqt to create the dmg
+$pathMacDepQt $pathApp -dmg
 
-# Convert the dmg back to read only - overwriting the original
-hdiutil convert -format UDRO -o "$pathdmg" "$pathRWdmg" -ov
+# Check to see if the dmg was created and exists
+if [ ! -f "$pathdmg" ]; then
+    
+    echo "Could not find the .dmg file at $appdmg. Exiting"
+    
+    exit
+fi
 
-# Remove the writable dmg
-rm $pathRWdmg
 
 echo "Done!"
