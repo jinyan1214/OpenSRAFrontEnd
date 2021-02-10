@@ -166,33 +166,19 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
     }
 
 
-    {
-        progressDialog->appendText("Looking for Java");
-        QProcess program;
-        QString commandToStart= "java -version";
-        program.start(commandToStart);
-        bool started = program.waitForStarted();
-        if (!program.waitForFinished(30000)) // 3 Second timeout
-            program.kill();
-
-        if(!started)
-        {
-            progressDialog->appendText("Could not start Java on the system");
-            return false; // Not found or which does not work
-        }
-
-        QString stdError = QString::fromLocal8Bit(program.readAllStandardError());
-        stdError.trimmed();
-        progressDialog->appendText(stdError);
-    }
-
     auto procEnv = QProcessEnvironment();
-
     procEnv.clear();
 
+    progressDialog->appendText("Looking for Java on the system");
+
+    // First check for JAVA_HOME
 #ifdef Q_OS_WIN
     auto sysEnv = QProcessEnvironment::systemEnvironment();
     QString javaHomeVal = sysEnv.value("JAVA_HOME");
+
+    progressDialog->appendText("JAVA_HOME: " + javaHomeVal);
+    qDebug() << "JAVA_HOME: "<<javaHomeVal;
+
     if(javaHomeVal.isEmpty())
     {
         progressDialog->appendText("NO JAVA_HOME VARIABLE FOUND");
@@ -201,6 +187,52 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
     }
 
     procEnv.insert("JAVA_HOME", javaHomeVal);
+#endif
+
+    QString javaOutput;
+    QString javaLocation;
+
+    {
+        QProcess javaProcess;
+        QString commandToStart= "java -version";
+        javaProcess.start(commandToStart);
+        bool started = javaProcess.waitForStarted();
+        if (!javaProcess.waitForFinished(30000)) // 3 Second timeout
+            javaProcess.kill();
+
+        if(!started)
+        {
+            progressDialog->appendText("Could not start Java on the system");
+            return false; // Not found or which does not work
+        }
+
+        javaOutput = QString::fromLocal8Bit(javaProcess.readAllStandardError());
+        javaOutput = javaOutput.trimmed();
+        progressDialog->appendText(javaOutput);
+    }
+
+#ifdef Q_OS_WIN
+    {
+        QProcess javaInstallation;
+
+        QString whereJava = "where java";
+        javaInstallation.start(whereJava);
+        bool started = javaInstallation.waitForStarted();
+        if (!javaInstallation.waitForFinished(30000)) // 3 Second timeout
+            javaInstallation.kill();
+
+        javaLocation = QString::fromLocal8Bit(javaInstallation.readAll());
+
+        if(javaLocation.isEmpty())
+            javaLocation = "Not Found";
+
+        progressDialog->appendText("Java location: "+ javaLocation);
+        qDebug()<<"WHERE JAVA:"<<javaLocation;
+    }
+
+    // Check if Java Home does not contain the java location
+    if(!javaLocation.contains(javaHomeVal))
+        progressDialog->appendText("Warning, JAVA_HOME is not found the Java locations on your system. This may cause issues at runtime. Please check your JAVA_HOME value and make sure Java is added to the PATH variable in your system's environment variables.");
 #endif
 
     progressDialog->appendText("Running script: " + pySCRIPT);
@@ -293,7 +325,7 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
 
     if(failed)
     {
-        qDebug().noquote() << proc->readAllStandardOutput();
+        qDebug().noquote() << proc->readAll();
         qDebug().noquote() << proc->readAllStandardError();
         return false;
     }

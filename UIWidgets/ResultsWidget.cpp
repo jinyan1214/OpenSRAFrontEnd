@@ -123,7 +123,7 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
 
     connect(exportPDFFileButton,&QPushButton::clicked,this,&ResultsWidget::printToPDF);
 
-    selectComponentsText = new QLabel("Select a subset of buildings to display the results:",this);
+    selectComponentsText = new QLabel("Select a subset of components to display the results:",this);
     selectComponentsLineEdit = new AssetInputDelegate();
 
     connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ResultsWidget::handleComponentSelection);

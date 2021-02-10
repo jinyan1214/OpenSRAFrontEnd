@@ -78,6 +78,7 @@ private:
     QLineEdit *appDir;
     QVBoxLayout *layout;
     QCheckBox* customAppDirCheckBox;
+    QCheckBox* customPythonCheckBox;
 };
 
 

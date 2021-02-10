@@ -80,7 +80,7 @@ void PythonProgressDialog::handleProcessFinished(int exitCode, QProcess::ExitSta
 
         this->appendErrorMessage(errText);
 
-        this->appendText(proc->errorString());
+//        this->appendText(proc->errorString());
 
         // Output to console and to text edit
         qDebug()<<errText;

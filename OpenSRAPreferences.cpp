@@ -78,6 +78,8 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
     // add row for python interpreter
     //
 
+
+
     python = new QLineEdit();
     QHBoxLayout *pythonLayout = new QHBoxLayout();
     pythonLayout->addWidget(python);
@@ -86,14 +88,20 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
     pythonButton->setToolTip(tr("Select your Python interpreter"));
     pythonLayout->addWidget(pythonButton);
 
-    externalApplicationsLayout->addRow(tr("Python:"), pythonLayout);
+
+    customPythonCheckBox = new QCheckBox("Custom Python:");
+    customPythonCheckBox->setChecked(false);
+    python->setEnabled(false);
+    pythonButton->setEnabled(false);
+
+    externalApplicationsLayout->addRow(customPythonCheckBox, pythonLayout);
     externalApplicationsLayout->setAlignment(Qt::AlignLeft);
     externalApplicationsLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
     externalApplicationsLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
 
     // connect the pushbutton with code to open file selection and update python preferences with selected file
     connect(pythonButton, &QPushButton::clicked, this, [this](){
-        QSettings settings("SimCenter", "Common"); //These names will need to be constants to be shared
+        QSettings settings("SimCenter", QCoreApplication::applicationName()); //These names will need to be constants to be shared
         QVariant  pythonPathVariant = settings.value("pythonExePath");
         QString existingDir = QCoreApplication::applicationDirPath();
         if (pythonPathVariant.isValid()) {
@@ -113,6 +121,15 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
         }
     }
     );
+
+    connect(customPythonCheckBox, &QCheckBox::toggled, this, [this, pythonButton](bool checked)
+    {
+        this->python->setEnabled(checked);
+        pythonButton->setEnabled(checked);
+        pythonButton->setFlat(!checked);
+        this->appDir->setText(this->getAppDir());
+    });
+
 
 
 
@@ -275,10 +292,9 @@ OpenSRAPreferences::~OpenSRAPreferences()
 
 void
 OpenSRAPreferences::savePreferences(bool) {
-    QSettings settingsCommon("SimCenter", "Common");
-    settingsCommon.setValue("pythonExePath", python->text());
     QSettings settingsApp("SimCenter", QCoreApplication::applicationName());
     settingsApp.setValue("appDir", appDir->text());
+    settingsApp.setValue("pythonExePath", python->text());
     settingsApp.setValue("localWorkDir", localWorkDir);
     settingsApp.setValue("customAppDir", customAppDirCheckBox->isChecked());
     this->close();
@@ -292,12 +308,11 @@ OpenSRAPreferences::quitPreferences(bool) {
 
 void
 OpenSRAPreferences::resetPreferences(bool) {
-    QSettings settingsCommon("SimCenter", "Common");
-    settingsCommon.setValue("pythonExePath", python->text());
-
     python->clear();
 
     QSettings settingsApplication("SimCenter", QCoreApplication::applicationName());
+
+    settingsApplication.setValue("pythonExePath","");
 
     QDir workingDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
 
@@ -319,16 +334,16 @@ OpenSRAPreferences::resetPreferences(bool) {
 void
 OpenSRAPreferences::loadPreferences()
 {
-    QSettings settingsCommon("SimCenter", "Common");
-    QVariant  pythonPathVariant = settingsCommon.value("pythonExePath");
+
+    QSettings settingsApplication("SimCenter", QCoreApplication::applicationName());
+
+    QVariant  pythonPathVariant = settingsApplication.value("pythonExePath");
 
     // python
     if (pythonPathVariant.isValid())
     {
         python->setText(pythonPathVariant.toString());
     }
-
-    QSettings settingsApplication("SimCenter", QCoreApplication::applicationName());
 
     // localWorkDir
     QVariant  localWorkDirVariant = settingsApplication.value("localWorkDir");
@@ -372,7 +387,7 @@ void OpenSRAPreferences::setLocalWorkDir(const QString &value)
 QString
 OpenSRAPreferences::getPython(void)
 {
-    QSettings settingsCommon("SimCenter", "Common");
+    QSettings settingsCommon("SimCenter", QCoreApplication::applicationName());
     QVariant  pythonPathVariant = settingsCommon.value("pythonExePath");
 
     return pythonPathVariant.toString();
