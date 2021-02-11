@@ -87,7 +87,7 @@ ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : 
     // Layout to display the results
     resultsPageWidget = new QWidget();
 
-    mainStackedWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    mainStackedWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
     mainStackedWidget->addWidget(resultsPageWidget);
 

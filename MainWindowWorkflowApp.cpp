@@ -157,8 +157,8 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
     citeText = QString("");
     aboutText = QString(tr("This is a SimCenter Workflow Application"));
 
-    aboutTitle = "About this Application"; // this is the title displayed in the on About dialog
-    aboutSource = ":/Resources/docs/textAbout.html";  // this is an HTML file stored under resources
+//    aboutTitle = "About this Application"; // this is the title displayed in the on About dialog
+//    aboutSource = ":/Resources/docs/textAbout.html";  // this is an HTML file stored under resources
 
     copyrightText = QString("\
                             <p>\
@@ -376,7 +376,11 @@ void MainWindowWorkflowApp::createActions() {
     connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     exitAction->setStatusTip(tr("Exit the application"));
     fileMenu->addAction(exitAction);
+}
 
+
+void MainWindowWorkflowApp::createHelpMenu()
+{
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(tr("&Version"), this, &MainWindowWorkflowApp::version);
     helpMenu->addAction(tr("&About"), this, &MainWindowWorkflowApp::about);
@@ -386,7 +390,6 @@ void MainWindowWorkflowApp::createActions() {
     helpMenu->addAction(tr("&How to Cite"), this, &MainWindowWorkflowApp::cite);
     helpMenu->addAction(tr("&License"), this, &MainWindowWorkflowApp::copyright);
 }
-
 
 void MainWindowWorkflowApp::statusMessage(const QString msg){
     errorLabel->setText(msg);

@@ -94,12 +94,12 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
     // Create a view menu for the dockable windows
     mainWidget = new QSplitter(this);
     mainWidget->setOrientation(Qt::Horizontal);
+    mainWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
     listWidget = new MutuallyExclusiveListWidget(this, "Results");
 
     connect(listWidget, &MutuallyExclusiveListWidget::itemChecked, this, &OpenSRAPostProcessor::handleListSelection);
     connect(listWidget, &MutuallyExclusiveListWidget::clearAll, this, &OpenSRAPostProcessor::clearAll);
-
     connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&OpenSRAPostProcessor::assemblePDF);
 
     // Create the table that will show the Component information

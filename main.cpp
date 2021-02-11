@@ -114,19 +114,19 @@ int main(int argc, char *argv[])
     // This is the title displayed in the on About dialog
     QString aboutTitle = "About the OpenSRA Application";
 
-    QString aboutSource = "About OpenSRA";
+    QString aboutSource = "Open-source Seismic Risk Assessment (OpenSRA) Tool";
     mainWindowApp.setAbout(aboutTitle, aboutSource);
 
-    QString version("Version 1.0.0");
+    QString version("Version 0.0.5");
     mainWindowApp.setVersion(version);
 
-    QString citeText("Cite text here");
+    QString citeText("OpenSRA");
     mainWindowApp.setCite(citeText);
 
-    QString manualURL("Link to user manual here");
+    QString manualURL("https://docs.google.com/document/d/1zwgICunkn6PVedDiErWoyXhVvpM-vZqyZ7emsUKSxeQ/edit?usp=sharing");
     mainWindowApp.setDocumentationURL(manualURL);
 
-    QString messageBoardURL("Link to message");
+    QString messageBoardURL("Link to message board");
     mainWindowApp.setFeedbackURL(messageBoardURL);
 
     //

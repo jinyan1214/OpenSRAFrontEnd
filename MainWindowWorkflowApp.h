@@ -28,6 +28,7 @@ public:
     void setAbout(QString &, QString&);
     void setFeedbackURL(QString &feedback);
     void setCite(QString &cite);
+    void createHelpMenu();
 
  protected:
 

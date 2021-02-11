@@ -125,6 +125,7 @@ void WorkflowAppOpenSRA::initialize(void)
 
     if(numEx > 0)
     {
+
         QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
 
         for(auto it = exContainerObj.begin(); it!=exContainerObj.end(); ++it)
@@ -146,6 +147,9 @@ void WorkflowAppOpenSRA::initialize(void)
     // Set the path to the input file
     editMenu->addAction("Clear Inputs", this, &WorkflowAppOpenSRA::clear);
     editMenu->addAction("Clear Working Directory", this, &WorkflowAppOpenSRA::clearWorkDir);
+
+    // Help menu
+    theMainWindow->createHelpMenu();
 
     theVisualizationWidget = new VisualizationWidget(this);
 
