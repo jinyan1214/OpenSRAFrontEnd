@@ -140,13 +140,13 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
     QVBoxLayout* rightHandLayout = new QVBoxLayout(rightHandWidget);
 
     rightHandLayout->addWidget(listWidget);
-    auto legView = theVisualizationWidget->getLegendView();
-    if(legView != nullptr)
-    {
-        QLabel* legLabel = new QLabel("Legend",this);
-        rightHandLayout->addWidget(legLabel);
-        rightHandLayout->addWidget(legView);
-    }
+//    auto legView = theVisualizationWidget->getLegendView();
+//    if(legView != nullptr)
+//    {
+//        QLabel* legLabel = new QLabel("Legend",this);
+//        rightHandLayout->addWidget(legLabel);
+//        rightHandLayout->addWidget(legView);
+//    }
 
     mainWidget->addWidget(rightHandWidget);
 

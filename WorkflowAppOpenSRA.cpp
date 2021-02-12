@@ -439,6 +439,7 @@ void WorkflowAppOpenSRA::loadFile(const QString fileName)
     //
 
     this->clear();
+    this->clearWorkDir();
     this->inputFromJSON(jsonObj);
 }
 

@@ -198,11 +198,12 @@ bool MainWindowWorkflowApp::saveAs()
             << "All files (*)";
     dialog.setNameFilters(filters);
 
-    if (dialog.exec() != QDialog::Accepted)
-        return false;
+    dialog.exec();
+
+    auto fileToSave = dialog.selectedFiles().first();
 
     // and save the file
-    return saveFile(dialog.selectedFiles().first());
+    return saveFile(fileToSave);
 }
 
 

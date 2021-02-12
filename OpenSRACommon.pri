@@ -30,6 +30,7 @@ SOURCES +=  $$PATH_TO_R2D/Tools/CSVReaderWriter.cpp \
             $$PATH_TO_R2D/ModelViewItems/CustomListWidget.cpp \
             $$PATH_TO_R2D/ModelViewItems/CheckableTreeModel.cpp \
             $$PATH_TO_R2D/ModelViewItems/MutuallyExclusiveListWidget.cpp \
+            $$PATH_TO_R2D/ModelViewItems/GISLegendView.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterComponentSelection.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/CustomizedItemModel.cpp \
             $$PATH_TO_COMMON/Workflow/EXECUTION/Application.cpp \
@@ -56,6 +57,7 @@ HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
             $$PATH_TO_R2D/ModelViewItems/CustomListWidget.h \
             $$PATH_TO_R2D/ModelViewItems/CheckableTreeModel.h \
             $$PATH_TO_R2D/ModelViewItems/MutuallyExclusiveListWidget.h \
+            $$PATH_TO_R2D/ModelViewItems/GISLegendView.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterComponentSelection.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/CustomizedItemModel.h \
             $$PATH_TO_COMMON/Workflow/EXECUTION/Application.h \

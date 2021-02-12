@@ -99,7 +99,7 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  Visualiza
     legendView = new QListView();
     legendView->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Minimum);
     legendView->hide();
-    theVisualizationWidget->setLegendView(legendView);
+//    theVisualizationWidget->setLegendView(legendView);
 
     QVBoxLayout *theLeftHandLayout = new QVBoxLayout();
 

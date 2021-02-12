@@ -212,10 +212,15 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
 
 void GeneralInformationWidget::chooseDirectoryDialog(void)
 {
-    auto pathToWorkingDirectoryFile = QFileDialog::getExistingDirectory(this,tr("Working Directory"));
+    auto prefs = OpenSRAPreferences::getInstance();
+
+    auto pathToWorkingDirectoryFile = QFileDialog::getExistingDirectory(this,tr("Working Directory"), prefs->getLocalWorkDir());
+
+    if(pathToWorkingDirectoryFile.isEmpty())
+        return;
 
     // Return if the user cancels
-    if(pathToWorkingDirectoryFile.isEmpty() || !QDir(pathToWorkingDirectoryFile).exists())
+    if(!QDir(pathToWorkingDirectoryFile).exists())
     {
         QString errMsg = "The given path " + pathToWorkingDirectoryFile + " is not a valid directory";
         this->userMessageDialog(errMsg);
