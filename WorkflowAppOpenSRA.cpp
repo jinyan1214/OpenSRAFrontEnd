@@ -277,6 +277,7 @@ void WorkflowAppOpenSRA::clear(void)
     theResultsWidget->clear();
 }
 
+
 void WorkflowAppOpenSRA::clearWorkDir(void)
 {
     auto thePreferences = OpenSRAPreferences::getInstance(this);
@@ -287,6 +288,16 @@ void WorkflowAppOpenSRA::clearWorkDir(void)
 
     if(workDirectory.exists()) {
         workDirectory.removeRecursively();
+    }
+
+    // Create a new work dir
+    if (!workDirectory.mkpath(workDirectoryPath)) {
+        QString errorMessage = QString("Could not create Working Dir: ") + workDirectoryPath
+                + QString(". Change the directory location in general information.");
+
+        qDebug()<<errorMessage;
+
+        return;
     }
 }
 

@@ -53,7 +53,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QLineEdit>
 #include <QMetaEnum>
-
+#include <QStandardPaths>
+#include <QApplication>
 
 GeneralInformationWidget::GeneralInformationWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
@@ -232,7 +233,7 @@ void GeneralInformationWidget::chooseDirectoryDialog(void)
     workingDirectoryLineEdit->setText(pathToWorkingDirectoryFile);
 
     // Set the file path to the preferences
-    OpenSRAPreferences::getInstance()->setLocalWorkDir(pathToWorkingDirectoryFile);
+    prefs->setLocalWorkDir(pathToWorkingDirectoryFile);
 
     return;
 }

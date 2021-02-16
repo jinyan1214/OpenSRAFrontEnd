@@ -34,8 +34,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
+// Written: Stevan Gavrilovic
 
 #include "OpenSRAPreferences.h"
+
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -52,18 +54,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QCoreApplication>
 #include <QFileInfo>
 
-OpenSRAPreferences *
-OpenSRAPreferences::getInstance(QWidget *parent) {
-    if (theInstance == 0)
+OpenSRAPreferences *OpenSRAPreferences::getInstance(QWidget *parent)
+{
+    if (theInstance == nullptr)
         theInstance = new OpenSRAPreferences(parent);
 
     return theInstance;
 }
 
-OpenSRAPreferences *OpenSRAPreferences::theInstance = 0;
+OpenSRAPreferences *OpenSRAPreferences::theInstance = nullptr;
 
-OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
-    : QDialog(parent)
+OpenSRAPreferences::OpenSRAPreferences(QWidget *parent) : QDialog(parent)
 {
     layout = new QVBoxLayout();
 
@@ -80,9 +81,9 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
 
 
 
-    python = new QLineEdit();
+    customPythonLineEdit = new QLineEdit();
     QHBoxLayout *pythonLayout = new QHBoxLayout();
-    pythonLayout->addWidget(python);
+    pythonLayout->addWidget(customPythonLineEdit);
     QPushButton *pythonButton = new QPushButton();
     pythonButton->setText("Browse");
     pythonButton->setToolTip(tr("Select your Python interpreter"));
@@ -91,7 +92,7 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
 
     customPythonCheckBox = new QCheckBox("Custom Python:");
     customPythonCheckBox->setChecked(false);
-    python->setEnabled(false);
+    customPythonLineEdit->setEnabled(false);
     pythonButton->setEnabled(false);
 
     externalApplicationsLayout->addRow(customPythonCheckBox, pythonLayout);
@@ -117,17 +118,17 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
                                                             "All files (*.*)");
 
         if(!selectedFile.isEmpty()) {
-            python->setText(selectedFile);
+            customPythonLineEdit->setText(selectedFile);
         }
     }
     );
 
     connect(customPythonCheckBox, &QCheckBox::toggled, this, [this, pythonButton](bool checked)
     {
-        this->python->setEnabled(checked);
+        this->customPythonLineEdit->setEnabled(checked);
         pythonButton->setEnabled(checked);
         pythonButton->setFlat(!checked);
-        this->appDir->setText(this->getAppDir());
+        this->customAppDirLineEdit->setText(this->getAppDir());
     });
 
 
@@ -177,9 +178,9 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
     // entry for appDir location .. basically as before
     //
 
-    appDir = new QLineEdit();
+    customAppDirLineEdit = new QLineEdit();
     QHBoxLayout *appDirLayout = new QHBoxLayout();
-    appDirLayout->addWidget(appDir);
+    appDirLayout->addWidget(customAppDirLineEdit);
     QPushButton *appDirButton = new QPushButton();
     appDirButton->setText("Browse");
     appDirButton->setToolTip(tr("Select Directory containing the Backend directory named applications"));
@@ -187,7 +188,7 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
 
     customAppDirCheckBox = new QCheckBox("Custom Local Applications:");
     customAppDirCheckBox->setChecked(false);
-    appDir->setEnabled(false);
+    customAppDirLineEdit->setEnabled(false);
     appDirButton->setEnabled(false);
     locationDirectoriesLayout->addRow(customAppDirCheckBox, appDirLayout);
     locationDirectoriesLayout->setAlignment(Qt::AlignLeft);
@@ -210,17 +211,17 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
                                                                 existingDir,
                                                                 QFileDialog::ShowDirsOnly);
         if(!selectedDir.isEmpty()) {
-            appDir->setText(selectedDir);
+            customAppDirLineEdit->setText(selectedDir);
         }
     }
     );
 
     connect(customAppDirCheckBox, &QCheckBox::toggled, this, [this, appDirButton](bool checked)
     {
-        this->appDir->setEnabled(checked);
+        this->customAppDirLineEdit->setEnabled(checked);
         appDirButton->setEnabled(checked);
         appDirButton->setFlat(!checked);
-        this->appDir->setText(this->getAppDir());
+        this->customAppDirLineEdit->setText(this->getAppDir());
     });
 
 
@@ -272,9 +273,9 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
         resize(nWidth, nHeight);
 
     //Automatically changing to forward slash
-    connect(appDir, &QLineEdit::textChanged, this, [this](QString newValue){
+    connect(customAppDirLineEdit, &QLineEdit::textChanged, this, [this](QString newValue){
         if (newValue.contains('\\'))
-            appDir->setText(newValue.replace('\\','/'));
+            customAppDirLineEdit->setText(newValue.replace('\\','/'));
     });
 
 
@@ -284,31 +285,31 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent)
     //    });
 }
 
+
 OpenSRAPreferences::~OpenSRAPreferences()
 {
 
 }
 
 
-void
-OpenSRAPreferences::savePreferences(bool) {
+void OpenSRAPreferences::savePreferences(bool) {
     QSettings settingsApp("SimCenter", QCoreApplication::applicationName());
-    settingsApp.setValue("appDir", appDir->text());
-    settingsApp.setValue("pythonExePath", python->text());
+    settingsApp.setValue("appDir", customAppDirLineEdit->text());
+    settingsApp.setValue("pythonExePath", customPythonLineEdit->text());
     settingsApp.setValue("localWorkDir", localWorkDir);
     settingsApp.setValue("customAppDir", customAppDirCheckBox->isChecked());
     this->close();
 }
 
-void
-OpenSRAPreferences::quitPreferences(bool) {
+
+void OpenSRAPreferences::quitPreferences(bool) {
     
     this->close();
 }
 
-void
-OpenSRAPreferences::resetPreferences(bool) {
-    python->clear();
+
+void OpenSRAPreferences::resetPreferences(bool) {
+    customPythonLineEdit->clear();
 
     QSettings settingsApplication("SimCenter", QCoreApplication::applicationName());
 
@@ -319,20 +320,15 @@ OpenSRAPreferences::resetPreferences(bool) {
     QString localWorkDirLocation = workingDir.filePath(QCoreApplication::applicationName() + "/LocalWorkDir");
     settingsApplication.setValue("localWorkDir", localWorkDirLocation);
     localWorkDir = localWorkDirLocation;
-    emit workDirReset(localWorkDirLocation);
-    //    localWorkDir->setText(localWorkDirLocation);
 
     customAppDirCheckBox->setChecked(false);
     QString appDirLocation = getAppDir();
     settingsApplication.setValue("appDir", appDirLocation);
-    appDir->setText(appDirLocation);
-
-
+    customAppDirLineEdit->setText(appDirLocation);
 }
 
 
-void
-OpenSRAPreferences::loadPreferences()
+void OpenSRAPreferences::loadPreferences()
 {
 
     QSettings settingsApplication("SimCenter", QCoreApplication::applicationName());
@@ -342,7 +338,7 @@ OpenSRAPreferences::loadPreferences()
     // python
     if (pythonPathVariant.isValid())
     {
-        python->setText(pythonPathVariant.toString());
+        customPythonLineEdit->setText(pythonPathVariant.toString());
     }
 
     // localWorkDir
@@ -372,10 +368,11 @@ OpenSRAPreferences::loadPreferences()
     else
         customAppDirCheckBox->setChecked(false);
 
-    appDir->setText(currentAppDir);
+    customAppDirLineEdit->setText(currentAppDir);
 
     
 }
+
 
 void OpenSRAPreferences::setLocalWorkDir(const QString &value)
 {
@@ -384,8 +381,8 @@ void OpenSRAPreferences::setLocalWorkDir(const QString &value)
     settingsApplication.setValue("localWorkDir", localWorkDir);
 }
 
-QString
-OpenSRAPreferences::getPython(void)
+
+QString OpenSRAPreferences::getPython(void)
 {
     QSettings settingsCommon("SimCenter", QCoreApplication::applicationName());
     QVariant  pythonPathVariant = settingsCommon.value("pythonExePath");
@@ -393,8 +390,8 @@ OpenSRAPreferences::getPython(void)
     return pythonPathVariant.toString();
 }
 
-QString
-OpenSRAPreferences::getAppDir(void) {
+
+QString OpenSRAPreferences::getAppDir(void) {
 
     //Default appDir is the location of the application
     auto currentAppDir = QCoreApplication::applicationDirPath();
@@ -414,9 +411,7 @@ OpenSRAPreferences::getAppDir(void) {
 }
 
 
-
-QString
-OpenSRAPreferences::getLocalWorkDir(void) {
+QString OpenSRAPreferences::getLocalWorkDir(void) {
 
     QSettings settingsApplication("SimCenter", QCoreApplication::applicationName());
     QVariant  localWorkDirVariant = settingsApplication.value("localWorkDir");

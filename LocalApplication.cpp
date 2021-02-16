@@ -144,6 +144,9 @@ bool
 LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &inputFile)
 {
 
+    QString currentTime = QDateTime::currentDateTime().toString("yyyy-MM-ddTHH:mm:ss");
+    qDebug()<<"Running analysis "<<currentTime;
+
     progressDialog->clear();
     progressDialog->showDialog(true);
 
@@ -334,9 +337,15 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
 
     QString command;
 
-    command = python + " " + pySCRIPT  + " -i " + inputFile;
+    command = python + " \"" + pySCRIPT + "\"" + " -i " +  "\"" + inputFile + "\"";
 
-    qDebug() << "PYTHON COMMAND" << command;
+    // Clean up the command for the debug log
+    auto commandClean = command;
+    commandClean.remove('\"');
+
+    QDebug debugHelper = qDebug();
+    debugHelper.noquote();
+    debugHelper << "PYTHON COMMAND: " << commandClean;
 
     //    proc->execute("bash", QStringList() << "-c" <<  command);
     proc->start("bash", QStringList() << "-c" <<  command);

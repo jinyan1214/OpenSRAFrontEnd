@@ -1,4 +1,4 @@
-#ifndef SIMCENTER_PREFERENCES_H
+﻿#ifndef SIMCENTER_PREFERENCES_H
 #define SIMCENTER_PREFERENCES_H
 
 /* *****************************************************************************
@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written: fmckenna
+// Written: Stevan Gavrilovic
 
 #include <QDialog>
 #include <QCheckBox>
@@ -50,12 +50,12 @@ class OpenSRAPreferences : public QDialog
     Q_OBJECT
 
 private:
-    explicit OpenSRAPreferences(QWidget *parent = 0);
+    explicit OpenSRAPreferences(QWidget *parent = nullptr);
     ~OpenSRAPreferences();
     static OpenSRAPreferences *theInstance;
 
 public:
-    static OpenSRAPreferences *getInstance(QWidget *parent = 0);
+    static OpenSRAPreferences *getInstance(QWidget *parent = nullptr);
     QString getPython(void);
     QString getAppDir(void);
     QString getLocalWorkDir(void);
@@ -69,16 +69,14 @@ public slots:
 
 signals:
 
-    void workDirReset(QString workDirName);
-
 private:
-    QLineEdit *python;
-    QString localWorkDir;
-//    QLineEdit *localWorkDir;
-    QLineEdit *appDir;
-    QVBoxLayout *layout;
+    QLineEdit *customPythonLineEdit;
+    QLineEdit *customAppDirLineEdit;
     QCheckBox* customAppDirCheckBox;
     QCheckBox* customPythonCheckBox;
+
+    QVBoxLayout *layout;
+    QString localWorkDir;
 };
 
 

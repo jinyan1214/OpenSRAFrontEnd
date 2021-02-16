@@ -4,6 +4,7 @@
 #include "MainWindowWorkflowApp.h"
 #include "WorkflowAppOpenSRA.h"
 #include "OpenSRAUserPass.h"
+#include "OpenSRAPreferences.h"
 
 #include <QApplication>
 #include <QDebug>
@@ -17,6 +18,7 @@
 #include <QTextStream>
 #include <QOpenGLWidget>
 #include <QStandardPaths>
+#include <QSettings>
 #include <QDir>
 #include <QStatusBar>
 
@@ -60,14 +62,44 @@ void customMessageOutput(QtMsgType type, const QMessageLogContext &context, cons
 int main(int argc, char *argv[])
 {
 
-    // Setting Core Application Name, Organization, Version and Google Analytics Tracking Id
+    QString OpenSRAVersion = "0.3.6";
+
+    // Setting Core Application Name, Organization, Version
     QCoreApplication::setApplicationName("OpenSRA");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("1.0.0");
+    QCoreApplication::setApplicationVersion(OpenSRAVersion);
+
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
+    // Set up the application
+    QApplication a(argc, argv);
+
+    auto prefs = OpenSRAPreferences::getInstance();
+
+    // Check if the app version has changed
+    QSettings settings("SimCenter", QCoreApplication::applicationName());
+    QVariant appVers = settings.value("AppVersion");
+    if (appVers.isValid())
+    {
+        auto prevAppVers = appVers.toString();
+        // If the app was updated, reset the preferences to pick up any potential updates
+        if(OpenSRAVersion != prevAppVers)
+        {
+            prefs->resetPreferences(true);
+            prefs->savePreferences(true);
+
+            settings.setValue("AppVersion", OpenSRAVersion);
+        }
+    }
+    else
+    {
+        // Set for the first time
+        settings.setValue("AppVersion", OpenSRAVersion);
+    }
+
 
     // set up logging of output messages for user debugging
-    logFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + QDir::separator() + QCoreApplication::applicationName();
+    logFilePath = prefs->getLocalWorkDir();
 
     // make sure tool dir exists in Documents folder
     QDir dirWork(logFilePath);
@@ -89,10 +121,6 @@ int main(int argc, char *argv[])
         logToFile = true;
 
     qInstallMessageHandler(customMessageOutput);
-
-    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-
-    QApplication a(argc, argv);
 
     // Set the key for the ArcGIS interface
     ArcGISRuntimeEnvironment::setLicense(getArcGISKey());
@@ -117,7 +145,7 @@ int main(int argc, char *argv[])
     QString aboutSource = "Open-source Seismic Risk Assessment (OpenSRA) Tool";
     mainWindowApp.setAbout(aboutTitle, aboutSource);
 
-    QString version("Version 0.0.5");
+    QString version("Version "+ OpenSRAVersion);
     mainWindowApp.setVersion(version);
 
     QString citeText("OpenSRA");
