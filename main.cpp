@@ -22,7 +22,6 @@
 #include <QDir>
 #include <QStatusBar>
 
-static QString logFilePath;
 static bool logToFile = false;
 
 #include "ArcGISRuntimeEnvironment.h"

@@ -45,6 +45,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class QLineEdit;
 class QVBoxLayout;
 
+extern QString logFilePath;
+
 class OpenSRAPreferences : public QDialog
 {
     Q_OBJECT

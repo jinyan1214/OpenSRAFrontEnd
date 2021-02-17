@@ -54,6 +54,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QCoreApplication>
 #include <QFileInfo>
 
+QString logFilePath;
+
 OpenSRAPreferences *OpenSRAPreferences::getInstance(QWidget *parent)
 {
     if (theInstance == nullptr)
@@ -379,6 +381,10 @@ void OpenSRAPreferences::setLocalWorkDir(const QString &value)
     localWorkDir = value;
     QSettings settingsApplication("SimCenter", QCoreApplication::applicationName());
     settingsApplication.setValue("localWorkDir", localWorkDir);
+
+    logFilePath = localWorkDir + QDir::separator() + QString("debug.log");
+
+//    qDebug()<<"New log file path"<<logFilePath;
 }
 
 
