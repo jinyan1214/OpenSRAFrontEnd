@@ -10,6 +10,9 @@
 # 	6) Run: bash PackageApp.sh
 
 # ********* THINGS TO CHANGE START *********
+# Version
+appVers="0.3.6"
+
 # Set the path to your macdeployqt here
 pathMacDepQt="/Users/steve/Qt/5.15.2/clang_64/bin/macdeployqt"
 
@@ -90,5 +93,7 @@ if [ ! -f "$pathdmg" ]; then
     exit
 fi
 
+# Rename it to add the version
+mv $pathdmg $AppName"v"$appVers".dmg"
 
 echo "Done!"

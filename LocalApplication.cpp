@@ -66,13 +66,11 @@ LocalApplication::LocalApplication(QString workflowScriptName, QWidget *parent)
 {
 
     proc = new QProcess(this);
-    progressDialog = new PythonProgressDialog(parent,proc);
-    connect(proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), progressDialog, &PythonProgressDialog::handleProcessFinished);
-    connect(proc, &QProcess::readyReadStandardOutput, progressDialog, &PythonProgressDialog::handleProcessTextOutput);
-    connect(proc, &QProcess::started, progressDialog, &PythonProgressDialog::handleProcessStarted);
-    
+    progressDialog = new PythonProgressDialog(parent);
     connect(proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &LocalApplication::handleProcessFinished);
-
+    connect(proc, &QProcess::readyReadStandardOutput, this, &LocalApplication::handleProcessTextOutput);
+    connect(proc, &QProcess::started, this, &LocalApplication::handleProcessStarted);
+    
     this->workflowScript = workflowScriptName;
 }
 
@@ -145,7 +143,7 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
 {
 
     QString currentTime = QDateTime::currentDateTime().toString("yyyy-MM-ddTHH:mm:ss");
-    qDebug()<<"Running analysis "<<currentTime;
+    qDebug()<<"Running analysis on OpenSRA version "<<QCoreApplication::applicationVersion()<<" at "<<currentTime;
 
     progressDialog->clear();
     progressDialog->showDialog(true);
@@ -362,18 +360,53 @@ LocalApplication::displayed(void){
     this->onRunButtonPressed();
 }
 
+
+
 void LocalApplication::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    if(exitStatus == QProcess::ExitStatus::CrashExit || exitCode != 0)
+    if(exitStatus == QProcess::ExitStatus::CrashExit)
     {
+        QString errText("Error, the process running the hazard simulation script crashed");
+        progressDialog->appendErrorMessage(errText);
+
+        // Output to console and to text edit
+        qDebug()<<errText;
+
         return;
     }
 
-    //
-    // process the results
-    //
+    if(exitCode != 0)
+    {
+        QString errText("An error occurred in the Hazard Simulation script, the exit code is " + QString::number(exitCode));
 
-    emit processResults("NA");
+        progressDialog->appendErrorMessage(errText);
+
+//        this->appendText(proc->errorString());
+
+        // Output to console and to text edit
+        qDebug()<<errText;
+
+        return;
+    }
+
+    progressDialog->appendText("Analysis Complete\n");
 }
+
+
+void LocalApplication::handleProcessStarted(void)
+{
+    progressDialog->appendText("Running OpenSRA script in the background.\n");
+}
+
+
+void LocalApplication::handleProcessTextOutput(void)
+{
+    QByteArray output =  proc->readAllStandardOutput();
+    //    QByteArray output =  proc->readAllStandardError();
+
+    progressDialog->appendText(QString(output));
+}
+
+
 
 

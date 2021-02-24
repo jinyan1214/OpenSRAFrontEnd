@@ -15,6 +15,7 @@ SOURCES +=  $$PATH_TO_R2D/Tools/CSVReaderWriter.cpp \
             $$PATH_TO_R2D/Tools/AssetInputDelegate.cpp \
             $$PATH_TO_R2D/Tools/ComponentDatabase.cpp \
             $$PATH_TO_R2D/Tools/TablePrinter.cpp \
+            $$PATH_TO_R2D/Tools/PythonProgressDialog.cpp \
             $$PATH_TO_R2D/UIWidgets/PopUpWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/VisualizationWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/ComponentInputWidget.cpp \
@@ -42,6 +43,7 @@ HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
             $$PATH_TO_R2D/Tools/ComponentDatabase.h \
             $$PATH_TO_R2D/Tools/CustomListWidget.h \
             $$PATH_TO_R2D/Tools/TablePrinter.h \
+            $$PATH_TO_R2D/Tools/PythonProgressDialog.h \
             $$PATH_TO_R2D/UIWidgets/PopUpWidget.h \
             $$PATH_TO_R2D/UIWidgets/VisualizationWidget.h \
             $$PATH_TO_R2D/UIWidgets/ComponentInputWidget.h \

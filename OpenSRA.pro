@@ -52,7 +52,6 @@ include(OpenSRACommon.pri)
 include($$PATH_TO_COMMON/Common/Common.pri)
 
 SOURCES += main.cpp \
-    PythonProgressDialog.cpp \
     UIWidgets/DMPipeStrainWidget.cpp \
     UIWidgets/DVNumRepairsWidget.cpp \
     UIWidgets/EDPGroundSettlementWidget.cpp \
@@ -85,7 +84,6 @@ SOURCES += main.cpp \
 
 HEADERS  += \
     OpenSRAUserPass.h \
-    PythonProgressDialog.h \
     UIWidgets/DMPipeStrainWidget.h \
     UIWidgets/DVNumRepairsWidget.h \
     UIWidgets/EDPGroundSettlementWidget.h \

@@ -69,7 +69,14 @@ signals:
 public slots:
    void onRunButtonPressed(void);
 
+   // Handles the results when the process is finished
    void handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
+   // Gives a message to the user that the process has started
+   void handleProcessStarted(void);
+
+   // Displays the text output of the process in the dialog
+   void handleProcessTextOutput(void);
 
 private:
     void submitJob(void);
