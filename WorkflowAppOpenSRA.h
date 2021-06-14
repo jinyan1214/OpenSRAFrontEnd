@@ -1,4 +1,4 @@
-#ifndef WORKFLOW_APP_EE_UQ_H
+﻿#ifndef WORKFLOW_APP_EE_UQ_H
 #define WORKFLOW_APP_EE_UQ_H
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
@@ -55,6 +55,7 @@ class CustomVisualizationWidget;
 class EngDemandParamWidget;
 class GeneralInformationWidget;
 class IntensityMeasureWidget;
+class LoadResultsDialog;
 class RunLocalWidget;
 class RunWidget;
 class VisualizationWidget;
@@ -100,13 +101,21 @@ public slots:
     void clearWorkDir(void);
 
     void setUpForApplicationRun(QString &, QString &);
-    void processResults(QString pathToResults);
+    void processResults(QString doesNothing1, QString doesNothing2, QString doesNothing3);
 
-    void loadFile(QString filename);
+    int loadFile(QString filename);
     void replyFinished(QNetworkReply*);
 
-    // Examples
+    // Load examples
     void loadExamples();
+
+    // Load cached result
+    void loadResults(void);
+
+    void statusMessage(QString message);
+    void infoMessage(QString message);
+    void errorMessage(QString message);
+    void fatalMessage(QString message);
 
 private:
 
@@ -130,6 +139,8 @@ private:
     Application* localApp;
 
     QJsonObject* jsonObjOrig;
+
+    LoadResultsDialog* resultsDialog;
 };
 
 #endif // WORKFLOW_APP_EE_UQ_H

@@ -42,7 +42,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 //  - allow for refresh of status, deletion of submitted jobs, and download of results from finished job
 
 #include "LocalApplication.h"
-#include "PythonProgressDialog.h"
 #include "OpenSRAPreferences.h"
 
 #include <QHBoxLayout>
@@ -66,7 +65,6 @@ LocalApplication::LocalApplication(QString workflowScriptName, QWidget *parent)
 {
 
     proc = new QProcess(this);
-    progressDialog = new PythonProgressDialog(parent);
     connect(proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &LocalApplication::handleProcessFinished);
     connect(proc, &QProcess::readyReadStandardOutput, this, &LocalApplication::handleProcessTextOutput);
     connect(proc, &QProcess::started, this, &LocalApplication::handleProcessStarted);
@@ -102,16 +100,14 @@ LocalApplication::inputFromJSON(QJsonObject &dataObject) {
 void
 LocalApplication::onRunButtonPressed(void)
 {
-    progressDialog->appendText("Setting up temporary directory");
+    statusMessage("Setting up temporary directory");
 
     QString workingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir();
     QDir dirWork(workingDir);
     if (!dirWork.exists())
         if (!dirWork.mkpath(workingDir)) {
-            QString errorMessage = QString("Could not create Working Dir: ") + workingDir
-                    + QString(". Change the Local Jobs Directory location in preferences.");
-            progressDialog->appendText(errorMessage);
-            emit sendErrorMessage(errorMessage);;
+            QString errMsg = QString("Could not create Working Dir: ") + workingDir + QString(". Change the Local Jobs Directory location in preferences.");
+            errorMessage(errMsg);
 
             return;
         }
@@ -121,14 +117,12 @@ LocalApplication::onRunButtonPressed(void)
     QString appDir = OpenSRAPreferences::getInstance()->getAppDir();
     QDir dirApp(appDir);
     if (!dirApp.exists()) {
-        QString errorMessage = QString("The application directory, ") + appDir +QString(" specified does not exist!. Check Local Application Directory im Preferences");
-        progressDialog->appendText(errorMessage);
-        emit sendErrorMessage(errorMessage);;
+        QString errMsg = QString("The application directory, ") + appDir +QString(" specified does not exist!. Check Local Application Directory im Preferences");
+        errorMessage(errMsg);;
         return;
     }
 
-    progressDialog->appendText("Gathering files to local workdir");
-    emit sendStatusMessage("Gathering Files to local workdir");
+    statusMessage("Gathering Files to local workdir");
     emit setupForRun(workingDir, workingDir);
 }
 
@@ -143,10 +137,8 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
 {
 
     QString currentTime = QDateTime::currentDateTime().toString("yyyy-MM-ddTHH:mm:ss");
-    qDebug()<<"Running analysis on OpenSRA version "<<QCoreApplication::applicationVersion()<<" at "<<currentTime;
-
-    progressDialog->clear();
-    progressDialog->showDialog(true);
+    QString msg1 = "Running analysis on OpenSRA version " + QCoreApplication::applicationVersion() + " at " + currentTime;
+    statusMessage(msg1);
 
     QString appDir = OpenSRAPreferences::getInstance()->getAppDir();
 
@@ -160,9 +152,9 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
     // check if file exists and if yes: Is it really a file and no directory?
     if (!check_script.exists() || !check_script.isFile())
     {
-        progressDialog->appendText("Cannot find the Python script: " + pySCRIPT);
+        QString errMsg = "Cannot find the Python script: " + pySCRIPT;
+        errorMessage(errMsg);
 
-        emit sendErrorMessage(QString("NO SCRIPT FILE: ") + pySCRIPT);
         return false;
     }
 
@@ -170,14 +162,15 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
     auto procEnv = QProcessEnvironment();
     procEnv.clear();
 
-    progressDialog->appendText("Looking for Java on the system");
+    statusMessage("Looking for Java on the system");
 
     // First check for JAVA_HOME
 #ifdef Q_OS_WIN
     auto sysEnv = QProcessEnvironment::systemEnvironment();
     QString javaHomeVal = sysEnv.value("JAVA_HOME");
 
-    progressDialog->appendText("JAVA_HOME: " + javaHomeVal);
+    statusMessage("JAVA_HOME: " + javaHomeVal);
+
     qDebug() << "JAVA_HOME: "<<javaHomeVal;
 
     if(javaHomeVal.isEmpty())
@@ -203,13 +196,13 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
 
         if(!started)
         {
-            progressDialog->appendText("Could not start Java on the system");
+            statusMessage("Could not start Java on the system");
             return false; // Not found or which does not work
         }
 
         javaOutput = QString::fromLocal8Bit(javaProcess.readAllStandardError());
         javaOutput = javaOutput.trimmed();
-        progressDialog->appendText(javaOutput);
+        statusMessage(javaOutput);
     }
 
 #ifdef Q_OS_WIN
@@ -227,16 +220,17 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
         if(javaLocation.isEmpty())
             javaLocation = "Not Found";
 
-        progressDialog->appendText("Java location: "+ javaLocation);
+        statusMessage("Java location: "+ javaLocation);
+
         qDebug()<<"WHERE JAVA:"<<javaLocation;
     }
 
     // Check if Java Home does not contain the java location
     if(!javaLocation.contains(javaHomeVal))
-        progressDialog->appendText("Warning, JAVA_HOME is not found the Java locations on your system. This may cause issues at runtime. Please check your JAVA_HOME value and make sure Java is added to the PATH variable in your system's environment variables.");
+        errorMessage("Warning, JAVA_HOME is not found the Java locations on your system. This may cause issues at runtime. Please check your JAVA_HOME value and make sure Java is added to the PATH variable in your system's environment variables.");
 #endif
 
-    progressDialog->appendText("Running script: " + pySCRIPT);
+    statusMessage("Running script: " + pySCRIPT);
 
     proc->setProcessChannelMode(QProcess::SeparateChannels);
 
@@ -263,15 +257,12 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
 
         // check if exe exists and if yes: Is it really a exe and no directory?
         if (!checkPython.exists() || !checkPython.isExecutable()) {
-            progressDialog->appendText("NO PYTHON FOUND");
-            emit sendErrorMessage(QString("NO PYTHON FOUND"));
+            errorMessage(QString("NO PYTHON FOUND"));
             return false;
         }
     }
 
-    QString msg = "Starting the analysis... this may take a while!";
-    progressDialog->appendText(msg);
-    emit sendStatusMessage(msg);
+    statusMessage("Starting the analysis... this may take a while!");
 
     procEnv.insert("PATH", python);
     procEnv.insert("PYTHONPATH", python);
@@ -297,8 +288,8 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
         qDebug() << "Failed to start the workflow!!! exit code returned: " << proc->exitCode();
         qDebug() << proc->errorString().split('\n');
 
-        progressDialog->appendText("Failed to start the workflow!!!");
-        progressDialog->appendText( proc->errorString());
+        errorMessage("Failed to start the workflow!!!");
+        errorMessage(proc->errorString());
 
         failed = true;
     }
@@ -308,19 +299,18 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
         qDebug() << "Failed to finish running the workflow!!! exit code returned: " << proc->exitCode();
         qDebug() << proc->errorString();
 
-        progressDialog->appendText("Failed to finish running the workflow!!! exit code returned: " + QString::number(proc->exitCode()));
-        progressDialog->appendText(proc->errorString());
+        errorMessage("Failed to finish running the workflow!!! exit code returned: " + QString::number(proc->exitCode()));
+        errorMessage(proc->errorString());
 
-        emit sendStatusMessage("Failed to finish running the workflow!!!");
         failed = true;
     }
-
 
     if(0 != proc->exitCode())
     {
         qDebug() << "Failed to run the workflow!!! exit code returned: " << proc->exitCode();
         qDebug() << proc->errorString();
-        emit sendStatusMessage("Failed to run the workflow!!!");
+
+        errorMessage("Failed to run the workflow!!!");
         failed = true;
     }
 
@@ -367,7 +357,7 @@ void LocalApplication::handleProcessFinished(int exitCode, QProcess::ExitStatus 
     if(exitStatus == QProcess::ExitStatus::CrashExit)
     {
         QString errText("Error, the process running the hazard simulation script crashed");
-        progressDialog->appendErrorMessage(errText);
+        errorMessage(errText);
 
         // Output to console and to text edit
         qDebug()<<errText;
@@ -379,7 +369,7 @@ void LocalApplication::handleProcessFinished(int exitCode, QProcess::ExitStatus 
     {
         QString errText("An error occurred in the Hazard Simulation script, the exit code is " + QString::number(exitCode));
 
-        progressDialog->appendErrorMessage(errText);
+        errorMessage(errText);
 
 //        this->appendText(proc->errorString());
 
@@ -389,13 +379,18 @@ void LocalApplication::handleProcessFinished(int exitCode, QProcess::ExitStatus 
         return;
     }
 
-    progressDialog->appendText("Analysis Complete\n");
+    statusMessage("Analysis Complete\n");
+
+    auto SCPrefs = OpenSRAPreferences::getInstance();
+    auto resultsDirectory = SCPrefs->getLocalWorkDir();
+
+    emit processResults(resultsDirectory, QString(), QString());
 }
 
 
 void LocalApplication::handleProcessStarted(void)
 {
-    progressDialog->appendText("Running OpenSRA script in the background.\n");
+    statusMessage("Running OpenSRA script in the background.\n");
 }
 
 
@@ -404,7 +399,7 @@ void LocalApplication::handleProcessTextOutput(void)
     QByteArray output =  proc->readAllStandardOutput();
     //    QByteArray output =  proc->readAllStandardError();
 
-    progressDialog->appendText(QString(output));
+    statusMessage(QString(output));
 }
 
 

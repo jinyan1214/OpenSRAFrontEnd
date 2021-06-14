@@ -12,7 +12,8 @@
 		"Seed": 1
 	},
     "Infrastructure": {
-        "SiteDataFile": "Examples/Ex3_LHSwithIMCorrelation_RepairRatePGV/Input/SiteData.csv"
+        "SiteDataFile": "Examples/Ex3_LHSwithIMCorrelation_RepairRatePGV/Input/SiteData.csv",
+        "filter": "1-23"
     },
     "IntensityMeasure": {
         "Type": {

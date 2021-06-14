@@ -118,7 +118,7 @@ void DVNumRepairsWidget::handleAddButtonPressed(void)
     if(!PGDCheckBox->isChecked() && !PGVCheckBox->isChecked())
     {
         QString msg = "Please check the \"Shaking Induced\" or \"Deformation Induced\" checkbox to add items to list to run";
-        this->userMessageDialog(msg);
+        this->statusMessage(msg);
     }
 
     listWidget->expandAll();
@@ -183,7 +183,7 @@ bool DVNumRepairsWidget::inputFromJSON(QJsonObject &jsonObject)
         if(weightsPGV.size() != methodsPGV.size())
         {
             QString msg = "The PGV number of methods " + QString::number(methodsPGV.size()) + " is not the same as the number of weights " + QString::number(weightsPGV.size());
-            this->userMessageDialog(msg);
+            errorMessage(msg);
         }
 
         for(int i = 0; i<weightsPGV.size(); ++i)
@@ -196,7 +196,7 @@ bool DVNumRepairsWidget::inputFromJSON(QJsonObject &jsonObject)
                modelSelectCombo->setCurrentIndex(index);
             }
             else{
-                qDebug()<<"Error, could not find the item "<<model;
+                errorMessage("Error, could not find the item "+model);
             }
 
 
@@ -225,7 +225,7 @@ bool DVNumRepairsWidget::inputFromJSON(QJsonObject &jsonObject)
         if(weightsPGD.size() != methodsPGD.size())
         {
             QString msg = "The PGD number of methods " + QString::number(methodsPGD.size()) + " is not the same as the number of weights " + QString::number(weightsPGD.size());
-            this->userMessageDialog(msg);
+            errorMessage(msg);
         }
 
         for(int i = 0; i<weightsPGD.size(); ++i)
@@ -238,7 +238,7 @@ bool DVNumRepairsWidget::inputFromJSON(QJsonObject &jsonObject)
                modelSelectCombo->setCurrentIndex(index);
             }
             else{
-                qDebug()<<"Error, could not find the item "<<model;
+                errorMessage("Error, could not find the item " + model);
             }
 
             QString item = modelSelectCombo->currentText();

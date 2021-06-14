@@ -41,7 +41,7 @@ QGroupBox* EDPLandslideWidget::getWidgetBox(void)
     auto ModelLabel = new QLabel("Model:");
     modelSelectCombo = new QComboBox(this);
     modelSelectCombo->addItem("Bray and Macedo (2019)","BrayMacedo2019");
-    //    modelSelectCombo->addItem("Jibson (2007)","Jibson2007");
+    modelSelectCombo->addItem("Jibson (2007)","Jibson2007");
     modelSelectCombo->setCurrentIndex(0);
 
     auto notesLabel = new QLabel("");
@@ -132,7 +132,7 @@ bool EDPLandslideWidget::inputFromJSON(QJsonObject &jsonObject)
     if(methodsArray.size() != weightsArray.size())
     {
         QString msg = "The number of methods " + QString::number(methodsArray.size()) + " is not the same as the number of weights " + QString::number(weightsArray.size());
-        this->userMessageDialog(msg);
+        this->errorMessage(msg);
     }
 
     for(int i = 0; i<methodsArray.size(); ++i)

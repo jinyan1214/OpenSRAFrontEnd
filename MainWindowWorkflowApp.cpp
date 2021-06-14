@@ -5,8 +5,10 @@
 #include "OpenSRAPreferences.h"
 #include "Utils/RelativePathResolver.h"
 #include "Utils/dialogabout.h"
+#include "Utils/PythonProgressDialog.h"
 
 #include <QTreeView>
+#include <QDockWidget>
 #include <QStandardItemModel>
 #include <QItemSelectionModel>
 #include <QDebug>
@@ -41,6 +43,17 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
     centralWidget->setLayout(layout);
     centralWidget->setContentsMargins(0,0,0,0);
 
+    statusWidget = PythonProgressDialog::getInstance(this);
+
+    statusDockWidget = new QDockWidget(tr("Program Output"), this);
+    statusDockWidget->setContentsMargins(0,0,0,0);
+
+    statusDockWidget->setWidget(statusWidget);
+
+    this->addDockWidget(Qt::BottomDockWidgetArea, statusDockWidget);
+
+    connect(statusWidget,&PythonProgressDialog::showDialog,statusDockWidget,&QDockWidget::setVisible);
+
     //
     // resize to primary screen
     //
@@ -59,8 +72,8 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
         ********************************************************/
 
     QRect rec = QGuiApplication::primaryScreen()->geometry();
-    int height = this->height()<int(0.75*rec.height())?int(0.75*rec.height()):this->height();
-    int width  = this->width()<int(0.75*rec.width())?int(0.75*rec.width()):this->width();
+    int height = this->height()<int(rec.height())?int(rec.height()):this->height();
+    int width  = this->width()<int(rec.width())?int(rec.width()):this->width();
     this->resize(width, height);
 
 
@@ -109,12 +122,6 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
 
 
     // connect some signals and slots
-
-    // allow remote interface to send error and status messages
-    connect(inputWidget,SIGNAL(sendErrorMessage(QString)),this,SLOT(errorMessage(QString)));
-    connect(inputWidget,SIGNAL(sendStatusMessage(QString)),this,SLOT(statusMessage(QString)));
-    connect(inputWidget,SIGNAL(sendFatalMessage(QString)),this,SLOT(fatalMessage(QString)));
-
 
     // connect(runButton, SIGNAL(clicked(bool)),this,SLOT(onRunButtonClicked()));
     // connect job manager
@@ -390,25 +397,6 @@ void MainWindowWorkflowApp::createHelpMenu()
     // QAction *submitFeature = helpMenu->addAction(tr("&Submit Bug/Feature Request"), this, &MainWindowWorkflowApp::submitFeatureRequest);
     helpMenu->addAction(tr("&How to Cite"), this, &MainWindowWorkflowApp::cite);
     helpMenu->addAction(tr("&License"), this, &MainWindowWorkflowApp::copyright);
-}
-
-void MainWindowWorkflowApp::statusMessage(const QString msg){
-    errorLabel->setText(msg);
-    qDebug() << "STATUS MESSAGE" << msg;
-    QApplication::processEvents();
-}
-
-
-void MainWindowWorkflowApp::errorMessage(const QString msg){
-    errorLabel->setText(msg);
-    qDebug() << "ERROR MESSAGE" << msg;
-    QApplication::processEvents();
-}
-
-
-void MainWindowWorkflowApp::fatalMessage(const QString msg){
-    errorLabel->setText(msg);
-    qDebug() << "FATAL MESSAGE" << msg;
 }
 
 

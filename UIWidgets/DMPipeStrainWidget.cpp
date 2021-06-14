@@ -161,7 +161,7 @@ bool DMPipeStrainWidget::inputFromJSON(QJsonObject &jsonObject)
     if(methodsArray.size() != weightsArray.size())
     {
         QString msg = "The number of methods " + QString::number(methodsArray.size()) + " is not the same as the number of weights " + QString::number(weightsArray.size());
-        this->userMessageDialog(msg);
+        this->errorMessage(msg);
     }
 
     for(int i = 0; i<methodsArray.size(); ++i)

@@ -260,7 +260,7 @@ bool IntensityMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
        spectralCorrComboBox->setCurrentIndex(index3);
     }
 
-    return false;
+    return true;
 }
 
 

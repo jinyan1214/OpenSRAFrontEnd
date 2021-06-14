@@ -20,7 +20,8 @@
 		]
 	},
     "Infrastructure": {
-        "SiteDataFile": "Examples/Ex4_RasterSampling_RepairRatePGD/Input/SiteData.csv"
+        "SiteDataFile": "Examples/Ex4_RasterSampling_RepairRatePGD/Input/SiteData.csv",
+        "filter": "1-23"
     },
     "IntensityMeasure": {
         "Type": {

@@ -37,6 +37,7 @@ OpenSHAWidget::OpenSHAWidget(QWidget* parent) : SimCenterAppWidget(parent)
     vs30Combo = new QComboBox(this);
     vs30Combo->addItem("Wills et al. (2015) (Preferred)", "Wills et al. (2015)");
     vs30Combo->addItem("User-Defined", "UserDefined");
+    vs30Combo->setCurrentIndex(0);
 
     connect(vs30Combo, QOverload<int>::of(&QComboBox::currentIndexChanged),this,&OpenSHAWidget::handleVS30Change);
 
@@ -130,7 +131,10 @@ bool OpenSHAWidget::outputToJSON(QJsonObject &jsonObj)
     QJsonObject sourceParamObj;
 
     sourceParamObj.insert("SeismicSourceModel",seismicSourceCombo->currentData().toString());
-    sourceParamObj.insert("SourceForVs30",vs30Combo->currentData().toString());
+
+    auto vs30 = vs30Combo->currentData().toString();
+
+    sourceParamObj.insert("SourceForVs30",vs30);
 
     QJsonObject filterObj;
 
@@ -205,7 +209,7 @@ bool OpenSHAWidget::inputFromJSON(QJsonObject &jsonObject)
     int index2 = vs30Combo->findData(sourceVs30);
     if (index2 != -1)
     {
-       vs30Combo->setCurrentIndex(index);
+       vs30Combo->setCurrentIndex(index2);
     }
     else{
         qDebug()<<"Error, could not find the item "<<sourceVs30;
@@ -216,7 +220,7 @@ bool OpenSHAWidget::inputFromJSON(QJsonObject &jsonObject)
     int index3 = modelSelectCombo->findData(gmModel);
     if (index3 != -1)
     {
-       modelSelectCombo->setCurrentIndex(index);
+       modelSelectCombo->setCurrentIndex(index3);
     }
     else{
         qDebug()<<"Error, could not find the item "<<gmModel;

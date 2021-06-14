@@ -17,6 +17,12 @@
         },
         "6. Repair-rate PGV and Repair-rate PGD": {
             "InputFile": "Ex6_RepairRatePGV_RepairRatePGD/Input/SetupConfig.json"
+        },
+        "7. UCERF3 & NGAW2 Avg. Surface Fault Rupture": {
+            "InputFile": "Ex7_UCERF3_NGAW2Avg_SurfaceFaultRupture/Input/SetupConfig.json"
+        },
+        "8. Full": {
+            "InputFile": "Ex8_Full/Input/SetupConfig.json"
         }
     }
 }

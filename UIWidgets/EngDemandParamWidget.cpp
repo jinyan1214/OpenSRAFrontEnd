@@ -166,7 +166,7 @@ bool EngDemandParamWidget::inputFromJSON(QJsonObject &jsonObject)
     if(!groundStrainObj.isEmpty())
         EDPGroundStrain->inputFromJSON(groundStrainObj);
 
-    return false;
+    return true;
 }
 
 

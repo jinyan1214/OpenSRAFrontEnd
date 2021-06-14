@@ -41,7 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "DecisionVariableWidget.h"
 #include "EngDemandParamWidget.h"
 #include "UIWidgets/GeneralInformationWidget.h"
-#include "IntensityMeasureWidget.h"
+#include "UIWidgets/IntensityMeasureWidget.h"
 #include "LocalApplication.h"
 #include "PipelineNetworkWidget.h"
 #include "RunLocalWidget.h"
@@ -54,7 +54,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "UncertaintyQuantificationWidget.h"
 #include "MainWindowWorkflowApp.h"
 #include "OpenSRAPreferences.h"
+#include "LoadResultsDialog.h"
+#include "Utils/PythonProgressDialog.h"
 
+#include <QApplication>
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
@@ -98,6 +101,8 @@ WorkflowAppOpenSRA::WorkflowAppOpenSRA(QWidget *parent) : WorkflowAppWidget(pare
     theApp = this;
 
     theInstance = this;
+
+    resultsDialog = nullptr;
 }
 
 
@@ -109,6 +114,14 @@ WorkflowAppOpenSRA::~WorkflowAppOpenSRA()
 
 void WorkflowAppOpenSRA::initialize(void)
 {
+
+    // Create the edit menu with the clear action
+    QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
+    // Set the path to the input file
+    editMenu->addAction("Clear Inputs", this, &WorkflowAppOpenSRA::clear);
+    editMenu->addAction("Clear Working Directory", this, &WorkflowAppOpenSRA::clearWorkDir);
+
+
     // Load the examples
     auto pathToExamplesJson = QCoreApplication::applicationDirPath() + QDir::separator() + "Examples" + QDir::separator() + "Examples.json";
     // QString pathToExamplesJson = "/Users/steve/Desktop/SimCenter/RDT/RDT/Examples/";
@@ -142,11 +155,18 @@ void WorkflowAppOpenSRA::initialize(void)
         }
     }
 
-    // Clear action
-    QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
+    // Edit menu for the clear action
+    QMenu *resultsMenu = new QMenu(tr("&Results"),theMainWindow->menuBar());
+
     // Set the path to the input file
-    editMenu->addAction("Clear Inputs", this, &WorkflowAppOpenSRA::clear);
-    editMenu->addAction("Clear Working Directory", this, &WorkflowAppOpenSRA::clearWorkDir);
+    resultsMenu->addAction("&Load Results", this, &WorkflowAppOpenSRA::loadResults);
+    theMainWindow->menuBar()->addMenu(resultsMenu);
+
+
+    // Show progress dialog
+    QMenu *viewMenu = theMainWindow->menuBar()->addMenu(tr("&View"));
+    viewMenu->addAction("Show Status Dialog", this, &WorkflowAppWidget::showOutputDialog);
+    viewMenu->addSeparator();
 
     // Help menu
     theMainWindow->createHelpMenu();
@@ -169,16 +189,12 @@ void WorkflowAppOpenSRA::initialize(void)
     localApp = new LocalApplication("OpenSRA.py",theMainWindow);
     theRunWidget = new RunWidget(localApp, theWidgets, 0);
 
-    connect(theRunWidget,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
-    connect(theRunWidget,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    connect(theRunWidget,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
 
-    connect(localApp,SIGNAL(sendErrorMessage(QString)), this,SLOT(errorMessage(QString)));
-    connect(localApp,SIGNAL(sendStatusMessage(QString)), this,SLOT(statusMessage(QString)));
-    connect(localApp,SIGNAL(sendFatalMessage(QString)), this,SLOT(fatalMessage(QString)));
+    connect(this,SIGNAL(sendInfoMessage(QString)),this,SLOT(infoMessage(QString)));
+
     connect(localApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
     connect(this,SIGNAL(setUpForApplicationRunDone(QString&, QString &)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString &)));
-    connect(localApp,SIGNAL(processResults(QString)), this, SLOT(processResults(QString)));
+    connect(localApp,SIGNAL(processResults(QString,QString,QString)), this, SLOT(processResults(QString, QString, QString)));
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
@@ -202,22 +218,51 @@ void WorkflowAppOpenSRA::initialize(void)
     theComponentSelection->setItemWidthHeight(120,70);
 
     theComponentSelection->displayComponent("Visualization");
+
+//    loadResults();
 }
 
 
 
 void WorkflowAppOpenSRA::loadExamples()
 {
+    QObject* senderObj = QObject::sender();
+
+    if(senderObj == nullptr)
+        return;
+
     auto pathToExample = QCoreApplication::applicationDirPath() + QDir::separator() + "Examples" + QDir::separator();
     pathToExample += QObject::sender()->property("InputFile").toString();
 
     if(pathToExample.isNull())
     {
-        qDebug()<<"Error loading examples";
+        QString msg = "Error loading example "+pathToExample;
+        emit sendErrorMessage(msg);
         return;
     }
 
+    auto exampleName = senderObj->property("name").toString();
+    emit sendStatusMessage("Loading example "+exampleName);
+
+    auto description = senderObj->property("description").toString();
+
+    if(!description.isEmpty())
+        this->infoMessage(description);
+
+    this->statusMessage("Loading Example file.  Wait until \"Done Loading\" appears before progressing.");
+
+    auto progressDialog = this->getProgressDialog();
+
+    progressDialog->showProgressBar();
+    progressDialog->setProgressBarRange(0,0);
+    progressDialog->setProgressBarValue(0);
+
+    QApplication::processEvents();
+
     this->loadFile(pathToExample);
+    progressDialog->hideProgressBar();
+
+    this->statusMessage("Done loading.  Click on 'Run' button to run the analysis.");
 }
 
 
@@ -241,26 +286,53 @@ GeneralInformationWidget *WorkflowAppOpenSRA::getGeneralInformationWidget() cons
 
 bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
 {
+    bool res = true;
+
     // Get each of the main widgets to output themselves
-    theGenInfoWidget->outputToJSON(jsonObjectTop);
-    theUQWidget->outputToJSON(jsonObjectTop);
-    thePipelineNetworkWidget->outputToJSON(jsonObjectTop);
-    theIntensityMeasureWidget->outputToJSON(jsonObjectTop);
-    theDecisionVariableWidget->outputToJSON(jsonObjectTop);
-    theDamageMeasureWidget->outputToJSON(jsonObjectTop);
-    theEDPWidget->outputToJSON(jsonObjectTop);
+    res = theGenInfoWidget->outputToJSON(jsonObjectTop);
+
+    if(!res)
+        return false;
+
+    res = theUQWidget->outputToJSON(jsonObjectTop);
+
+    if(!res)
+        return false;
+
+    res = thePipelineNetworkWidget->outputToJSON(jsonObjectTop);
+
+    if(!res)
+        return false;
+
+    res = theIntensityMeasureWidget->outputToJSON(jsonObjectTop);
+
+    if(!res)
+        return false;
+
+    res = theDecisionVariableWidget->outputToJSON(jsonObjectTop);
+
+    if(!res)
+        return false;
+
+    res = theDamageMeasureWidget->outputToJSON(jsonObjectTop);
+
+    if(!res)
+        return false;
+
+    res = theEDPWidget->outputToJSON(jsonObjectTop);
+
+    if(!res)
+        return false;
 
     return true;
 }
 
 
-void WorkflowAppOpenSRA::processResults(QString /*pathToResults*/)
+void WorkflowAppOpenSRA::processResults(QString resultsDirectory, QString /*doesNothing2*/, QString /*doesNothing3*/)
 {
-    theResultsWidget->processResults();
+    theResultsWidget->processResults(resultsDirectory);
     theRunWidget->hide();
     theComponentSelection->displayComponent("Results");
-
-    statusMessage("Analysis complete");
 }
 
 
@@ -304,26 +376,70 @@ void WorkflowAppOpenSRA::clearWorkDir(void)
 
 bool WorkflowAppOpenSRA::inputFromJSON(QJsonObject &jsonObject)
 {
+    bool res = true;
+
     auto genJsonObj = jsonObject["General"].toObject();
-    theGenInfoWidget->inputFromJSON(genJsonObj);
+    res = theGenInfoWidget->inputFromJSON(genJsonObj);
+
+    if(res == false)
+    {
+        errorMessage("Error loading .json input file");
+        return false;
+    }
 
     auto UQJsonObj = jsonObject["UncertaintyQuantification"].toObject();
-    theUQWidget->inputFromJSON(UQJsonObj);
+    res = theUQWidget->inputFromJSON(UQJsonObj);
+
+    if(res == false)
+    {
+        errorMessage("Error loading .json input file");
+        return false;
+    }
 
     auto InfraJsonObj = jsonObject["Infrastructure"].toObject();
-    thePipelineNetworkWidget->inputFromJSON(InfraJsonObj);
+    res = thePipelineNetworkWidget->inputFromJSON(InfraJsonObj);
+
+    if(res == false)
+    {
+        errorMessage("Error loading .json input file");
+        return false;
+    }
 
     auto IntensityMeasObj = jsonObject["IntensityMeasure"].toObject();
-    theIntensityMeasureWidget->inputFromJSON(IntensityMeasObj);
+    res = theIntensityMeasureWidget->inputFromJSON(IntensityMeasObj);
+
+    if(res == false)
+    {
+        errorMessage("Error loading .json input file");
+        return false;
+    }
 
     auto EDPObj = jsonObject["EngineeringDemandParameter"].toObject();
-    theEDPWidget->inputFromJSON(EDPObj);
+    res = theEDPWidget->inputFromJSON(EDPObj);
+
+    if(res == false)
+    {
+        errorMessage("Error loading .json input file");
+        return false;
+    }
 
     auto DamageMeasureObj = jsonObject["DamageMeasure"].toObject();
-    theDamageMeasureWidget->inputFromJSON(DamageMeasureObj);
+    res = theDamageMeasureWidget->inputFromJSON(DamageMeasureObj);
+
+    if(res == false)
+    {
+        errorMessage("Error loading .json input file");
+        return false;
+    }
 
     auto DecisionVarObj = jsonObject["DecisionVariable"].toObject();
-    theDecisionVariableWidget->inputFromJSON(DecisionVarObj);
+    res = theDecisionVariableWidget->inputFromJSON(DecisionVarObj);
+
+    if(res == false)
+    {
+        errorMessage("Error loading .json input file");
+        return false;
+    }
 
     return true;
 }
@@ -403,7 +519,12 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
         return;
     }
     QJsonObject json;
-    this->outputToJSON(json);
+    auto res = this->outputToJSON(json);
+    if(!res)
+    {
+        errorMessage("Error setting up the analysis.  Analysis did not run.");
+        return;
+    }
 
     json["runDir"]=tmpDirectory;
     json["WorkflowType"]="OpenSRA Simulation";
@@ -412,7 +533,7 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
     file.write(doc.toJson());
     file.close();
 
-    statusMessage("SetUp Done .. Now starting application");
+    statusMessage("Set up Done.  Now starting the analysis.");
 
     QString inputDirectory = tmpDirectory + QDir::separator();
 
@@ -420,7 +541,17 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
 }
 
 
-void WorkflowAppOpenSRA::loadFile(const QString fileName)
+void WorkflowAppOpenSRA::loadResults(void)
+{
+    if(resultsDialog == nullptr)
+        resultsDialog= new LoadResultsDialog(this);
+
+    resultsDialog->show();
+}
+
+
+
+int WorkflowAppOpenSRA::loadFile(const QString fileName)
 {
 
     //
@@ -429,8 +560,8 @@ void WorkflowAppOpenSRA::loadFile(const QString fileName)
 
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        emit errorMessage(QString("Could Not Open File: ") + fileName);
-        return;
+        this->errorMessage(QString("Could Not Open File: ") + fileName);
+        return -1;
     }
 
     //
@@ -451,6 +582,35 @@ void WorkflowAppOpenSRA::loadFile(const QString fileName)
 
     this->clear();
     this->clearWorkDir();
-    this->inputFromJSON(jsonObj);
+
+    auto res = this->inputFromJSON(jsonObj);
+
+    if(res == false)
+        return -1;
+
+    return 0;
 }
 
+
+void WorkflowAppOpenSRA::statusMessage(QString message)
+{
+    progressDialog->appendText(message);
+}
+
+
+void WorkflowAppOpenSRA::infoMessage(QString message)
+{
+    progressDialog->appendInfoMessage(message);
+}
+
+
+void WorkflowAppOpenSRA::errorMessage(QString message)
+{
+    progressDialog->appendErrorMessage(message);
+}
+
+
+void WorkflowAppOpenSRA::fatalMessage(QString message)
+{
+    progressDialog->appendErrorMessage(message);
+}

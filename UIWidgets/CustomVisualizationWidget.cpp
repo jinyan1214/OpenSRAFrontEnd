@@ -35,7 +35,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 // Written by: Stevan Gavrilovic
-// Latest revision: 11.03.2020
 
 #include "CustomVisualizationWidget.h"
 #include "VisualizationWidget.h"
@@ -63,7 +62,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QJsonArray>
 #include <QTreeView>
 #include <QPushButton>
-
+#include <QSplitter>
+#include <QToolButton>
 
 using namespace Esri::ArcGISRuntime;
 
@@ -78,9 +78,11 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  Visualiza
     baseCGSURL = "https://gis.conservation.ca.gov/server/rest/services/CGS/Geologic_Map_of_California/MapServer";
 
     QVBoxLayout *mainLayout = new QVBoxLayout();
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0,0,0,0);
+    mainLayout->setSpacing(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
+    theHeaderLayout->setContentsMargins(0,0,0,0);
     SectionTitle *label = new SectionTitle();
     label->setText(QString("Visualization"));
     label->setMinimumWidth(150);
@@ -90,7 +92,10 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  Visualiza
     theHeaderLayout->addItem(spacer);
     theHeaderLayout->addStretch(1);
 
-    QHBoxLayout *theVizLayout = new QHBoxLayout();
+    QSplitter *theVizLayout = new QSplitter(this);
+    visWidget->setContentsMargins(5,0,0,0);
+
+    theVizLayout->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     auto visSelectBox = this->getVisSelectionGroupBox();
 
@@ -101,27 +106,50 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  Visualiza
     legendView->hide();
 //    theVisualizationWidget->setLegendView(legendView);
 
-    QVBoxLayout *theLeftHandLayout = new QVBoxLayout();
+    QWidget* theLeftHandWidget = new QWidget(this);
+
+    theLeftHandWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
+
+    QVBoxLayout *theLeftHandLayout = new QVBoxLayout(theLeftHandWidget);
 
     theLeftHandLayout->addWidget(visSelectBox);
     theLeftHandLayout->addWidget(legendView);
 
-    theVizLayout->addLayout(theLeftHandLayout);
+    theVizLayout->addWidget(theLeftHandWidget);
     theVizLayout->addWidget(theVisWidget);
 
+    theVizLayout->setStretchFactor(1,1);
+
     mainLayout->addLayout(theHeaderLayout);
-    mainLayout->addLayout(theVizLayout);
+    mainLayout->addWidget(theVizLayout);
 
     this->setLayout(mainLayout);
-    this->setMinimumWidth(640);
 
-    //    QString mapServerUrl =  "/Users/steve/Desktop/SimCenter/OpenSRA/Examples/CA_Precip_1981-2010_30m_WGS84_clip_mm.tif";
+    // Now add the splitter handle
+    // Note: index 0 handle is always hidden, index 1 is between the two widgets
+    QSplitterHandle *handle = theVizLayout->handle(1);
 
-    //    auto shpLayer = theVisualizationWidget->createAndAddRasterLayer(mapServerUrl,"Precipitation Map",nullptr);
+    if(handle == nullptr)
+    {
+        qDebug()<<"Error getting the handle";
+        return;
+    }
 
-    //    if(shpLayer != nullptr)
-    //        theVisualizationWidget->addLayerToMap(shpLayer);
+    auto buttonHandle = new QToolButton(handle);
+    QVBoxLayout *layout = new QVBoxLayout(handle);
+    layout->setSpacing(0);
+    layout->setMargin(0);
 
+    theVizLayout->setHandleWidth(15);
+
+    buttonHandle->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    buttonHandle->setDown(false);
+    buttonHandle->setAutoRaise(false);
+    buttonHandle->setCheckable(false);
+    buttonHandle->setArrowType(Qt::RightArrow);
+    buttonHandle->setStyleSheet("QToolButton{border:0px solid}; QToolButton:pressed {border:0px solid}");
+    buttonHandle->setIconSize(buttonHandle->size());
+    layout->addWidget(buttonHandle);
 }
 
 
@@ -193,7 +221,7 @@ void CustomVisualizationWidget::processNetworkReply(QNetworkReply* pReply)
     if(pReply->error() != QNetworkReply::NoError)
     {
         QString err = "Error in connecting to the server at: " + pReply->url().toString();
-        this->userMessageDialog(err);
+        errorMessage(err);
         return;
     }
 
@@ -249,7 +277,9 @@ void CustomVisualizationWidget::showCGSLandslideMap(bool state)
     {
         if(landslideLayer != nullptr)
         {
-            theVisualizationWidget->removeLayerFromMap(landslideLayer);
+            theVisualizationWidget->removeLayerFromMapAndTree(landslideLayer->layerId());
+            delete landslideLayer;
+            landslideLayer = nullptr;
         }
 
         return;
@@ -262,8 +292,7 @@ void CustomVisualizationWidget::showCGSLandslideMap(bool state)
         landslideLayer = theVisualizationWidget->createAndAddMapServerLayer(mapServerUrl,"Landslide Susceptibility Map",nullptr);
     }
 
-    if(landslideLayer != nullptr)
-        theVisualizationWidget->addLayerToMap(landslideLayer);
+    theVisualizationWidget->setViewElevation(7500000);
 
 }
 
@@ -273,29 +302,19 @@ void CustomVisualizationWidget::showCGSGeologicMap(bool state)
     if(state == false)
     {
         if(geologicMapLayer != nullptr)
-            theVisualizationWidget->removeLayerFromMap(geologicMapLayer);
+        {
+            theVisualizationWidget->removeLayerFromMapAndTree(geologicMapLayer->layerId());
+            delete geologicMapLayer;
+            geologicMapLayer = nullptr;
+        }
 
         return;
     }
 
     if(geologicMapLayer == nullptr)
-        geologicMapLayer = theVisualizationWidget->createAndAddMapServerLayer(baseCGSURL,"California Geo. Map",nullptr);
+        geologicMapLayer = theVisualizationWidget->createAndAddMapServerLayer(baseCGSURL,"California Geological Map",nullptr);
 
-
-    if(geologicMapLayer != nullptr)
-        theVisualizationWidget->addLayerToMap(geologicMapLayer);
-
-
-    //    QString addToJson = baseCGSURL + "?f=pjson";
-
-    //    QUrl addressToJson(addToJson);
-
-    //    QNetworkRequest request(addressToJson);
-
-    //    downloadJsonReply = m_WebCtrl.get(request);
-
-    //    connect(&m_WebCtrl, &QNetworkAccessManager::finished, this, &CustomVisualizationWidget::processNetworkReply);
-
+    theVisualizationWidget->setViewElevation(10000000);
 }
 
 
@@ -304,7 +323,11 @@ void CustomVisualizationWidget::showCGSLiquefactionMap(bool state)
     if(state == false)
     {
         if(liquefactionLayer != nullptr)
-            theVisualizationWidget->removeLayerFromMap(liquefactionLayer);
+        {
+            theVisualizationWidget->removeLayerFromMapAndTree(liquefactionLayer->layerId());
+            delete liquefactionLayer;
+            liquefactionLayer = nullptr;
+        }
 
         return;
     }
@@ -315,8 +338,7 @@ void CustomVisualizationWidget::showCGSLiquefactionMap(bool state)
         liquefactionLayer = theVisualizationWidget->createAndAddMapServerLayer(mapServerUrl,"Liquefaction Zones Map",nullptr);
     }
 
-    if(liquefactionLayer != nullptr)
-        theVisualizationWidget->addLayerToMap(liquefactionLayer);
+    theVisualizationWidget->setViewElevation(7500000);
 }
 
 

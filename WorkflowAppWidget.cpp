@@ -1,12 +1,16 @@
 #include "WorkflowAppWidget.h"
+#include "Utils/PythonProgressDialog.h"
 
 #include <QWidget>
 #include <QDebug>
 
+PythonProgressDialog *WorkflowAppWidget::progressDialog = nullptr;
+
 WorkflowAppWidget::WorkflowAppWidget(QWidget *parent)
-  :QWidget(parent)
+    :QWidget(parent)
 {
-  this->setContentsMargins(0,0,0,0);
+    this->setContentsMargins(0,0,0,0);
+    progressDialog = PythonProgressDialog::getInstance(this);
 }
 
 
@@ -44,6 +48,20 @@ void WorkflowAppWidget::errorMessage(const QString msg)
 
 void WorkflowAppWidget::fatalMessage(const QString msg)
 {
-  emit sendFatalMessage(msg);
+    emit sendFatalMessage(msg);
 }
+
+
+void WorkflowAppWidget::showOutputDialog(void)
+{
+    progressDialog->setVisibility(true);
+}
+
+
+PythonProgressDialog *WorkflowAppWidget::getProgressDialog()
+{
+    return progressDialog;
+}
+
+
 

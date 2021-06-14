@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PipelineNetworkWidget.h"
 #include "sectiontitle.h"
 #include "SimCenterComponentSelection.h"
-#include "ComponentInputWidget.h"
+#include "GasPipelineInputWidget.h"
 #include "VisualizationWidget.h"
 
 // GIS headers
@@ -83,10 +83,10 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     theHeaderLayout->addStretch(1);
     mainLayout->addLayout(theHeaderLayout);
 
-    theComponentInputWidget = std::make_unique<ComponentInputWidget>(this, "Components");
+    theComponentInputWidget = std::make_unique<GasPipelineInputWidget>(this, "Components");
     theComponentInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
 
-    theVisualizationWidget->setPipelineWidget(theComponentInputWidget.get());
+    theVisualizationWidget->registerComponentWidget("GASPIPELINES",theComponentInputWidget.get());
 
     theComponentInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
     theComponentInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
@@ -116,8 +116,16 @@ bool PipelineNetworkWidget::outputToJSON(QJsonObject &jsonObject)
 
     QFileInfo file(siteDataPath);
 
-
     infrastructureObj.insert("SiteDataFile",file.absoluteFilePath());
+
+    QString filterString = theComponentInputWidget->getFilterString();
+    if(filterString.isEmpty())
+    {
+        errorMessage("Please select components for analysis");
+        return false;
+    }
+
+    infrastructureObj.insert("filter",filterString);
 
     jsonObject.insert("Infrastructure",infrastructureObj);
 
@@ -129,7 +137,18 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
 {
     auto fileName = jsonObject["SiteDataFile"].toString();
 
+    if(fileName.isEmpty())
+    {
+        errorMessage("Cannot find the pipeline data 'SiteDataFile' in the .json input file");
+        return false;
+    }
+
     theComponentInputWidget->loadFileFromPath(fileName);
+
+    auto filter = jsonObject["filter"].toString();
+
+    if(!filter.isEmpty())
+        theComponentInputWidget->setFilterString(filter);
 
     return true;
 }
@@ -137,14 +156,8 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
 
 
 bool PipelineNetworkWidget::copyFiles(QString &destDir)
-{
-
-    QString fileName = theComponentInputWidget->getPathToComponentFile();
-    QFileInfo fileInfo(fileName);
-
-    if (fileInfo.exists()) {
-        return this->copyFile(fileName, destDir);
-    }
+{    
+    theComponentInputWidget->copyFiles(destDir);
 
     return false;
 }

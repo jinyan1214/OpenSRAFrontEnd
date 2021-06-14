@@ -42,6 +42,7 @@ QGroupBox* EDPSurfFaultRupWidget::getWidgetBox(void)
     modelSelectCombo = new QComboBox(this);
     modelSelectCombo->addItem("Thompson (2020)","Thompson2020");
     modelSelectCombo->addItem("Wells and Coppersmith (1994)","WellsCoppersmith1994");
+    modelSelectCombo->addItem("Hazus (FEMA, 2013)","Hazus2014");
     modelSelectCombo->setCurrentIndex(0);
 
     auto notesLabel = new QLabel("");
@@ -130,7 +131,7 @@ bool EDPSurfFaultRupWidget::inputFromJSON(QJsonObject &jsonObject)
     if(methodsArray.size() != weightsArray.size())
     {
         QString msg = "The number of methods " + QString::number(methodsArray.size()) + " is not the same as the number of weights " + QString::number(weightsArray.size());
-        this->userMessageDialog(msg);
+        this->errorMessage(msg);
     }
 
     for(int i = 0; i<methodsArray.size(); ++i)

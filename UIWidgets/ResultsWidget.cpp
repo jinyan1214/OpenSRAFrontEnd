@@ -42,7 +42,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ResultsWidget.h"
 #include "OpenSRAPreferences.h"
 #include "VisualizationWidget.h"
-#include "WorkflowAppR2D.h"
 #include "sectiontitle.h"
 
 #include <QCheckBox>
@@ -210,12 +209,8 @@ void ResultsWidget::setCurrentlyViewable(bool status){
 }
 
 
-int ResultsWidget::processResults()
+int ResultsWidget::processResults(const QString& resultsDirectory)
 {
-
-    auto SCPrefs = OpenSRAPreferences::getInstance();
-    auto resultsDirectory = SCPrefs->getLocalWorkDir() + QDir::separator() + "DV";
-
     try
     {
         theOpenSRAPostProcessor->importResults(resultsDirectory);
@@ -224,7 +219,7 @@ int ResultsWidget::processResults()
     }
     catch (const QString msg)
     {
-        this->userMessageDialog(msg);
+        errorMessage(msg);
 
         return -1;
     }
@@ -241,7 +236,7 @@ int ResultsWidget::printToPDF(void)
     if(outputFileName.isEmpty())
     {
         QString errMsg = "The file name is empty";
-        this->userMessageDialog(errMsg);
+        this->errorMessage(errMsg);
         return -1;
     }
 
@@ -251,7 +246,7 @@ int ResultsWidget::printToPDF(void)
     if(res != 0)
     {
         QString err = "Error printing the PDF";
-        this->userMessageDialog(err);
+        this->errorMessage(err);
         return -1;
     }
 
@@ -270,7 +265,7 @@ void ResultsWidget::selectComponents(void)
     }
     catch (const QString msg)
     {
-        this->userMessageDialog(msg);
+        errorMessage(msg);
     }
 }
 
@@ -285,7 +280,7 @@ void ResultsWidget::handleComponentSelection(void)
     }
     catch (const QString msg)
     {
-        this->userMessageDialog(msg);
+        errorMessage(msg);
     }
 }
 

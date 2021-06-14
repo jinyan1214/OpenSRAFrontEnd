@@ -49,8 +49,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QProcess>
 
-class PythonProgressDialog;
-
 class QLabel;
 
 class LocalApplication : public Application
@@ -64,7 +62,7 @@ public:
     void displayed(void);
 
 signals:
-    void processResults(QString);
+    void processResults(QString,QString,QString);
 
 public slots:
    void onRunButtonPressed(void);
@@ -84,7 +82,6 @@ private:
 
     QProcess *proc;
 
-    PythonProgressDialog *progressDialog;
 };
 
 #endif // LOCAL_APPLICATION_H

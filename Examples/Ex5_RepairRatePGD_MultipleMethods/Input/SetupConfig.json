@@ -20,7 +20,8 @@
 		]
 	},
     "Infrastructure": {
-        "SiteDataFile": "Examples/Ex5_RepairRatePGD_MultipleMethods/Input/SiteData.csv"
+        "SiteDataFile": "Examples/Ex5_RepairRatePGD_MultipleMethods/Input/SiteData.csv",
+        "filter": "1-23"
     },
     "IntensityMeasure": {
         "Type": {

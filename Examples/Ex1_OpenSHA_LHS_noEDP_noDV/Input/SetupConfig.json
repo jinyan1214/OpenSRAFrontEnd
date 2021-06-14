@@ -12,7 +12,8 @@
 		"Seed": 1
 	},
     "Infrastructure": {
-        "SiteDataFile": "Examples/Ex1_OpenSHA_LHS_noEDP_noDV/Input/SiteData.csv"
+        "SiteDataFile": "Examples/Ex1_OpenSHA_LHS_noEDP_noDV/Input/SiteData.csv",
+        "filter": "1-23"
     },
     "IntensityMeasure": {
         "Type": {

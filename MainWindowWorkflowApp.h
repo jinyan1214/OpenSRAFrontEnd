@@ -12,7 +12,7 @@ class SimCenterWidget;
 class QPushButton;
 class QLabel;
 class OpenSRAPreferences;
-
+class PythonProgressDialog;
 
 class MainWindowWorkflowApp : public QMainWindow
 {
@@ -36,6 +36,11 @@ public:
     void attemptLogin(QString, QString);
     void logout();
 
+    void sendStatusMessage(QString message);
+    void sendErrorMessage(QString message);
+    void sendFatalMessage(QString message);
+    void sendInfoMessage(QString message);
+
   public slots:
     // for menu items
     void newFile();
@@ -55,12 +60,6 @@ public:
     // for main actions
     void onRunButtonClicked();
     void onExitButtonClicked();
-
-    // for error messages
-    void statusMessage(QString message);
-    void errorMessage(QString message);
-    void fatalMessage(QString message);
-
 
  private:
     void setCurrentFile(const QString &fileName);
@@ -84,6 +83,9 @@ public:
 
     QPushButton *loginButton;
     QLabel *errorLabel;
+
+    PythonProgressDialog* statusWidget;
+    QDockWidget* statusDockWidget;
 
     QString versionText;
     QString aboutText;

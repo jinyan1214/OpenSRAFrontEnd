@@ -62,7 +62,7 @@ public:
     virtual bool outputToJSON(QJsonObject &rvObject);
     virtual bool inputFromJSON(QJsonObject &rvObject);
 
-    virtual int processResults();
+    virtual int processResults(const QString& resultsDirectory);
 
     void setCurrentlyViewable(bool status);
 

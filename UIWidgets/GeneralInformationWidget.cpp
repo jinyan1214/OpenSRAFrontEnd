@@ -135,8 +135,7 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject)
     auto unitsSystem = jsonObject["UnitSystem"].toString();
     unitsCombo->setCurrentText(unitsSystem);
 
-
-    return false;
+    return true;
 }
 
 
@@ -224,7 +223,7 @@ void GeneralInformationWidget::chooseDirectoryDialog(void)
     if(!QDir(pathToWorkingDirectoryFile).exists())
     {
         QString errMsg = "The given path " + pathToWorkingDirectoryFile + " is not a valid directory";
-        this->userMessageDialog(errMsg);
+        errorMessage(errMsg);
 
         return;
     }

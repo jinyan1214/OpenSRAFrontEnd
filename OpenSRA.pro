@@ -9,8 +9,12 @@ TEMPLATE = app
 VERSION=0.0.2
 DEFINES += APP_VERSION=\\\"$$VERSION\\\" OpenSRA
 
-# C++14 support
+# C++17 support
 CONFIG += c++14
+
+# Full optimization on release
+QMAKE_CXXFLAGS_RELEASE += -O3
+
 
 # Check for the required Qt version
 equals(QT_MAJOR_VERSION, 5) {
@@ -23,7 +27,6 @@ equals(QT_MAJOR_VERSION, 5) {
 }
 
 mac {
-QMAKE_MAC_SDK = macosx10.15
 #Deployment target should be lower than SDK to make plugins useable in an older OS
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
 

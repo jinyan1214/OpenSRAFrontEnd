@@ -51,7 +51,7 @@ class MapGraphicsView;
 }
 
 class QGroupBox;
-class ComponentInputWidget;
+class GasPipelineInputWidget;
 class VisualizationWidget;
 
 class PipelineNetworkWidget : public  SimCenterAppWidget
@@ -74,7 +74,7 @@ public slots:
 
 private:
 
-    std::unique_ptr<ComponentInputWidget> theComponentInputWidget;
+    std::unique_ptr<GasPipelineInputWidget> theComponentInputWidget;
 
     VisualizationWidget* theVisualizationWidget;
 };

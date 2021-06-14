@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "ComponentDatabase.h"
-#include "ResultsMapViewWidget.h"
+#include "MapViewSubWidget.h"
 #include "SimCenterAppWidget.h"
 
 #include <QString>
@@ -49,7 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class TreeItem;
 class REmpiricalProbabilityDistribution;
-class ResultsMapViewWidget;
+class MapViewSubWidget;
 class VisualizationWidget;
 class MutuallyExclusiveListWidget;
 
@@ -85,6 +85,8 @@ public:
     OpenSRAPostProcessor(QWidget *parent, VisualizationWidget* visWidget);
 
     void importResults(const QString& pathToResults);
+
+    int importDVresults(const QString& pathToResults);
 
     int printToPDF(const QString& outputPath);
 
@@ -145,6 +147,11 @@ private:
 
     int processPGDResults(const QVector<QStringList>& DVResults);
 
+    int importResultVisuals(const QString& pathToResults);
+    int importFaultCrossings(const QString& pathToFile);
+    int importScenarioTraces(const QString& pathToFile);
+
+
     QVector<QStringList> RepairRatePGD;
     QVector<QStringList> RepairRatePGV;
 
@@ -163,7 +170,7 @@ private:
 
     VisualizationWidget* theVisualizationWidget;
 
-    std::unique_ptr<ResultsMapViewWidget> mapViewSubWidget;
+    std::unique_ptr<EmbeddedMapViewWidget> mapViewSubWidget;
     Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
 
     // The number of header rows in the Pelicun results file

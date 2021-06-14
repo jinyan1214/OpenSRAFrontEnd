@@ -46,8 +46,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "TreeItem.h"
 #include "VisualizationWidget.h"
 #include "WorkflowAppOpenSRA.h"
-#include "ResultsMapViewWidget.h"
+#include "SimCenterMapGraphicsView.h"
+#include "EmbeddedMapViewWidget.h"
 #include "MutuallyExclusiveListWidget.h"
+#include "LayerTreeView.h"
 
 #include <QBarCategoryAxis>
 #include <QBarSeries>
@@ -82,8 +84,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "FeatureTable.h"
 #include "Map.h"
 #include "MapGraphicsView.h"
+#include "SimpleFillSymbol.h"
+#include "SimpleLineSymbol.h"
+#include "PolylineBuilder.h"
+#include "FeatureCollectionLayer.h"
+#include "SimpleRenderer.h"
 
 using namespace QtCharts;
+using namespace Esri::ArcGISRuntime;
 
 OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
@@ -128,11 +136,11 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
     // Create a map view that will be used for selecting the grid points
     mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
 
-    mapViewSubWidget = std::make_unique<ResultsMapViewWidget>(nullptr);
+    mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(nullptr);
 
     // Popup stuff
     // Once map is set, connect to MapQuickView mouse clicked signal
-    // connect(mapViewSubWidget.get(), &ResultsMapViewWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
+    // connect(mapViewSubWidget.get(), &MapViewSubWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
 
     mainWidget->addWidget(mapViewSubWidget.get());
 
@@ -140,13 +148,13 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
     QVBoxLayout* rightHandLayout = new QVBoxLayout(rightHandWidget);
 
     rightHandLayout->addWidget(listWidget);
-//    auto legView = theVisualizationWidget->getLegendView();
-//    if(legView != nullptr)
-//    {
-//        QLabel* legLabel = new QLabel("Legend",this);
-//        rightHandLayout->addWidget(legLabel);
-//        rightHandLayout->addWidget(legView);
-//    }
+    //    auto legView = theVisualizationWidget->getLegendView();
+    //    if(legView != nullptr)
+    //    {
+    //        QLabel* legLabel = new QLabel("Legend",this);
+    //        rightHandLayout->addWidget(legLabel);
+    //        rightHandLayout->addWidget(legView);
+    //    }
 
     mainWidget->addWidget(rightHandWidget);
 
@@ -162,14 +170,157 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
 }
 
 
+int OpenSRAPostProcessor::importResultVisuals(const QString& pathToResults)
+{
+
+    QDir resultsDir(pathToResults);
+
+    // Get the existing files in the folder
+    QStringList acceptableFileExtensions = {"*.csv"};
+    QStringList existingCSVFiles = resultsDir.entryList(acceptableFileExtensions, QDir::Files);
+
+    if(existingCSVFiles.empty())
+    {
+        errorMessage("The results folder is empty. Did you include DV's in the analysis?");
+        return -1;
+    }
+
+    for(auto&& it : existingCSVFiles)
+    {
+        QString pathToFile = pathToResults+ QDir::separator() + it;
+
+        if(it.startsWith("ScenarioTraces"))
+        {
+            this->importScenarioTraces(pathToFile);
+        }
+        else if(it.startsWith("FaultCrossings"))
+        {
+            this->importFaultCrossings(pathToFile);
+        }
+    }
+
+    return 0;
+}
+
+
+int OpenSRAPostProcessor::importScenarioTraces(const QString& pathToFile)
+{
+
+    if(pathToFile.isEmpty())
+        return 0;
+
+    CSVReaderWriter csvTool;
+
+    QString errMsg;
+
+    auto traces = csvTool.parseCSVFile(pathToFile, errMsg);
+    if(!errMsg.isEmpty())
+    {
+        errorMessage(errMsg);
+        return -1;
+    }
+
+    if(traces.size() < 2)
+    {
+        statusMessage("No fault traces available.");
+        return 0;
+    }
+
+    auto layersTreeView = theVisualizationWidget->getLayersTree();
+
+    // Check if there is a 'Shake Map' root item in the tree
+    auto faultTracesTreeItem = layersTreeView->getTreeItem("Scenario Faults", nullptr);
+
+    QString layerName = "Scenario Traces";
+
+    auto headers = traces.front();
+
+    auto indexListofTraces = headers.indexOf("ListOfTraces");
+
+    traces.pop_front();
+
+    auto featureCollection = new FeatureCollection(this);
+
+    QList<Field> tableFields;
+    tableFields.append(Field::createText("AssetType", "NULL",4));
+    tableFields.append(Field::createText("TabName", "NULL",4));
+    tableFields.append(Field::createText("SourceIndex", "NULL",4));
+
+    auto featureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Polyline, SpatialReference::wgs84(),this);
+
+    QColor featureColor = QColor(0,0,0,200);
+
+    auto legendLabel = layerName;
+
+    auto weight = 1.0;
+
+    SimpleLineSymbol* lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, featureColor, weight, this);
+    SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol, this);
+    lineRenderer->setLabel(legendLabel);
+
+    featureCollectionTable->setRenderer(lineRenderer);
+
+    for(auto&& it : traces)
+    {
+        auto coordString = it.at(indexListofTraces);
+
+        auto geometry = theVisualizationWidget->getMultilineStringGeometryFromJson(coordString);
+
+        if(geometry.isEmpty())
+        {
+            QString msg ="Error getting the feature geometry for " + layerName;
+            this->errorMessage(msg);
+            return -1;
+        }
+
+        QMap<QString, QVariant> featureAttributes;
+        featureAttributes.insert("AssetType", "SCENARIO_TRACES");
+        featureAttributes.insert("TabName", layerName);
+        featureAttributes.insert("SourceIndex", it.at(0));
+
+        auto feature = featureCollectionTable->createFeature(featureAttributes, geometry, this);
+
+        featureCollectionTable->addFeature(feature);
+
+    }
+
+    featureCollection->tables()->append(featureCollectionTable);
+
+    // New geo json layer
+    auto newGeojsonLayer = new FeatureCollectionLayer(featureCollection,this);
+
+    newGeojsonLayer->setName(layerName);
+
+    newGeojsonLayer->setAutoFetchLegendInfos(true);
+
+    theVisualizationWidget->addLayerToMap(newGeojsonLayer,faultTracesTreeItem);
+
+    return 0;
+}
+
+int OpenSRAPostProcessor::importFaultCrossings(const QString& pathToFile)
+{
+
+    return 0;
+}
+
+
+
 void OpenSRAPostProcessor::importResults(const QString& pathToResults)
 {
     qDebug() << "OpenSRAPostProcessor: " << pathToResults;
 
     QString errMsg;
 
+    auto pipelineInputWidget = theVisualizationWidget->getComponentWidget("GASPIPELINES");
+    if(pipelineInputWidget == nullptr)
+    {
+        errMsg = "Could not get the pipeline input widget";
+        throw errMsg;
+    }
+
     // Get the pipelines database
-    thePipelineDb = theVisualizationWidget->getPipelineWidget()->getComponentDatabase();
+    thePipelineDb = pipelineInputWidget->getComponentDatabase();
 
     if(thePipelineDb == nullptr)
     {
@@ -177,23 +328,41 @@ void OpenSRAPostProcessor::importResults(const QString& pathToResults)
         throw errMsg;
     }
 
-    // Remove old csv files in the output pathToResults
+    QString pathToDv = pathToResults + QDir::separator() + "DV";
+
+    try {
+        this->importDVresults(pathToDv);
+    }
+    catch (QString err) {
+        errorMessage(err);
+    }
+
+
+    QString pathToScenarioTraces = pathToResults + QDir::separator() + "IM" + QDir::separator() + "SeismicSource";
+
+    this->importResultVisuals(pathToScenarioTraces);
+
+
+
+    listWidget->expandAll();
+}
+
+
+int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
+{
+
     QDir resultsDir(pathToResults);
 
-    const QFileInfo existingFilesInfo(pathToResults);
+    QString errMsg;
 
-    // Get the existing files in the folder to see if we already have the record
+    // Get the existing files in the folder
     QStringList acceptableFileExtensions = {"*.csv"};
     QStringList existingCSVFiles = resultsDir.entryList(acceptableFileExtensions, QDir::Files);
 
     if(existingCSVFiles.empty())
     {
-        qDebug()<<"The results folder is empty";
-        return;
-        // QStringList acceptableFileExtensions = {"*.*"};
-        // QStringList existingFiles = existingFilesInfo.dir().entryList(acceptableFileExtensions, QDir::Files);
-        // qDebug() << "FILES IN FOLDER: " << existingFiles;
-        // throw errMsg;
+        errMsg = "The results folder is empty. Did you include DV's in the analysis?";
+        throw errMsg;
     }
 
     QString PGDResultsSheet;
@@ -240,6 +409,8 @@ void OpenSRAPostProcessor::importResults(const QString& pathToResults)
     }
 
     listWidget->expandAll();
+
+    return 0;
 }
 
 
@@ -630,9 +801,16 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
         if(arcGISFeature == nullptr)
             throw QString("ArcGIS feature is a null pointer for component ID " + QString::number(it.ID));
 
-        arcGISFeature->attributes()->replaceAttribute("RepairRate",val);
+        auto atrb = "RepairRate";
 
+        arcGISFeature->attributes()->replaceAttribute(atrb,val);
         arcGISFeature->featureTable()->updateFeature(arcGISFeature);
+
+        auto atrbVal = QVariant(val);
+
+        // Get the feature UID
+        auto uid = it.UID;
+        theVisualizationWidget->updateSelectedComponent("GASPIPELINES",uid,atrb,atrbVal);
     }
 }
 
