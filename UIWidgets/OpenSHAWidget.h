@@ -3,10 +3,7 @@
 
 #include "SimCenterAppWidget.h"
 
-class QCheckBox;
-class QComboBox;
-class QLabel;
-class QLineEdit;
+class JsonDefinedWidget;
 
 class OpenSHAWidget : public SimCenterAppWidget
 {
@@ -19,26 +16,13 @@ public:
     void clear();
 
 public slots:
-    void handleVS30Change(int index);
 
 private:
-    QComboBox* modelSelectCombo;
-    QComboBox* seismicSourceCombo;
-    QComboBox* vs30Combo;
 
-    QCheckBox* RpCheckBox;
-    QLineEdit* RpLineEdit;
+    QWidget* getMainWidget(void);
 
-    QCheckBox* distCheckBox;
-    QLineEdit* distLineEdit;
+    JsonDefinedWidget* mainWidget = nullptr;
 
-    QCheckBox* magCheckBox;
-    QLineEdit* magLineEditMin;
-    QLineEdit* magLineEditMax;
-
-    QCheckBox* pointSourceCheckBox;
-
-    QLabel* vs30InfoLabel;
 };
 
 #endif // OPENSHAWIDGET_H

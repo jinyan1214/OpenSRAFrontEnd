@@ -6,6 +6,8 @@
 #include <QGroupBox>
 
 class CustomListWidget;
+class JsonDefinedWidget;
+class JsonWidget;
 
 class QCheckBox;
 class QComboBox;
@@ -27,12 +29,20 @@ public slots:
 
     void handleAddButtonPressed(void);
 
+    void handleListItemSelected(const QModelIndex &index);
+
 private:
+
+    JsonWidget* getYieldMethodWidget();
+    JsonWidget* getYieldAccWidget();
+
+    JsonDefinedWidget* methodWidget;
+
+    JsonWidget* yieldAccParametersWidget;
+    JsonWidget* yieldAccMethodWidget;
 
     CustomListWidget *listWidget ;
 
-    QCheckBox* toAssessCheckBox;
-    QComboBox* modelSelectCombo;
     QLineEdit* weightLineEdit;
 };
 

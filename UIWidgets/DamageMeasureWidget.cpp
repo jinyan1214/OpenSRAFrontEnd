@@ -34,11 +34,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-// Latest revision: 10.01.2020
+// Written by: Stevan Gavrilovic, SimCenter @ UC Berkeley
 
 #include "DamageMeasureWidget.h"
-#include "DMPipeStrainWidget.h"
+#include "SimCenterJsonWidget.h"
 #include "sectiontitle.h"
 #include "SimCenterComponentSelection.h"
 
@@ -61,6 +60,8 @@ DamageMeasureWidget::DamageMeasureWidget(QWidget *parent): SimCenterAppWidget(pa
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
+    mainLayout->setSpacing(0);
+    mainLayout->setContentsMargins(5,0,0,0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
@@ -76,10 +77,9 @@ DamageMeasureWidget::DamageMeasureWidget(QWidget *parent): SimCenterAppWidget(pa
 
     auto theComponentSelection = new SimCenterComponentSelection(this);
 
-    DMPipeStrain = new DMPipeStrainWidget(this);
+    DMPipeStrain = new SimCenterJsonWidget("TransientPipeStrain", "DamageMeasure", this);
 
     theComponentSelection->addComponent("Transient\nPipe Strain",DMPipeStrain);
-    theComponentSelection->addComponent("DM 2",this->getDM2Widget());
 
     theComponentSelection->displayComponent("Transient\nPipe Strain");
 
@@ -133,14 +133,6 @@ bool DamageMeasureWidget::copyFiles(QString &destDir)
     return false;
 }
 
-
-QGroupBox* DamageMeasureWidget::getDM2Widget(void)
-{
-    QGroupBox* groupBox = new QGroupBox("DM 2");
-    groupBox->setFlat(true);
-
-    return groupBox;
-}
 
 void DamageMeasureWidget::clear(void)
 {

@@ -34,7 +34,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, UC Berkeley
+// Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
 #include "UIWidgets/GeneralInformationWidget.h"
 #include "OpenSRAPreferences.h"
@@ -60,6 +60,8 @@ GeneralInformationWidget::GeneralInformationWidget(QWidget *parent) : SimCenterA
 {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);
+    mainLayout->setSpacing(0);
+    mainLayout->setContentsMargins(5,0,0,0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
@@ -67,19 +69,19 @@ GeneralInformationWidget::GeneralInformationWidget(QWidget *parent) : SimCenterA
     label->setMinimumWidth(150);
 
     theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
+    QSpacerItem *spacer = new QSpacerItem(50,0);
     theHeaderLayout->addItem(spacer);
     theHeaderLayout->addStretch(1);
 
     auto infoLayout = this->getInfoLayout();
+    infoLayout->setSpacing(3);
+    infoLayout->setContentsMargins(5,0,0,0);
 
     mainLayout->addLayout(theHeaderLayout);
-    mainLayout->addLayout(infoLayout);
+    mainLayout->addLayout(infoLayout,-1);
     mainLayout->addStretch();
 
     this->setLayout(mainLayout);
-    this->setMinimumWidth(640);
-    this->setMaximumWidth(750);
 }
 
 
@@ -147,18 +149,19 @@ void GeneralInformationWidget::clear(void)
 }
 
 
-QGridLayout* GeneralInformationWidget::getInfoLayout(void)
+QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
 {
     auto analysisLabel = new QLabel("Analysis ID:", this);
     analysisLineEdit = new QLineEdit();
-    analysisLineEdit->setText("Analysis_1");
-    analysisLineEdit->setMaximumWidth(250);
+    analysisLineEdit->setText("Analysis_ID");
+    analysisLineEdit->setMaximumWidth(500);
 
     auto unitSystemLabel = new QLabel("Unit System:", this);
     unitsCombo = new QComboBox();
     unitsCombo->addItem("SI (km)");
     unitsCombo->setCurrentIndex(0);
-    unitsCombo->setMaximumWidth(260);
+    unitsCombo->setMaximumWidth(500);
+    unitsCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
     QPushButton *loadFileButton = new QPushButton(this);
     loadFileButton->setText(tr("Browse"));
@@ -186,25 +189,34 @@ QGridLayout* GeneralInformationWidget::getInfoLayout(void)
     warningLabel->setStyleSheet("color: red");
 
     // Layout the UI components in a grid
-    QGridLayout* layout = new QGridLayout();
+    QVBoxLayout* layout = new QVBoxLayout();
 
-    layout->addWidget(analysisLabel, 0, 0);
-    layout->addWidget(analysisLineEdit, 0, 1);
+    QHBoxLayout* analysisNameLayout = new QHBoxLayout();
+    analysisNameLayout->addWidget(analysisLabel);
+    analysisNameLayout->addWidget(analysisLineEdit);
+    analysisNameLayout->addStretch();
 
-    layout->addWidget(unitSystemLabel, 1, 0);
-    layout->addWidget(unitsCombo, 1, 1);
+    QHBoxLayout* workingDirLayout = new QHBoxLayout();
+    workingDirLayout->addWidget(workingDirectoryLabel);
+    workingDirLayout->addWidget(workingDirectoryLineEdit);
+    workingDirLayout->addWidget(loadFileButton);
+    workingDirLayout->addStretch();
 
-    layout->addWidget(workingDirectoryLabel, 2, 0);
-    layout->addWidget(workingDirectoryLineEdit, 2, 1);
-    layout->addWidget(loadFileButton, 2, 2);
+    QHBoxLayout* unitsLayout = new QHBoxLayout();
+    unitsLayout->addWidget(unitSystemLabel);
+    unitsLayout->addWidget(unitsCombo);
+    unitsLayout->addStretch();
 
+    layout->addLayout(analysisNameLayout);
+    layout->addLayout(workingDirLayout);
+    layout->addLayout(unitsLayout);
 
-    layout->addWidget(assessmentSetupLabel, 3, 0);
+    layout->addWidget(assessmentSetupLabel);
 
-    layout->addWidget(button1, 4, 0, 1, 3);
-    layout->addWidget(button2, 5, 0, 1, 3);
+    layout->addWidget(button1);
+    layout->addWidget(button2);
 
-    layout->addWidget(warningLabel, 6, 0, 1, 3);
+    layout->addWidget(warningLabel);
 
     return layout;
 }

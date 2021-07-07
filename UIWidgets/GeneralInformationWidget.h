@@ -36,12 +36,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic, UC Berkeley
+// Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
 #include "SimCenterAppWidget.h"
 
 class QComboBox;
-class QGridLayout;
+class QVBoxLayout;
 class QLineEdit;
 
 class GeneralInformationWidget : public SimCenterAppWidget
@@ -62,7 +62,7 @@ private slots:
 
 private:
 
-    QGridLayout* getInfoLayout(void);
+    QVBoxLayout* getInfoLayout(void);
 
     QLineEdit* analysisLineEdit;
     QLineEdit* workingDirectoryLineEdit;

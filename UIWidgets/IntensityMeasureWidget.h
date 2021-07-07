@@ -40,11 +40,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <SimCenterAppWidget.h>
 
+class VisualizationWidget;
 class OpenSHAWidget;
-class SourceCharacterizationWidget;
+class JsonGroupBoxWidget;
 class ShakeMapWidget;
 class UserDefinedApplication;
-class VisualizationWidget;
 
 class QComboBox;
 class QGroupBox;
@@ -79,20 +79,16 @@ private:
 
     OpenSHAWidget* openSHA;
     ShakeMapWidget* shakeMap;
+
     QWidget* shakeMapStackedWidget;
-    SourceCharacterizationWidget* theSourceCharacterizationWidget;
 
     QStackedWidget* mainPanel;
-    QGroupBox* getIMBox(void);
 
-    QCheckBox* PGACheckbox;
-    QCheckBox* PGVCheckbox;
+    QWidget* getIMBox(void);
+    QWidget* getCorrelationWidget(void);
 
-    QCheckBox* spatialCorrCheckbox;
-    QComboBox* spatialCorrComboBox;
-
-    QCheckBox* spectralCorrCheckbox;
-    QComboBox* spectralCorrComboBox;
+    JsonGroupBoxWidget* typeWidget;
+    JsonGroupBoxWidget* corrWidget;
 
 };
 

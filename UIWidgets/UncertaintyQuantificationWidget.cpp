@@ -36,49 +36,28 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ComponentInputWidget.h"
-#include "MonteCarloSamplingWidget.h"
-#include "FixedResidualsSamplingWidget.h"
-#include "NoneWidget.h"
-#include "SecondaryComponentSelection.h"
-#include "SimCenterAppSelection.h"
 #include "UncertaintyQuantificationWidget.h"
-#include "VisualizationWidget.h"
+#include "WorkflowAppOpenSRA.h"
+#include "JsonDefinedWidget.h"
+
+#include "SimCenterJsonWidget.h"
+
 #include "sectiontitle.h"
 
-// Qt headers
-#include <QCheckBox>
-#include <QComboBox>
-#include <QColorTransform>
-#include <QDebug>
-#include <QFileDialog>
-#include <QGroupBox>
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QLineEdit>
-#include <QListWidget>
-#include <QMessageBox>
-#include <QPointer>
-#include <QPushButton>
-#include <QStackedWidget>
-#include <QTableWidget>
-#include <QVBoxLayout>
 
 UncertaintyQuantificationWidget::UncertaintyQuantificationWidget(QWidget *parent)
     : SimCenterAppWidget(parent)
 {
-    layout = new QVBoxLayout(this);
+    auto layout = new QVBoxLayout(this);
     layout->setMargin(0);
+    layout->setContentsMargins(5,0,0,0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
-    label->setText(QString("Uncertainty Quantification"));
-    label->setMinimumWidth(150);
+    label->setText(QString("Sampling Method"));
 
     theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
+    QSpacerItem *spacer = new QSpacerItem(50,0);
     theHeaderLayout->addItem(spacer);
     theHeaderLayout->addStretch(1);
 
@@ -88,37 +67,13 @@ UncertaintyQuantificationWidget::UncertaintyQuantificationWidget(QWidget *parent
     // create layout for selection box for method type to layout
     //
 
-    QHBoxLayout *methodLayout= new QHBoxLayout;
-    QLabel *label1 = new QLabel();
-    label1->setText(QString("Method"));
-    samplingMethod = new QComboBox();
-    samplingMethod->addItem("Latin Hypercube Sampling","Latin Hypercube Sampling");
-    samplingMethod->addItem("Monte Carlo Random Sampling","MonteCarlo");
-    samplingMethod->addItem("Fixed Residuals","FixedResiduals");
-    samplingMethod->addItem("Polynomial Chaos Expansion (Currently Disabled)");
-    samplingMethod->setCurrentIndex(0);
+    auto uncertaintyWidget = this->getMainWidget();
 
-    methodLayout->addWidget(label1);
-    methodLayout->addWidget(samplingMethod,2);
-    methodLayout->addStretch(4);
+    uncertaintyWidget->setContentsMargins(5,0,0,0);
 
-    layout->addLayout(methodLayout);
+    layout->addWidget(uncertaintyWidget);
 
-    //
-    // qstacked widget to hold all widgets
-    //
-
-    theStackedWidget = new QStackedWidget();
-
-    theMonteCarloWidget = new MonteCarloSamplingWidget();
-    theFixedResidualsWidget = new FixedResidualsSamplingWidget();
-
-    theStackedWidget->addWidget(theMonteCarloWidget);
-    theStackedWidget->addWidget(theFixedResidualsWidget);
-
-    layout->addWidget(theStackedWidget);
-
-    connect(samplingMethod, SIGNAL(currentTextChanged(QString)), this, SLOT(onTextChanged(QString)));
+    layout->addStretch(1);
 
 }
 
@@ -129,49 +84,57 @@ UncertaintyQuantificationWidget::~UncertaintyQuantificationWidget()
 }
 
 
-void UncertaintyQuantificationWidget::onTextChanged(const QString &text)
+QWidget* UncertaintyQuantificationWidget::getMainWidget(void)
 {
-    if (text=="Latin Hypercube Sampling") {
-        theStackedWidget->setCurrentWidget(theMonteCarloWidget);
+    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
+
+    QJsonObject thisObj = methodsAndParams.value("SamplingMethod").toObject();
+
+    if(thisObj.isEmpty())
+    {
+        this->errorMessage("Json object is empty in SimCenterJsonWidget");
+        return nullptr;
     }
-    else if (text=="Monte Carlo Random Sampling" || text=="MonteCarlo") {
-        theStackedWidget->setCurrentWidget(theMonteCarloWidget);
-    }
-    else if (text=="Fixed Residuals" || text=="FixedResiduals") {
-        theStackedWidget->setCurrentWidget(theFixedResidualsWidget);
-    }
+
+    QJsonObject samplingObj;
+
+    samplingObj["SamplingMethod"] = thisObj.value("Method").toObject();
+
+    QJsonObject widgetObj;
+
+    widgetObj["Params"] = samplingObj;
+
+    mainWidget = new JsonDefinedWidget(this, widgetObj, this->objectName());
+
+    return mainWidget;
 }
+
 
 
 void  UncertaintyQuantificationWidget::clear()
 {
-    theFixedResidualsWidget->clear();
-    theMonteCarloWidget->clear();
-    samplingMethod->setCurrentIndex(0);
+    mainWidget->reset();
 }
 
 
 bool UncertaintyQuantificationWidget::outputToJSON(QJsonObject &jsonObject)
 {    
-    auto uqType = samplingMethod->currentData().toString();
 
-    QJsonObject uq;
+    QJsonObject outputObj;
+    auto res = mainWidget->outputToJSON(outputObj);
 
-    uq.insert("Type","MonteCarlo");
-
-    uq.insert("Algorithm",uqType);
-
-    if(uqType == "Latin Hypercube Sampling" || uqType == "MonteCarlo")
+    if(!res || outputObj.isEmpty())
     {
-
-        theMonteCarloWidget->outputToJSON(uq);
-    }
-    else if (uqType == "FixedResiduals")
-    {
-        theFixedResidualsWidget->outputToJSON(uq);
+        this->errorMessage("Failed to export json in " + this->objectName());
+        return false;
     }
 
-    jsonObject.insert("UncertaintyQuantification",uq);
+    auto samplingObject = outputObj.value("SamplingMethod").toObject();
+
+    QJsonObject methodObj;
+    methodObj["Method"] = samplingObject;
+
+    jsonObject["SamplingMethod"] = methodObj;
 
     return true;
 }
@@ -179,21 +142,17 @@ bool UncertaintyQuantificationWidget::outputToJSON(QJsonObject &jsonObject)
 
 bool UncertaintyQuantificationWidget::inputFromJSON(QJsonObject &jsonObject)
 { 
-    auto uqType = jsonObject["Algorithm"].toString();
 
-    int index = samplingMethod->findData(uqType);
-    if ( index != -1 )
-    {
-       samplingMethod->setCurrentIndex(index);
-    }
+    QJsonObject methodObj;
 
-    if(uqType == "Latin Hypercube Sampling" || uqType == "MonteCarlo")
+    methodObj["SamplingMethod"] = jsonObject.value("Method").toObject();
+
+    auto res = mainWidget->inputFromJSON(methodObj);
+
+    if(!res)
     {
-        theMonteCarloWidget->inputFromJSON(jsonObject);
-    }
-    else if (uqType == "FixedResiduals")
-    {
-        theFixedResidualsWidget->inputFromJSON(jsonObject);
+        this->errorMessage("Failed to import json in " + this->objectName());
+        return false;
     }
 
     return true;

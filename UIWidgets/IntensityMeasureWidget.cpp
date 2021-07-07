@@ -42,6 +42,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ShakeMapWidget.h"
 #include "SourceCharacterizationWidget.h"
 #include "WorkflowAppOpenSRA.h"
+#include "JsonDefinedWidget.h"
+#include "JsonGroupBoxWidget.h"
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -60,13 +62,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDebug>
 #include <QFileDialog>
 #include <QPushButton>
-#include <QStackedWidget>
+#include <QSplitter>
 
 IntensityMeasureWidget::IntensityMeasureWidget(VisualizationWidget* visWidget, QWidget *parent)
     : SimCenterAppWidget(parent)
 {
-    PGACheckbox = nullptr;
-    PGVCheckbox = nullptr;
+    this->setContentsMargins(0,0,0,0);
 
     IMSelectCombo = new QComboBox(this);
     IMSelectCombo->addItem("OpenSHA (Preferred)","OpenSHA");
@@ -77,36 +78,45 @@ IntensityMeasureWidget::IntensityMeasureWidget(VisualizationWidget* visWidget, Q
     connect(IMSelectCombo,QOverload<int>::of(&QComboBox::currentIndexChanged),this,&IntensityMeasureWidget::IMSelectionChanged);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->setSpacing(0);
     mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(5,0,0,0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
+    theHeaderLayout->setContentsMargins(0,0,0,0);
+    theHeaderLayout->setMargin(0);
+    theHeaderLayout->setSpacing(0);
     SectionTitle *label = new SectionTitle();
     label->setText(QString("Intensity Measure (IM)"));
     label->setMinimumWidth(150);
 
     theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
+    QSpacerItem *spacer = new QSpacerItem(50,0);
     theHeaderLayout->addItem(spacer);
     theHeaderLayout->addWidget(IMSelectCombo);
 
     auto IMBox = this->getIMBox();
 
+    auto corrBox = this->getCorrelationWidget();
+
     openSHA = new OpenSHAWidget(this);
-    shakeMap = new ShakeMapWidget(visWidget, this);
+    shakeMap = new ShakeMapWidget(visWidget);
 
     shakeMapStackedWidget = shakeMap->getShakeMapWidget();
 
-    theSourceCharacterizationWidget = new SourceCharacterizationWidget(this);
-
     mainPanel = new QStackedWidget(this);
+    mainPanel->setContentsMargins(5,0,0,0);
+    mainPanel->layout()->setMargin(0);
+    mainPanel->layout()->setSpacing(0);
+
     mainPanel->addWidget(openSHA);
     mainPanel->addWidget(shakeMapStackedWidget);
-    mainPanel->addWidget(theSourceCharacterizationWidget);
 
     mainLayout->addLayout(theHeaderLayout);
     mainLayout->addWidget(mainPanel);
     mainLayout->addWidget(IMBox);
-    mainLayout->addStretch();
+    mainLayout->addWidget(corrBox);
+    mainLayout->addStretch(1);
 
 }
 
@@ -136,34 +146,6 @@ bool IntensityMeasureWidget::outputToJSON(QJsonObject &jsonObject)
         return false;
     }
 
-    QJsonObject TypeObj;
-    QJsonObject PGAObj;
-    QJsonObject PGVObj;
-
-    PGAObj.insert("ToAssess",PGACheckbox->isChecked());
-    PGVObj.insert("ToAssess",PGVCheckbox->isChecked());
-
-    TypeObj.insert("PGA",PGAObj);
-    TypeObj.insert("PGV",PGVObj);
-
-    IMobj.insert("Type",TypeObj);
-
-    QJsonObject corrObj;
-    QJsonObject spatCorrObj;
-    QJsonObject specCorrObj;
-
-    spatCorrObj.insert("ToInclude",spatialCorrCheckbox->isChecked());
-    spatCorrObj.insert("Method",spatialCorrComboBox->currentData().toString());
-
-    specCorrObj.insert("ToInclude",spectralCorrCheckbox->isChecked());
-    specCorrObj.insert("Method",spectralCorrComboBox->currentData().toString());
-
-    corrObj.insert("Spatial",spatCorrObj);
-    corrObj.insert("Spectral",specCorrObj);
-
-    IMobj.insert("Correlation",corrObj);
-
-    jsonObject.insert("IntensityMeasure",IMobj);
 
     return true;
 }
@@ -175,90 +157,59 @@ void IntensityMeasureWidget::clear()
 
     openSHA->clear();
     shakeMap->clear();
-    theSourceCharacterizationWidget->clear();
 
-    PGACheckbox->setChecked(false);
-    PGVCheckbox->setChecked(false);
-    spatialCorrCheckbox->setChecked(false);
-    spectralCorrCheckbox->setChecked(false);
-
-    spatialCorrComboBox->setCurrentIndex(0);
-    spectralCorrComboBox->setCurrentIndex(0);
+    typeWidget->reset();
+    corrWidget->reset();
 }
 
 
 bool IntensityMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
 {
 
-    auto IMSource = jsonObject["SourceForIM"].toString();
+    auto IMSourceObject = jsonObject.value("SourceForIM").toObject();
 
-    auto sourceParamObj = jsonObject["SourceParameters"].toObject();
-
-    if(sourceParamObj.isEmpty() || IMSource.isEmpty())
+    if(IMSourceObject.isEmpty())
         return false;
 
-    int index = IMSelectCombo->findData(IMSource);
+    auto IMSourceTypes = IMSourceObject.keys();
+
+    if(IMSourceTypes.isEmpty())
+        return false;
+
+    auto IMSourceType = IMSourceTypes.first();
+
+    int index = IMSelectCombo->findData(IMSourceType);
     if (index != -1)
     {
-       IMSelectCombo->setCurrentIndex(index);
+        IMSelectCombo->setCurrentIndex(index);
     }
 
-    if(IMSource == "OpenSHA")
+    if(IMSourceType == "OpenSHA")
     {
-        openSHA->inputFromJSON(sourceParamObj);
+        auto res = openSHA->inputFromJSON(IMSourceObject);
+        if(res == false)
+            return false;
+
     }
-    else if(IMSource == "ShakeMap")
+    else if(IMSourceType == "ShakeMap")
     {
-        shakeMap->inputFromJSON(sourceParamObj);
+        auto res =  shakeMap->inputFromJSON(IMSourceObject);
+        if(res == false)
+            return false;
     }
     else
-        return false;
-
-    auto typeObj = jsonObject["Type"].toObject();
-
-    if(typeObj.isEmpty())
-        return false;
-
-    auto PGAObj = typeObj["PGA"].toObject();
-    auto PGVObj = typeObj["PGV"].toObject();
-
-    if(PGAObj.isEmpty() || PGVObj.isEmpty())
-        return false;
-
-    auto PGAChecked = PGAObj["ToAssess"].toBool();
-    PGACheckbox->setChecked(PGAChecked);
-
-    auto PGVChecked = PGVObj["ToAssess"].toBool();
-    PGVCheckbox->setChecked(PGVChecked);
-
-    QJsonObject corrObj = jsonObject["Correlation"].toObject();
-    if(corrObj.isEmpty())
-        return false;
-
-    QJsonObject spatCorrObj = corrObj["Spatial"].toObject();
-    QJsonObject specCorrObj = corrObj["Spectral"].toObject();
-
-    auto includeSpatCorr = spatCorrObj["ToInclude"].toBool();
-    spatialCorrCheckbox->setChecked(includeSpatCorr);
-
-    auto spatCorrType = spatCorrObj["Method"].toString();
-
-    int index2 = spatialCorrComboBox->findData(spatCorrType);
-    if (index2 != -1)
     {
-       spatialCorrComboBox->setCurrentIndex(index2);
+        this->errorMessage("Cannot find the intensity measure object of type " + IMSourceType);
+        return false;
     }
 
-    auto includeSpecCorr = specCorrObj["ToInclude"].toBool();
-    spectralCorrCheckbox->setChecked(includeSpecCorr);
+    auto res = typeWidget->inputFromJSON(jsonObject);
+    if(res == false)
+        return false;
 
-    auto specCorrType = specCorrObj["Method"].toString();
-
-    int index3 = spectralCorrComboBox->findData(specCorrType);
-    if (index3 != -1)
-    {
-       spectralCorrComboBox->setCurrentIndex(index3);
-    }
+    auto res2 = corrWidget->inputFromJSON(jsonObject);
+    if(res2 == false)
+        return false;
 
     return true;
 }
@@ -274,10 +225,7 @@ void IntensityMeasureWidget::IMSelectionChanged(int index)
     {
         mainPanel->setCurrentWidget(shakeMapStackedWidget);
     }
-    else if(index == 2)
-    {
-        mainPanel->setCurrentWidget(theSourceCharacterizationWidget);
-    }
+
 }
 
 
@@ -291,58 +239,45 @@ bool IntensityMeasureWidget::copyFiles(QString &destDir)
 }
 
 
-QGroupBox* IntensityMeasureWidget::getIMBox(void)
+QWidget* IntensityMeasureWidget::getIMBox(void)
 {
-    auto smallVSpacer = new QSpacerItem(0,10);
+    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
 
-    QGroupBox* IMGroupBox = new QGroupBox(this);
-    IMGroupBox->setFlat(true);
+    QJsonObject thisObj = methodsAndParams["IntensityMeasure"].toObject()["Type"].toObject();
 
-    auto IMLabel = new QLabel("Intensity Measures");
-    IMLabel->setStyleSheet("font-weight: bold; color: black");
+    if(thisObj.isEmpty())
+    {
+        this->errorMessage("Json object is empty in EDPLandslideWidget");
+        return nullptr;
+    }
 
-    PGACheckbox = new QCheckBox("Peak Ground Acceleration (PGA)");
-    PGVCheckbox = new QCheckBox("Peak Ground Velocity (PGV)");
+    QString nameToDisplay = thisObj.value("NameToDisplay").toString();
 
-    PGACheckbox->setChecked(true);
-    PGVCheckbox->setChecked(true);
+    typeWidget = new JsonGroupBoxWidget(this, thisObj, "Type");
+    typeWidget->setObjectName("Type");
+    typeWidget->setTitle(nameToDisplay);
 
-    auto correlationsLabel = new QLabel("Correlations");
-    correlationsLabel->setStyleSheet("font-weight: bold; color: black");
+    return typeWidget;
+}
 
-    spatialCorrCheckbox = new QCheckBox("Spatial Correlation");
-    spectralCorrCheckbox = new QCheckBox("Spectral (Cross) Correlation");
 
-    spatialCorrCheckbox->setChecked(true);
-    spectralCorrCheckbox->setChecked(true);
+QWidget* IntensityMeasureWidget::getCorrelationWidget(void)
+{
+    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
 
-    spatialCorrComboBox = new QComboBox(this);
-    spatialCorrComboBox->addItem("Jayaram & Baker (2009)","JayaramBaker2009");
+    QJsonObject thisObj = methodsAndParams["IntensityMeasure"].toObject()["Correlation"].toObject();
 
-    spectralCorrComboBox = new QComboBox(this);
-    spectralCorrComboBox->addItem("Baker & Jayaram (2008)","BakerJayaram2008");
+    if(thisObj.isEmpty())
+    {
+        this->errorMessage("Json object is empty in EDPLandslideWidget");
+        return nullptr;
+    }
 
-    // Add a vertical spacer at the bottom to push everything up
-    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
+    QString nameToDisplay = thisObj.value("NameToDisplay").toString();
 
-    QGridLayout* gridLayout = new QGridLayout(IMGroupBox);
+    corrWidget = new JsonGroupBoxWidget(this, thisObj, "Correlation");
+    corrWidget->setTitle(nameToDisplay);
+    corrWidget->setObjectName("Correlation");
 
-    gridLayout->addWidget(IMLabel,0,0);
-
-    gridLayout->addWidget(PGACheckbox,1,0);
-    gridLayout->addWidget(PGVCheckbox,1,1);
-
-    gridLayout->addItem(smallVSpacer,2,0);
-
-    gridLayout->addWidget(correlationsLabel,3,0);
-
-    gridLayout->addWidget(spatialCorrCheckbox,4,0);
-    gridLayout->addWidget(spatialCorrComboBox,4,1);
-
-    gridLayout->addWidget(spectralCorrCheckbox,5,0);
-    gridLayout->addWidget(spectralCorrComboBox,5,1);
-
-    gridLayout->addItem(vspacer, 6, 0);
-
-    return IMGroupBox;
+    return corrWidget;
 }

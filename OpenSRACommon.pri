@@ -23,6 +23,7 @@ SOURCES +=  $$PATH_TO_R2D/Tools/CSVReaderWriter.cpp \
             $$PATH_TO_R2D/Events/UI/SiteGrid.cpp \
             $$PATH_TO_R2D/Events/UI/GridDivision.cpp \
             $$PATH_TO_R2D/Events/UI/Location.cpp \
+            $$PATH_TO_R2D/Events/UI/SiteScatter.cpp \
             $$PATH_TO_R2D/UIWidgets/PopUpWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/LoadResultsDialog.cpp \
             $$PATH_TO_R2D/GraphicElements/ConvexHull.cpp \
@@ -57,6 +58,8 @@ SOURCES +=  $$PATH_TO_R2D/Tools/CSVReaderWriter.cpp \
             $$PATH_TO_R2D/ModelViewItems/CheckableTreeModel.cpp \
             $$PATH_TO_R2D/ModelViewItems/MutuallyExclusiveListWidget.cpp \
             $$PATH_TO_R2D/ModelViewItems/GISLegendView.cpp \
+            $$PATH_TO_R2D/ModelViewItems/ComponentTableModel.cpp \
+            $$PATH_TO_R2D/ModelViewItems/ComponentTableView.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterComponentSelection.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/CustomizedItemModel.cpp \
             $$PATH_TO_COMMON/Workflow/EXECUTION/Application.cpp \
@@ -73,6 +76,8 @@ HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
             $$PATH_TO_R2D/Events/UI/SiteGrid.h \
             $$PATH_TO_R2D/Events/UI/GridDivision.h \
             $$PATH_TO_R2D/Events/UI/Location.h \
+            $$PATH_TO_R2D/Events/UI/SiteScatter.h \
+            $$PATH_TO_R2D/Events/UI/JsonSerializable.h \
             $$PATH_TO_R2D/UIWidgets/PopUpWidget.h \
             $$PATH_TO_R2D/UIWidgets/LoadResultsDialog.h \
             $$PATH_TO_R2D/GraphicElements/ConvexHull.h \
@@ -107,6 +112,8 @@ HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
             $$PATH_TO_R2D/ModelViewItems/CheckableTreeModel.h \
             $$PATH_TO_R2D/ModelViewItems/MutuallyExclusiveListWidget.h \
             $$PATH_TO_R2D/ModelViewItems/GISLegendView.h \
+            $$PATH_TO_R2D/ModelViewItems/ComponentTableModel.h \
+            $$PATH_TO_R2D/ModelViewItems/ComponentTableView.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterComponentSelection.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/CustomizedItemModel.h \
             $$PATH_TO_COMMON/Workflow/EXECUTION/Application.h \

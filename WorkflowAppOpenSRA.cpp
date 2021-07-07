@@ -115,16 +115,70 @@ WorkflowAppOpenSRA::~WorkflowAppOpenSRA()
 void WorkflowAppOpenSRA::initialize(void)
 {
 
+    // Load the methods and params json file
+    QString fileName = QCoreApplication::applicationDirPath() + QDir::separator() + "OpenSRABackEnd" + QDir::separator() + "MethodsAndParams.json";
+
+    QFileInfo fileInfo(fileName);
+    if (!fileInfo.exists()){
+        this->errorMessage(QString("The methods and params file does not exist! ") + fileName);
+    }
+
+    QString dirPath = fileInfo.absoluteDir().absolutePath();
+    QDir::setCurrent(dirPath);
+
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        this->errorMessage(QString("Could Not Open File: ") + fileName);
+    }
+
+    //
+    // place contents of file into json object
+    //
+
+    QString val;
+    val=file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(val.toUtf8());
+    methodsAndParamsObj = doc.object();
+
+    // close file
+    file.close();
+
+    if(methodsAndParamsObj.isEmpty())
+    {
+        this->errorMessage("The methods and parameters file is empty");
+        return;
+    }
+
+    // Get the human read-able names of the json objects
+    std::function<void(const QJsonObject&)> recursiveObj = [&](const QJsonObject& objects){
+
+        QJsonObject::const_iterator objIt;
+        for (objIt = objects.begin(); objIt != objects.end(); ++objIt)
+        {
+            auto obj = objIt.value().toObject();
+
+            auto name = obj["NameToDisplay"].toString();
+            if(!name.isEmpty())
+            {
+                auto key = objIt.key();
+                methodsParamsMap.insert(key,name);
+            }
+
+            if(!obj.isEmpty())
+                recursiveObj(objIt.value().toObject());
+        }
+    };
+
+    recursiveObj(methodsAndParamsObj);
+
     // Create the edit menu with the clear action
     QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
     // Set the path to the input file
     editMenu->addAction("Clear Inputs", this, &WorkflowAppOpenSRA::clear);
     editMenu->addAction("Clear Working Directory", this, &WorkflowAppOpenSRA::clearWorkDir);
 
-
     // Load the examples
-    auto pathToExamplesJson = QCoreApplication::applicationDirPath() + QDir::separator() + "Examples" + QDir::separator() + "Examples.json";
-    // QString pathToExamplesJson = "/Users/steve/Desktop/SimCenter/RDT/RDT/Examples/";
+    auto pathToExamplesJson = QCoreApplication::applicationDirPath() + QDir::separator() + "OpenSRABackEnd" + QDir::separator() + "examples" + QDir::separator() + "Examples.json";
 
     QFile jsonFile(pathToExamplesJson);
     jsonFile.open(QFile::ReadOnly);
@@ -176,9 +230,9 @@ void WorkflowAppOpenSRA::initialize(void)
     // Create the various widgets
     theGenInfoWidget = new GeneralInformationWidget(this);
     theUQWidget = new UncertaintyQuantificationWidget(this);
+    thePipelineNetworkWidget = new PipelineNetworkWidget(this,theVisualizationWidget);
     theIntensityMeasureWidget = new IntensityMeasureWidget(theVisualizationWidget, this);
     theDamageMeasureWidget = new DamageMeasureWidget(this);
-    thePipelineNetworkWidget = new PipelineNetworkWidget(this,theVisualizationWidget);
     theEDPWidget = new EngDemandParamWidget(this);
     theCustomVisualizationWidget = new CustomVisualizationWidget(this,theVisualizationWidget);
     theDecisionVariableWidget = new DecisionVariableWidget(this);
@@ -198,16 +252,18 @@ void WorkflowAppOpenSRA::initialize(void)
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
-    this->setContentsMargins(0,5,0,5);
+    horizontalLayout->setSpacing(0);
+    this->setContentsMargins(0,0,0,0);
     horizontalLayout->setMargin(0);
 
     // Create the component selection & add the components to it
     theComponentSelection = new SimCenterComponentSelection();
+    theComponentSelection->setContentsMargins(0,0,0,0);
     horizontalLayout->addWidget(theComponentSelection);
 
     theComponentSelection->addComponent(QString("Visualization"), theCustomVisualizationWidget);
     theComponentSelection->addComponent(QString("General\nInformation"), theGenInfoWidget);
-    theComponentSelection->addComponent(QString("Uncertainty\nQuantification"), theUQWidget);
+    theComponentSelection->addComponent(QString("Sampling\nMethod"), theUQWidget);
     theComponentSelection->addComponent(QString("Infrastructure"), thePipelineNetworkWidget);
     theComponentSelection->addComponent(QString("Intensity\nMeasure"), theIntensityMeasureWidget);
     theComponentSelection->addComponent(QString("Engineering\nDemand\nParameter"), theEDPWidget);
@@ -219,9 +275,14 @@ void WorkflowAppOpenSRA::initialize(void)
 
     theComponentSelection->displayComponent("Visualization");
 
-//    loadResults();
-}
+//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex1_OpenSHA_LHS_noEDP_noDV/Input/SetupConfig.json");
+//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex2_ShakeMap_noEDP_noDV/Input/SetupConfig.json");
+//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex3_IMCorrelation_RepairRatePGV/Input/SetupConfig.json");
+//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex4_EDPs_and_RepairRatePGD/Input/SetupConfig.json");
+    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex5_MultipleMethods/Input/SetupConfig.json");
+//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex6_UserInputModelParams/Input/SetupConfig.json");
 
+}
 
 
 void WorkflowAppOpenSRA::loadExamples()
@@ -231,7 +292,8 @@ void WorkflowAppOpenSRA::loadExamples()
     if(senderObj == nullptr)
         return;
 
-    auto pathToExample = QCoreApplication::applicationDirPath() + QDir::separator() + "Examples" + QDir::separator();
+    QString pathToExample = QCoreApplication::applicationDirPath() + QDir::separator() + "OpenSRABackEnd" + QDir::separator() + "examples" + QDir::separator();
+
     pathToExample += QObject::sender()->property("InputFile").toString();
 
     if(pathToExample.isNull())
@@ -288,21 +350,21 @@ bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
 {
     bool res = true;
 
-    // Get each of the main widgets to output themselves
-    res = theGenInfoWidget->outputToJSON(jsonObjectTop);
+//    // Get each of the main widgets to output themselves
+//    res = theGenInfoWidget->outputToJSON(jsonObjectTop);
 
-    if(!res)
-        return false;
+//    if(!res)
+//        return false;
 
     res = theUQWidget->outputToJSON(jsonObjectTop);
 
     if(!res)
         return false;
 
-    res = thePipelineNetworkWidget->outputToJSON(jsonObjectTop);
+//    res = thePipelineNetworkWidget->outputToJSON(jsonObjectTop);
 
-    if(!res)
-        return false;
+//    if(!res)
+//        return false;
 
     res = theIntensityMeasureWidget->outputToJSON(jsonObjectTop);
 
@@ -378,66 +440,66 @@ bool WorkflowAppOpenSRA::inputFromJSON(QJsonObject &jsonObject)
 {
     bool res = true;
 
-    auto genJsonObj = jsonObject["General"].toObject();
+    auto genJsonObj = jsonObject.value("General").toObject();
     res = theGenInfoWidget->inputFromJSON(genJsonObj);
 
     if(res == false)
     {
-        errorMessage("Error loading .json input file");
+        errorMessage("Error loading .json input file at " + theGenInfoWidget->objectName() + " panel");
         return false;
     }
 
-    auto UQJsonObj = jsonObject["UncertaintyQuantification"].toObject();
+    auto UQJsonObj = jsonObject.value("SamplingMethod").toObject();
     res = theUQWidget->inputFromJSON(UQJsonObj);
 
     if(res == false)
     {
-        errorMessage("Error loading .json input file");
+        errorMessage("Error loading .json input file at " + theUQWidget->objectName() + " panel");
         return false;
     }
 
-    auto InfraJsonObj = jsonObject["Infrastructure"].toObject();
+    auto InfraJsonObj = jsonObject.value("Infrastructure").toObject();
     res = thePipelineNetworkWidget->inputFromJSON(InfraJsonObj);
 
     if(res == false)
     {
-        errorMessage("Error loading .json input file");
+        errorMessage("Error loading .json input file at " + thePipelineNetworkWidget->objectName() + " panel");
         return false;
     }
 
-    auto IntensityMeasObj = jsonObject["IntensityMeasure"].toObject();
+    auto IntensityMeasObj = jsonObject.value("IntensityMeasure").toObject();
     res = theIntensityMeasureWidget->inputFromJSON(IntensityMeasObj);
 
     if(res == false)
     {
-        errorMessage("Error loading .json input file");
+        errorMessage("Error loading .json input file at " + theIntensityMeasureWidget->objectName() + " panel");
         return false;
     }
 
-    auto EDPObj = jsonObject["EngineeringDemandParameter"].toObject();
+    auto EDPObj = jsonObject.value("EngineeringDemandParameter").toObject();
     res = theEDPWidget->inputFromJSON(EDPObj);
 
     if(res == false)
     {
-        errorMessage("Error loading .json input file");
+        errorMessage("Error loading .json input file at " + theEDPWidget->objectName() + " panel");
         return false;
     }
 
-    auto DamageMeasureObj = jsonObject["DamageMeasure"].toObject();
+    auto DamageMeasureObj = jsonObject.value("DamageMeasure").toObject();
     res = theDamageMeasureWidget->inputFromJSON(DamageMeasureObj);
 
     if(res == false)
     {
-        errorMessage("Error loading .json input file");
+        errorMessage("Error loading .json input file at " + theDamageMeasureWidget->objectName() + " panel");
         return false;
     }
 
-    auto DecisionVarObj = jsonObject["DecisionVariable"].toObject();
+    auto DecisionVarObj = jsonObject.value("DecisionVariable").toObject();
     res = theDecisionVariableWidget->inputFromJSON(DecisionVarObj);
 
     if(res == false)
     {
-        errorMessage("Error loading .json input file");
+        errorMessage("Error loading .json input file at " + theDecisionVariableWidget->objectName() + " panel");
         return false;
     }
 
@@ -613,4 +675,14 @@ void WorkflowAppOpenSRA::errorMessage(QString message)
 void WorkflowAppOpenSRA::fatalMessage(QString message)
 {
     progressDialog->appendErrorMessage(message);
+}
+
+QJsonObject WorkflowAppOpenSRA::getMethodsAndParamsObj() const
+{
+    return methodsAndParamsObj;
+}
+
+QMap<QString, QString> WorkflowAppOpenSRA::getMethodsAndParamsMap() const
+{
+    return methodsParamsMap;
 }

@@ -70,6 +70,8 @@ using namespace Esri::ArcGISRuntime;
 CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  VisualizationWidget* visWidget)
     : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
+    this->setContentsMargins(0,0,0,0);
+
     landslideLayer = nullptr;
     liquefactionLayer = nullptr;
     geologicMapLayer = nullptr;
@@ -78,22 +80,22 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  Visualiza
     baseCGSURL = "https://gis.conservation.ca.gov/server/rest/services/CGS/Geologic_Map_of_California/MapServer";
 
     QVBoxLayout *mainLayout = new QVBoxLayout();
-    mainLayout->setContentsMargins(0,0,0,0);
+    mainLayout->setContentsMargins(5,0,0,0);
     mainLayout->setSpacing(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     theHeaderLayout->setContentsMargins(0,0,0,0);
     SectionTitle *label = new SectionTitle();
     label->setText(QString("Visualization"));
-    label->setMinimumWidth(150);
+//    label->setMinimumWidth(150);
 
     theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
+    QSpacerItem *spacer = new QSpacerItem(50,0);
     theHeaderLayout->addItem(spacer);
     theHeaderLayout->addStretch(1);
 
     QSplitter *theVizLayout = new QSplitter(this);
-    visWidget->setContentsMargins(5,0,0,0);
+    visWidget->setContentsMargins(0,0,0,0);
 
     theVizLayout->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -111,6 +113,7 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  Visualiza
     theLeftHandWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
 
     QVBoxLayout *theLeftHandLayout = new QVBoxLayout(theLeftHandWidget);
+    theLeftHandLayout->setMargin(0);
 
     theLeftHandLayout->addWidget(visSelectBox);
     theLeftHandLayout->addWidget(legendView);

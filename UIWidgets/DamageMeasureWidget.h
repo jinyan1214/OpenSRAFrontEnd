@@ -36,11 +36,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Stevan Gavrilovic, SimCenter @ UC Berkeley
 
 #include <SimCenterAppWidget.h>
 
-class DMPipeStrainWidget;
+class SimCenterJsonWidget;
 
 class QGroupBox;
 
@@ -64,9 +64,7 @@ public slots:
 
 private:
 
-    DMPipeStrainWidget* DMPipeStrain;
-
-    QGroupBox* getDM2Widget(void);
+    SimCenterJsonWidget* DMPipeStrain;
 
 };
 

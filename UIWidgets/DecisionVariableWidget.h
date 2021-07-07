@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterAppWidget.h"
 
-class DVNumRepairsWidget;
+class DVRepairRateWidget;
 
 class QGroupBox;
 
@@ -64,7 +64,7 @@ public slots:
 
 private:
 
-    DVNumRepairsWidget* DVNumRepairs;
+    DVRepairRateWidget* repairRateWidget;
     QGroupBox* getNumRepairsWidget(void);
     QGroupBox* getNumBreaksWidget(void);
     QGroupBox* getServiceabilityWidget(void);

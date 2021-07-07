@@ -36,8 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-// Latest revision: 09.30.2020
+// Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
 #include <SimCenterAppWidget.h>
 

@@ -34,8 +34,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
-// Latest revision: 09.30.2020
+// Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
 #include "PipelineNetworkWidget.h"
 #include "sectiontitle.h"
@@ -68,17 +67,22 @@ using namespace Esri::ArcGISRuntime;
 PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidget* visWidget)
     : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
+    this->setContentsMargins(0,0,0,0);
+
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(5,0,0,0);
+    mainLayout->setSpacing(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
+    theHeaderLayout->setContentsMargins(0,0,0,0);
+    theHeaderLayout->setMargin(0);
+    theHeaderLayout->setSpacing(0);
     SectionTitle *label = new SectionTitle();
     label->setText(QString("Infrastructure (Limited to a maximum of 1,000 sites)"));
     label->setMinimumWidth(150);
 
     theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
-    theHeaderLayout->addItem(spacer);
 
     theHeaderLayout->addStretch(1);
     mainLayout->addLayout(theHeaderLayout);
@@ -90,9 +94,6 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
 
     theComponentInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
     theComponentInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
-
-    //    QString pathToPipelineInfoFile =  "/Users/steve/Desktop/SimCenter/OpenSRA/OpenSRA/Examples/Ex1_OpenSHA_LHS_noEDP_noDV/Input/SiteData.csv";
-    //    theComponentInputWidget->testFileLoad(pathToPipelineInfoFile);
 
     mainLayout->addWidget(theComponentInputWidget.get());
 
@@ -149,6 +150,8 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
 
     if(!filter.isEmpty())
         theComponentInputWidget->setFilterString(filter);
+
+    theComponentInputWidget->inputFromJSON(jsonObject);
 
     return true;
 }

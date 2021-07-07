@@ -1,4 +1,4 @@
-﻿#ifndef WORKFLOW_APP_EE_UQ_H
+#ifndef WORKFLOW_APP_EE_UQ_H
 #define WORKFLOW_APP_EE_UQ_H
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "WorkflowAppWidget.h"
 
 #include <QWidget>
+#include <QJsonObject>
 
 class SimCenterComponentSelection;
 class InputWidgetBIM;
@@ -90,6 +91,10 @@ public:
     
     GeneralInformationWidget *getGeneralInformationWidget() const;
     VisualizationWidget *getVisualizationWidget() const;
+
+    QJsonObject getMethodsAndParamsObj() const;
+
+    QMap<QString, QString> getMethodsAndParamsMap() const;
 
 signals:
     void setUpForApplicationRunDone(QString &tmpDirectory, QString &inputFile);
@@ -141,6 +146,9 @@ private:
     QJsonObject* jsonObjOrig;
 
     LoadResultsDialog* resultsDialog;
+
+    QJsonObject methodsAndParamsObj;
+    QMap<QString, QString> methodsParamsMap;
 };
 
 #endif // WORKFLOW_APP_EE_UQ_H

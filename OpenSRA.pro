@@ -29,7 +29,7 @@ equals(QT_MAJOR_VERSION, 5) {
 mac {
 #Deployment target should be lower than SDK to make plugins useable in an older OS
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
-
+QMAKE_CXXFLAGS += -mmacosx-version-min=10.14
 }
 
 #Application Icons
@@ -49,27 +49,30 @@ include($$PWD/arcgisruntime.pri)
 # Specify the path to R2D and common
 PATH_TO_R2D=../../R2DTool/R2DTool
 PATH_TO_COMMON=../../SimCenterCommon
+PATH_TO_BACKEND=../../OpenSRABackEnd
 
 # To avoid code copying, include the common SimCenter code
 include(OpenSRACommon.pri)
 include($$PATH_TO_COMMON/Common/Common.pri)
 
 SOURCES += main.cpp \
-    UIWidgets/DMPipeStrainWidget.cpp \
-    UIWidgets/DVNumRepairsWidget.cpp \
-    UIWidgets/EDPGroundSettlementWidget.cpp \
-    UIWidgets/EDPGroundStrainWidget.cpp \
+    JsonWidgets/JsonDefinedWidget.cpp \
+    JsonWidgets/JsonGroupBoxWidget.cpp \
+    JsonWidgets/JsonComboBox.cpp \
+    JsonWidgets/JsonLineEdit.cpp \
+    JsonWidgets/JsonCheckBox.cpp \
+    JsonWidgets/JsonWidget.cpp \
+    JsonWidgets/JsonStackedWidget.cpp \
+    JsonWidgets/SimCenterJsonWidget.cpp \
+    UIWidgets/DVRepairRateWidget.cpp \
     UIWidgets/EDPLandslideWidget.cpp \
-    UIWidgets/EDPLiquefactionWidget.cpp \
-    UIWidgets/EDPLatSpreadWidget.cpp \
-    UIWidgets/EDPSubSurfFaultRupWidget.cpp \
-    UIWidgets/EDPSurfFaultRupWidget.cpp \
     UIWidgets/MonteCarloSamplingWidget.cpp \
     UIWidgets/FixedResidualsSamplingWidget.cpp \
     UIWidgets/OpenSHAWidget.cpp \
     UIWidgets/OpenSRAPostProcessor.cpp \
     UIWidgets/ResultsWidget.cpp \
     UIWidgets/UncertaintyQuantificationWidget.cpp \
+    UIWidgets/WidgetFactory.cpp \
     WorkflowAppOpenSRA.cpp \
     WorkflowAppWidget.cpp \
     MainWindowWorkflowApp.cpp \
@@ -86,22 +89,24 @@ SOURCES += main.cpp \
     RunWidget.cpp \
 
 HEADERS  += \
+    JsonWidgets/JsonDefinedWidget.h \
+    JsonWidgets/JsonComboBox.h \
+    JsonWidgets/JsonLineEdit.h \
+    JsonWidgets/JsonCheckBox.h \
+    JsonWidgets/JsonWidget.h \
+    JsonWidgets/JsonStackedWidget.h \
+    JsonWidgets/SimCenterJsonWidget.h \
+    JsonWidgets/JsonGroupBoxWidget.h \
     OpenSRAUserPass.h \
-    UIWidgets/DMPipeStrainWidget.h \
-    UIWidgets/DVNumRepairsWidget.h \
-    UIWidgets/EDPGroundSettlementWidget.h \
-    UIWidgets/EDPGroundStrainWidget.h \
+    UIWidgets/DVRepairRateWidget.h \
     UIWidgets/EDPLandslideWidget.h \
-    UIWidgets/EDPLiquefactionWidget.h \
-    UIWidgets/EDPLatSpreadWidget.h \
-    UIWidgets/EDPSubSurfFaultRupWidget.h \
-    UIWidgets/EDPSurfFaultRupWidget.h \
     UIWidgets/MonteCarloSamplingWidget.h \
     UIWidgets/FixedResidualsSamplingWidget.h \
     UIWidgets/OpenSHAWidget.h \
     UIWidgets/OpenSRAPostProcessor.h \
     UIWidgets/ResultsWidget.h \
     UIWidgets/UncertaintyQuantificationWidget.h \
+    UIWidgets/WidgetFactory.h \
     WorkflowAppOpenSRA.h \
     WorkflowAppWidget.h \
     MainWindowWorkflowApp.h \
@@ -124,6 +129,7 @@ RESOURCES += \
 INCLUDEPATH += $$PWD/Utils \
                $$PWD/styles \
                $$PWD/UIWidgets \
+               $$PWD/JsonWidgets \
 
 
 # Copies over the examples folder into the build directory
@@ -134,18 +140,28 @@ Debug:DESTDIR = $$DESTDIR/debug
 
 message($$DESTDIR)
 
-PATH_TO_BINARY=$$DESTDIR/Examples
+EXAMPLE_FOLDER=$$DESTDIR/Examples
+
+BACKEND_FOLDER=$$DESTDIR/OpenSRABackEnd
+
 } else {
     mac {
-    PATH_TO_BINARY=$$OUT_PWD/OpenSRA.app/Contents/MacOS
+    EXAMPLE_FOLDER=$$OUT_PWD/OpenSRA.app/Contents/MacOS
+    BACKEND_FOLDER=$$OUT_PWD/OpenSRA.app/Contents/MacOS
+
+#    mkpath($$EXAMPLE_FOLDER)
+#    mkpath($$BACKEND_FOLDER)
     }
 }
 
-copydata.commands = $(COPY_DIR) \"$$shell_path($$PWD/Examples)\" \"$$shell_path($$PATH_TO_BINARY)\"
-first.depends = $(first) copydata
+copyExamples.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_BACKEND/examples)) $$shell_quote($$shell_path($$EXAMPLE_FOLDER))
+first.depends = $(first) copyExamples
+
+copyBackEnd.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_BACKEND)) $$shell_quote($$shell_path($$BACKEND_FOLDER))
+first.depends += $(first) copyBackEnd
+
 export(first.depends)
-export(copydata.commands)
-QMAKE_EXTRA_TARGETS += first copydata
+export(copyExamples.commands)
+export(copyBackEnd.commands)
 
-QMAKE_CXXFLAGS += -mmacosx-version-min=10.14
-
+QMAKE_EXTRA_TARGETS += first copyExamples copyBackEnd

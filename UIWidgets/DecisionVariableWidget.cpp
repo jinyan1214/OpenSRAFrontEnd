@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "DecisionVariableWidget.h"
-#include "DVNumRepairsWidget.h"
+#include "DVRepairRateWidget.h"
 #include "sectiontitle.h"
 #include "SimCenterComponentSelection.h"
 
@@ -61,6 +61,8 @@ DecisionVariableWidget::DecisionVariableWidget(QWidget *parent): SimCenterAppWid
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
+    mainLayout->setSpacing(0);
+    mainLayout->setContentsMargins(5,0,0,0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle(this);
@@ -76,18 +78,14 @@ DecisionVariableWidget::DecisionVariableWidget(QWidget *parent): SimCenterAppWid
 
     auto theComponentSelection = new SimCenterComponentSelection(this);
 
-    DVNumRepairs = new DVNumRepairsWidget(this);
+    QString nameToDisplay = "Repair Rate";
 
-//    QGroupBox* numRepairsBox = this->getNumRepairsWidget();
-//    QGroupBox* numBreaksBox = this->getNumBreaksWidget();
-//    QGroupBox* serviceabilityBox = this->getServiceabilityWidget();
-//    QGroupBox* DM4Box = this->getDM4Widget();
+    repairRateWidget = new DVRepairRateWidget(this);
+//    DVNumRepairs = new DVNumRepairsWidget(this);
 
-    theComponentSelection->addComponent("Annual Number\nof Repairs",DVNumRepairs);
-//    theComponentSelection->addComponent("Test",numRepairsBox);
-//    theComponentSelection->addComponent("Serviceability\nIndex",serviceabilityBox);
+    theComponentSelection->addComponent(nameToDisplay,repairRateWidget);
 
-    theComponentSelection->displayComponent("Annual Number\nof Repairs");
+    theComponentSelection->displayComponent(nameToDisplay);
 
     theComponentSelection->setWidth(120);
     theComponentSelection->setItemWidthHeight(120,70);
@@ -109,7 +107,7 @@ bool DecisionVariableWidget::outputToJSON(QJsonObject &jsonObject)
 
     QJsonObject typeObj;
 
-    DVNumRepairs->outputToJSON(typeObj);
+    repairRateWidget->outputToJSON(typeObj);
 
     outputObj.insert("Type",typeObj);
 
@@ -126,7 +124,7 @@ bool DecisionVariableWidget::inputFromJSON(QJsonObject &jsonObject)
     if(typeObj.isEmpty())
         return false;
 
-    DVNumRepairs->inputFromJSON(typeObj);
+    repairRateWidget->inputFromJSON(typeObj);
 
     return true;
 }
@@ -249,5 +247,5 @@ QGroupBox* DecisionVariableWidget::getDM4Widget(void)
 
 void DecisionVariableWidget::clear(void)
 {
-    DVNumRepairs->clear();
+    repairRateWidget->clear();
 }

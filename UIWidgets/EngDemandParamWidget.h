@@ -30,17 +30,12 @@ PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Stevan Gavrilovic, SimCenter @ UC Berkeley
 
 #include <SimCenterAppWidget.h>
 
+class SimCenterJsonWidget;
 class EDPLandslideWidget;
-class EDPLiquefactionWidget;
-class EDPLatSpreadWidget;
-class EDPGroundSettlementWidget;
-class EDPGroundStrainWidget;
-class EDPSurfFaultRupWidget;
-class EDPSubSurfFaultRupWidget;
 
 class QGroupBox;
 
@@ -65,12 +60,12 @@ public slots:
 private:
 
     EDPLandslideWidget* EDPLandslide;
-    EDPLiquefactionWidget* EDPLiquefaction;
-    EDPLatSpreadWidget* EDPLatSpread;
-    EDPGroundSettlementWidget* EDPGroundSettlement;
-    EDPGroundStrainWidget* EDPGroundStrain;
-    EDPSurfFaultRupWidget* EDPSurfFaultRup;
-    EDPSubSurfFaultRupWidget* EDPSubSurfFaultRup;
+    SimCenterJsonWidget* EDPLiquefaction;
+    SimCenterJsonWidget* EDPLatSpread;
+    SimCenterJsonWidget* EDPGroundSettlement;
+    SimCenterJsonWidget* EDPGroundStrain;
+    SimCenterJsonWidget* EDPSurfFaultRup;
+    SimCenterJsonWidget* EDPSubSurfFaultRup;
 };
 
 #endif // EDP_EARTHQUAKE_SELECTION_H

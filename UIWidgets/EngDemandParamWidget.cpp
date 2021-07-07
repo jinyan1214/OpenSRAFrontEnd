@@ -28,16 +28,11 @@ PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Stevan Gavrilovic, SimCenter @ UC Berkeley
 
 #include "EngDemandParamWidget.h"
 #include "EDPLandslideWidget.h"
-#include "EDPGroundSettlementWidget.h"
-#include "EDPLiquefactionWidget.h"
-#include "EDPLatSpreadWidget.h"
-#include "EDPGroundStrainWidget.h"
-#include "EDPSurfFaultRupWidget.h"
-#include "EDPSubSurfFaultRupWidget.h"
+#include "SimCenterJsonWidget.h"
 
 #include "sectiontitle.h"
 #include "SimCenterComponentSelection.h"
@@ -60,15 +55,15 @@ EngDemandParamWidget::EngDemandParamWidget(QWidget *parent) : SimCenterAppWidget
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
-
+    mainLayout->setSpacing(0);
+    mainLayout->setContentsMargins(5,0,0,0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
     label->setText(QString("Engineering Demand Parameter (EDP)"));
-    label->setMinimumWidth(150);
 
     theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
+    QSpacerItem *spacer = new QSpacerItem(50,0);
     theHeaderLayout->addItem(spacer);
 
     theHeaderLayout->addStretch(1);
@@ -77,12 +72,12 @@ EngDemandParamWidget::EngDemandParamWidget(QWidget *parent) : SimCenterAppWidget
     auto theComponentSelection = new SimCenterComponentSelection();
 
     EDPLandslide = new EDPLandslideWidget(this);
-    EDPLiquefaction = new EDPLiquefactionWidget(this);
-    EDPLatSpread = new EDPLatSpreadWidget(this);
-    EDPGroundSettlement = new EDPGroundSettlementWidget(this);
-    EDPGroundStrain = new EDPGroundStrainWidget(this);
-    EDPSurfFaultRup = new EDPSurfFaultRupWidget(this);
-    EDPSubSurfFaultRup = new EDPSubSurfFaultRupWidget(this);
+    EDPLiquefaction = new SimCenterJsonWidget("Liquefaction","EngineeringDemandParameter", this);
+    EDPLatSpread = new SimCenterJsonWidget("LateralSpread","EngineeringDemandParameter",this);
+    EDPGroundSettlement = new SimCenterJsonWidget("GroundSettlement","EngineeringDemandParameter",this);
+    EDPGroundStrain = new SimCenterJsonWidget("TransientGroundStrain","EngineeringDemandParameter",this);
+    EDPSurfFaultRup = new SimCenterJsonWidget("SurfaceFaultRupture","EngineeringDemandParameter",this);
+    EDPSubSurfFaultRup = new SimCenterJsonWidget("SubsurfaceFaultRupture","EngineeringDemandParameter",this);
 
     theComponentSelection->setWidth(120);
     theComponentSelection->setItemWidthHeight(120,70);
@@ -138,31 +133,31 @@ bool EngDemandParamWidget::inputFromJSON(QJsonObject &jsonObject)
     if(typeObj.isEmpty())
         return false;
 
-    auto liquefactionObj = typeObj["Liquefaction"].toObject();
+    auto liquefactionObj = typeObj.value("Liquefaction").toObject();
     if(!liquefactionObj.isEmpty())
         EDPLiquefaction->inputFromJSON(liquefactionObj);
 
-    auto landslideObj = typeObj["Landslide"].toObject();
+    auto landslideObj = typeObj.value("Landslide").toObject();
     if(!landslideObj.isEmpty())
         EDPLandslide->inputFromJSON(landslideObj);
 
-    auto latSpreadObj = typeObj["LateralSpread"].toObject();
+    auto latSpreadObj = typeObj.value("LateralSpread").toObject();
     if(!latSpreadObj.isEmpty())
         EDPLatSpread->inputFromJSON(latSpreadObj);
 
-    auto groundSpreadObj = typeObj["GroundSettlement"].toObject();
+    auto groundSpreadObj = typeObj.value("GroundSettlement").toObject();
     if(!groundSpreadObj.isEmpty())
         EDPGroundSettlement->inputFromJSON(groundSpreadObj);
 
-    auto surfFaultObj = typeObj["SurfaceFaultRupture"].toObject();
+    auto surfFaultObj = typeObj.value("SurfaceFaultRupture").toObject();
     if(!surfFaultObj.isEmpty())
         EDPSurfFaultRup->inputFromJSON(surfFaultObj);
 
-    auto subSurfObj = typeObj["SubsurfaceFaultRupture"].toObject();
+    auto subSurfObj = typeObj.value("SubsurfaceFaultRupture").toObject();
     if(!subSurfObj.isEmpty())
         EDPSubSurfFaultRup->inputFromJSON(subSurfObj);
 
-    auto groundStrainObj = typeObj["TransientGroundStrain"].toObject();
+    auto groundStrainObj = typeObj.value("TransientGroundStrain").toObject();
     if(!groundStrainObj.isEmpty())
         EDPGroundStrain->inputFromJSON(groundStrainObj);
 

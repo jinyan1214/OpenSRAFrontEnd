@@ -40,15 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterAppWidget.h"
 
-class SimCenterAppWidget;
-class MonteCarloSamplingWidget;
-class FixedResidualsSamplingWidget;
-
-class QVBoxLayout;
-class QComboBox;
-class QCheckBox;
-class QLineEdit;
-class QStackedWidget;
+class JsonDefinedWidget;
 
 class UncertaintyQuantificationWidget : public  SimCenterAppWidget
 {
@@ -64,16 +56,12 @@ public:
     void clear();
 
 private slots:
-    void onTextChanged(const QString &text);
 
 private:
-    QVBoxLayout *layout;
 
-    QComboBox   *samplingMethod;
-    QStackedWidget *theStackedWidget;
-    MonteCarloSamplingWidget *theMonteCarloWidget;
-    FixedResidualsSamplingWidget *theFixedResidualsWidget;
+    QWidget* getMainWidget(void);
 
+    JsonDefinedWidget* mainWidget = nullptr;
 };
 
 #endif // UncertaintyQuantificationWidget_H
