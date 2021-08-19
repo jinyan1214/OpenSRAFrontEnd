@@ -119,6 +119,8 @@ QGroupBox* DVRepairRateWidget::getWidgetBox(void)
 
     mainLayout->addLayout(inputLayout);
 
+    mainLayout->addStretch(1);
+
     mainLayout->addItem(smallVSpacer);
 
     mainLayout->addLayout(weightLayout);

@@ -14,7 +14,10 @@ bool JsonLineEdit::outputToJSON(QJsonObject &jsonObject)
     auto data = this->text();
 
     if(data.isEmpty())
+    {
+        jsonObject[key] = QJsonValue::Null;
         return true;
+    }
 
     if(dataType == QJsonValue::Type::Double)
         jsonObject[key] = data.toDouble();
@@ -23,7 +26,7 @@ bool JsonLineEdit::outputToJSON(QJsonObject &jsonObject)
     else if(dataType == QJsonValue::Type::Array)
         jsonObject[key] = getArrayFromText(data);
     else if(dataType == QJsonValue::Type::Null)
-        jsonObject[key] = "null";
+        jsonObject[key] = QJsonValue::Null; // "null"
     else
     {
         this->errorMessage("Error, type not supported in " + this->objectName());

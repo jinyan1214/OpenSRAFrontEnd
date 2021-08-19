@@ -8,6 +8,10 @@ JsonWidget::JsonWidget(QWidget* parent) : QWidget(parent)
 
 bool JsonWidget::outputToJSON(QJsonObject &jsonObject)
 {
+    auto childWidgetList = this->findChildren<QWidget*>(QRegularExpression(), Qt::FindDirectChildrenOnly);
+    QStringList childList;
+    for(auto&& child : childWidgetList)
+        childList<<child->objectName();
 
     auto thisObj = this->objectName();
 
@@ -27,6 +31,34 @@ bool JsonWidget::outputToJSON(QJsonObject &jsonObject)
             asJson->outputToJSON(jsonObject);
         }
     }
+
+
+    // Works with ex 6,
+
+//    auto childWidgetList = this->findChildren<QWidget*>(QRegularExpression(), Qt::FindDirectChildrenOnly);
+//    QStringList childList;
+//    for(auto&& child : childWidgetList)
+//        childList<<child->objectName();
+
+//    auto thisObj = this->objectName();
+
+//    // qDebug()<<thisObj;
+
+//    auto subWidgetList = this->findChildren<QWidget*>(QRegularExpression(), Qt::FindDirectChildrenOnly);
+//    for(auto&& subWidget : subWidgetList)
+//    {
+//        auto key = subWidget->objectName();
+
+//        if(key.isEmpty() == true || key.compare("NULL") == 0)
+//            continue;
+
+//        auto asJson = dynamic_cast<JsonSerializable*>(subWidget);
+//        if(asJson != nullptr)
+//        {
+//            asJson->outputToJSON(jsonObject);
+//        }
+//    }
+
 
     return true;
 }

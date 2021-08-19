@@ -22,6 +22,8 @@ SimCenterJsonWidget::SimCenterJsonWidget(QString methodName, QString type, QWidg
 {
     this->setObjectName(methodName);
 
+    methodKey = methodName;
+
     QSplitter *splitter = new QSplitter(this);
 
     listWidget = new CustomListWidget("List of Cases to Run",this);
@@ -102,6 +104,8 @@ QGroupBox* SimCenterJsonWidget::getWidgetBox(const QString& type)
 
     mainLayout->addLayout(inputLayout);
 
+    mainLayout->addStretch(1);
+
     mainLayout->addItem(smallVSpacer);
 
     mainLayout->addLayout(weightLayout);
@@ -172,6 +176,7 @@ bool SimCenterJsonWidget::outputToJSON(QJsonObject &jsonObj)
     if(methodsObj.empty())
     {
         outputObj.insert("ToInclude", false);
+        jsonObj.insert(methodKey,outputObj);
         return true;
     }
 
@@ -179,7 +184,7 @@ bool SimCenterJsonWidget::outputToJSON(QJsonObject &jsonObj)
 
     outputObj["Method"] = methodsObj;
 
-    jsonObj.insert(this->objectName(),outputObj);
+    jsonObj.insert(methodKey,outputObj);
 
     return true;
 }

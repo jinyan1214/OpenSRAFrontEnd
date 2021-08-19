@@ -14,10 +14,11 @@ bool JsonComboBox::outputToJSON(QJsonObject &jsonObject)
     auto key = this->objectName();
     QString data;
 
-    if(key.compare("ColumnIDWithData") == 0)
+    // Try to get the data from the "current data" function
+    data = this->currentData().toString();
+
+    if(data.isEmpty())
         data = this->currentText();
-    else
-        data = this->currentData().toString();
 
     QJsonObject outputObj;
     boxStackedWidget->outputToJSON(outputObj);

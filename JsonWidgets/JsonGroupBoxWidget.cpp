@@ -23,6 +23,8 @@ bool JsonGroupBoxWidget::outputToJSON(QJsonObject &jsonObject)
 
     auto objName = this->objectName();
 
+    QJsonObject thisGroup;
+
     auto subWidgetList = this->findChildren<QWidget*>(QRegularExpression(), Qt::FindDirectChildrenOnly);
     for(auto&& subWidget : subWidgetList)
     {
@@ -34,9 +36,13 @@ bool JsonGroupBoxWidget::outputToJSON(QJsonObject &jsonObject)
         auto asJson = dynamic_cast<JsonSerializable*>(subWidget);
         if(asJson != nullptr)
         {
-            asJson->outputToJSON(jsonObject);
+            QJsonObject obj;
+            asJson->outputToJSON(obj);
+            thisGroup[key] = obj;
         }
     }
+
+    jsonObject[objName] = thisGroup;
 
     return true;
 }

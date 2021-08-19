@@ -101,20 +101,22 @@ QGroupBox* EDPLandslideWidget::getWidgetBox(void)
 
     QVBoxLayout* mainLayout = new QVBoxLayout(groupBox);
 
-    QVBoxLayout* methodLayout = new QVBoxLayout();
-    methodLayout->setMargin(0);
-    methodLayout->addWidget(methodWidget);
-    methodLayout->addWidget(yieldAccParametersWidget);
-    methodLayout->addStretch();
+    QHBoxLayout* yieldAccLayout = new QHBoxLayout();
+    yieldAccLayout->setMargin(0);
+    yieldAccLayout->addWidget(yieldAccMethodWidget);
+    yieldAccLayout->addWidget(yieldAccParametersWidget);
+    yieldAccLayout->setStretch(0,1);
+    yieldAccLayout->setStretch(1,1);
 
-    QHBoxLayout* inputLayout = new QHBoxLayout();
+    QVBoxLayout* inputLayout = new QVBoxLayout();
     inputLayout->setMargin(0);
-    inputLayout->addLayout(methodLayout);
-    inputLayout->addWidget(yieldAccMethodWidget);
-    inputLayout->setStretch(0,1);
-    inputLayout->setStretch(1,1);
+    inputLayout->addWidget(methodWidget);
+    inputLayout->addLayout(yieldAccLayout);
+    inputLayout->addStretch();
 
     mainLayout->addLayout(inputLayout);
+
+    mainLayout->addStretch(1);
 
     mainLayout->addItem(smallVSpacer);
 
@@ -192,6 +194,7 @@ bool EDPLandslideWidget::outputToJSON(QJsonObject &jsonObj)
     if(methodsObj.empty())
     {
         outputObj.insert("ToInclude", false);
+        jsonObj.insert(this->objectName(),outputObj);
         return true;
     }
 
@@ -285,7 +288,7 @@ JsonWidget* EDPLandslideWidget::getYieldMethodWidget()
     QLabel* widgetLabel = new QLabel(widgetLabelText, yieldMethodWidget);
 
     auto kyWidget = theWidgetFactory->getWidget(methodKyObj,methodKyStr,yieldMethodWidget);
-    kyWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    kyWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
     kyWidget->setObjectName(methodKyStr);
 
     QVBoxLayout* kyWidgetLayout = new QVBoxLayout(yieldMethodWidget);
@@ -294,7 +297,7 @@ JsonWidget* EDPLandslideWidget::getYieldMethodWidget()
     kyWidgetLayout->addWidget(widgetLabel);
     kyWidgetLayout->addWidget(kyWidget);
 
-    kyWidgetLayout->addStretch();
+    kyWidgetLayout->addStretch(1);
 
     return yieldMethodWidget;
 }

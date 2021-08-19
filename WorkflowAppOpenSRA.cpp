@@ -238,6 +238,7 @@ void WorkflowAppOpenSRA::initialize(void)
     theDecisionVariableWidget = new DecisionVariableWidget(this);
     theResultsWidget = new ResultsWidget(this,theVisualizationWidget);
 
+
     SimCenterWidget *theWidgets[1];
 
     localApp = new LocalApplication("OpenSRA.py",theMainWindow);
@@ -275,13 +276,14 @@ void WorkflowAppOpenSRA::initialize(void)
 
     theComponentSelection->displayComponent("Visualization");
 
-//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex1_OpenSHA_LHS_noEDP_noDV/Input/SetupConfig.json");
+//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex1_OpenSHA_noEDP_noDV/Input/SetupConfig.json");
 //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex2_ShakeMap_noEDP_noDV/Input/SetupConfig.json");
-//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex3_IMCorrelation_RepairRatePGV/Input/SetupConfig.json");
+//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex3_IMCorr_RepairRatePGV/Input/SetupConfig.json");
 //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex4_EDPs_and_RepairRatePGD/Input/SetupConfig.json");
-    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex5_MultipleMethods/Input/SetupConfig.json");
+//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex5_MultipleMethods/Input/SetupConfig.json");
 //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex6_UserInputModelParams/Input/SetupConfig.json");
 
+//    theResultsWidget->processResults("/Users/steve/Desktop/ResToDelete/");
 }
 
 
@@ -350,21 +352,21 @@ bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
 {
     bool res = true;
 
-//    // Get each of the main widgets to output themselves
-//    res = theGenInfoWidget->outputToJSON(jsonObjectTop);
+    // Get each of the main widgets to output themselves
+    res = theGenInfoWidget->outputToJSON(jsonObjectTop);
 
-//    if(!res)
-//        return false;
+    if(!res)
+        return false;
 
     res = theUQWidget->outputToJSON(jsonObjectTop);
 
     if(!res)
         return false;
 
-//    res = thePipelineNetworkWidget->outputToJSON(jsonObjectTop);
+    res = thePipelineNetworkWidget->outputToJSON(jsonObjectTop);
 
-//    if(!res)
-//        return false;
+    if(!res)
+        return false;
 
     res = theIntensityMeasureWidget->outputToJSON(jsonObjectTop);
 

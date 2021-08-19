@@ -24,9 +24,7 @@ OpenSHAWidget::OpenSHAWidget(QWidget* parent) : SimCenterAppWidget(parent)
 
 bool OpenSHAWidget::outputToJSON(QJsonObject &jsonObj)
 {
-
-
-    return true;
+    return mainWidget->outputToJSON(jsonObj);
 }
 
 

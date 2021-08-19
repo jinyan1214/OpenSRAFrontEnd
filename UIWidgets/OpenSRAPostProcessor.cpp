@@ -95,7 +95,12 @@ using namespace Esri::ArcGISRuntime;
 
 OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
+    PGVTreeItem = nullptr;
+    PGDTreeItem = nullptr;
+    totalTreeItem = nullptr;
     thePipelineDb = nullptr;
+    // The first n columns is information about the component and not results
+    numInfoCols = 8;
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
@@ -109,6 +114,8 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
     connect(listWidget, &MutuallyExclusiveListWidget::itemChecked, this, &OpenSRAPostProcessor::handleListSelection);
     connect(listWidget, &MutuallyExclusiveListWidget::clearAll, this, &OpenSRAPostProcessor::clearAll);
     connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&OpenSRAPostProcessor::assemblePDF);
+
+    listWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     // Create the table that will show the Component information
     tableWidget = new QWidget(this);
@@ -248,17 +255,7 @@ int OpenSRAPostProcessor::importScenarioTraces(const QString& pathToFile)
 
     auto featureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Polyline, SpatialReference::wgs84(),this);
 
-    QColor featureColor = QColor(0,0,0,200);
-
     auto legendLabel = layerName;
-
-    auto weight = 1.0;
-
-    SimpleLineSymbol* lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, featureColor, weight, this);
-    SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol, this);
-    lineRenderer->setLabel(legendLabel);
-
-    featureCollectionTable->setRenderer(lineRenderer);
 
     for(auto&& it : traces)
     {
@@ -270,6 +267,11 @@ int OpenSRAPostProcessor::importScenarioTraces(const QString& pathToFile)
         {
             QString msg ="Error getting the feature geometry for " + layerName;
             this->errorMessage(msg);
+
+            // Clean up memory
+            delete featureCollection;
+            delete featureCollectionTable;
+
             return -1;
         }
 
@@ -283,6 +285,15 @@ int OpenSRAPostProcessor::importScenarioTraces(const QString& pathToFile)
         featureCollectionTable->addFeature(feature);
 
     }
+
+    QColor featureColor = QColor(0,0,0,200);
+    auto weight = 1.0;
+
+    SimpleLineSymbol* lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, featureColor, weight, this);
+    SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol, this);
+    lineRenderer->setLabel(legendLabel);
+
+    featureCollectionTable->setRenderer(lineRenderer);
 
     featureCollection->tables()->append(featureCollectionTable);
 
@@ -343,7 +354,6 @@ void OpenSRAPostProcessor::importResults(const QString& pathToResults)
     this->importResultVisuals(pathToScenarioTraces);
 
 
-
     listWidget->expandAll();
 }
 
@@ -367,6 +377,7 @@ int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
 
     QString PGDResultsSheet;
     QString PGVResultsSheet;
+    QString AllResultsSheet;
 
     for(auto&& it : existingCSVFiles)
     {
@@ -374,6 +385,8 @@ int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
             PGDResultsSheet = it;
         else if(it.startsWith("RepairRatePGV"))
             PGVResultsSheet = it;
+        else if(it.startsWith("AllResults"))
+            AllResultsSheet = it;
     }
 
     CSVReaderWriter csvTool;
@@ -408,6 +421,22 @@ int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
         }
     }
 
+    if(!AllResultsSheet.isEmpty())
+    {
+        RepairRateAll = csvTool.parseCSVFile(pathToResults + QDir::separator() + AllResultsSheet,errMsg);
+        if(!errMsg.isEmpty())
+            throw errMsg;
+
+        if(!RepairRateAll.empty())
+            this->processTotalResults(RepairRateAll);
+        else
+        {
+            errMsg = "The total results are empty";
+            throw errMsg;
+        }
+    }
+
+
     listWidget->expandAll();
 
     return 0;
@@ -416,8 +445,6 @@ int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
 
 int OpenSRAPostProcessor::processPGVResults(const QVector<QStringList>& DVResults)
 {
-    // The first n columns is information about the component and not results
-    auto numInfoCols = 7;
 
     auto numRows = DVResults.size();
 
@@ -436,8 +463,11 @@ int OpenSRAPostProcessor::processPGVResults(const QVector<QStringList>& DVResult
         throw msg;
     }
 
-    PGVTreeItem = listWidget->addItem("Shaking Induced");
-    PGVTreeItem->setIsCheckable(false);
+    if(PGVTreeItem == nullptr)
+    {
+        PGVTreeItem = listWidget->addItem("Shaking Induced");
+        PGVTreeItem->setIsCheckable(false);
+    }
 
     QStringList tableHeadings;
 
@@ -505,8 +535,6 @@ int OpenSRAPostProcessor::processPGVResults(const QVector<QStringList>& DVResult
 
 int OpenSRAPostProcessor::processPGDResults(const QVector<QStringList>& DVResults)
 {
-    // The first n columns is information about the component and not results
-    auto numInfoCols = 7;
 
     auto numRows = DVResults.size();
 
@@ -525,8 +553,11 @@ int OpenSRAPostProcessor::processPGDResults(const QVector<QStringList>& DVResult
         throw msg;
     }
 
-    PGDTreeItem = listWidget->addItem("Deformation Induced");
-    PGDTreeItem->setIsCheckable(false);
+    if(PGDTreeItem == nullptr)
+    {
+        PGDTreeItem = listWidget->addItem("Deformation Induced");
+        PGDTreeItem->setIsCheckable(false);
+    }
 
     QStringList tableHeadings;
 
@@ -589,6 +620,79 @@ int OpenSRAPostProcessor::processPGDResults(const QVector<QStringList>& DVResult
     }
 
     return 0;
+}
+
+
+int OpenSRAPostProcessor::processTotalResults(const QVector<QStringList>& DVResults)
+{
+
+    auto numRows = DVResults.size();
+
+    // Check if there is data in the results, and not just the header rows
+    if(numRows < numHeaderRows)
+    {
+        QString msg = "No results to import!";
+        throw msg;
+    }
+
+    auto numHeaderColumns = DVResults.at(0).size();
+
+    if(numHeaderColumns < numInfoCols)
+    {
+        QString msg = "No results to import!";
+        throw msg;
+    }
+
+    if(totalTreeItem == nullptr)
+    {
+        totalTreeItem = listWidget->addItem("Total Repair Rates");
+        totalTreeItem->setIsCheckable(false);
+    }
+
+    QStringList tableHeadings = DVResults.at(0);
+
+    QString headerStr = "TotalRepairRateForAllDemands";
+
+    auto indexOfTotals = tableHeadings.indexOf(headerStr,-1);
+
+    if(indexOfTotals == -1)
+    {
+        QString msg = "Error getting index to total repairs";
+        throw msg;
+    }
+
+    QString itemStr = "All demands";
+
+    auto item = listWidget->addItem(itemStr,totalTreeItem);
+
+    // Set the header string as a property so I can find the header value later
+    item->setProperty("HeaderString",headerStr);
+
+    // Start at the row where headers end
+    for(int row = numHeaderRows; row<numRows; ++row)
+    {
+        auto inputRow = DVResults.at(row);
+
+        auto pipelineID = objectToInt(inputRow.at(0));
+
+        Component& pipeline = thePipelineDb->getComponent(pipelineID);
+
+        if(pipeline.ID == -1)
+            throw QString("Could not find the pipeline ID " + QString::number(pipelineID) + " in the database");
+
+        pipeline.ID = pipelineID;
+
+        // Add the result to the database
+        auto key = tableHeadings.at(indexOfTotals);
+        auto value = inputRow.at(indexOfTotals).toDouble();
+
+        pipeline.addResult(key,value);
+    }
+
+    item->setState(2);
+
+    return 0;
+
 }
 
 
@@ -764,6 +868,16 @@ void OpenSRAPostProcessor::setCurrentlyViewable(bool status){
 
     if (status == true)
         mapViewSubWidget->setCurrentlyViewable(status);
+
+    // Set the legend to display the selected building layer
+    auto componentsWidget = theVisualizationWidget->getComponentWidget("GASPIPELINES");
+
+    if(componentsWidget)
+    {
+        auto selectedLayer = componentsWidget->getSelectedFeatureLayer();
+
+        theVisualizationWidget->handleLegendChange(selectedLayer);
+    }
 }
 
 
@@ -771,6 +885,7 @@ void OpenSRAPostProcessor::clear(void)
 {
     RepairRatePGV.clear();
     RepairRatePGD.clear();
+    RepairRateAll.clear();
     outputFilePath.clear();
     if(thePipelineDb)
         thePipelineDb->clear();

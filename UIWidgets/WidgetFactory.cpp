@@ -23,9 +23,9 @@ WidgetFactory::WidgetFactory(QWidget *parent) : SimCenterWidget(parent)
 }
 
 
-QLayout * WidgetFactory::getLayout(const QJsonObject& obj, const QString& parentKey, QWidget* parent)
+QLayout * WidgetFactory::getLayout(const QJsonObject& obj, const QString& parentKey, QWidget* parent, QStringList widgetOrder)
 {
-    return this->getLayoutFromParams(obj, parentKey, parent);
+    return this->getLayoutFromParams(obj, parentKey, parent, Qt::Vertical, widgetOrder);
 }
 
 
@@ -68,7 +68,7 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
 
     QVBoxLayout* mainLayout = new QVBoxLayout(mainWidget);
     mainLayout->setMargin(0);
-    mainLayout->setSpacing(0);
+    mainLayout->setSpacing(1);
 
     JsonComboBox* comboWidget = new JsonComboBox(mainWidget);
     comboWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
@@ -78,8 +78,9 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
     JsonStackedWidget* comboStackedWidget = new JsonStackedWidget(mainWidget);
     comboStackedWidget->setObjectName("NULL");
     comboStackedWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    comboStackedWidget->setContentsMargins(0,0,0,0);
+    comboStackedWidget->setContentsMargins(50,0,0,0);
     comboWidget->setStackedWidget(comboStackedWidget);
+
     mainLayout->addWidget(comboStackedWidget);
     connect(comboWidget,SIGNAL(currentIndexChanged(int)),comboStackedWidget,SLOT(setCurrentIndex(int)));
 
@@ -146,7 +147,7 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
         }
         else
         {
-            this->errorMessage("Error, could not find the item " + defValue);
+            this->errorMessage("Error, could not find the item " + defValue + " in " + comboWidget->objectName());
         }
     }
 
@@ -181,13 +182,13 @@ QWidget* WidgetFactory::getCheckBoxWidget(const QJsonObject& obj, const QString&
     mainWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     mainWidget->setObjectName("NULL");
 
-    JsonCheckBox* checkBoxWidget = new JsonCheckBox(mainWidget);
+    JsonCheckBox* checkBoxWidget = new JsonCheckBox(parent);
     checkBoxWidget->setMainWidget(mainWidget);
     checkBoxWidget->setObjectName(parentKey);
 
     QHBoxLayout* mainLayout = new QHBoxLayout(mainWidget);
     mainLayout->setMargin(0);
-    mainLayout->setSpacing(0);
+    mainLayout->setSpacing(2);
 
     auto text = obj.value("NameToDisplay").toString();
 
@@ -208,6 +209,7 @@ QWidget* WidgetFactory::getCheckBoxWidget(const QJsonObject& obj, const QString&
         JsonDefinedWidget* newWidget = new JsonDefinedWidget(checkBoxWidget, obj, parentKey);
         newWidget->setObjectName("CheckBoxSubWidget");
         mainLayout->addWidget(newWidget);
+        checkBoxWidget->setSubWidget(newWidget);
 
         connect(checkBoxWidget,&QCheckBox::stateChanged,newWidget,&QWidget::setVisible);
 
@@ -218,7 +220,7 @@ QWidget* WidgetFactory::getCheckBoxWidget(const QJsonObject& obj, const QString&
 }
 
 
-QLayout* WidgetFactory::getLayoutFromParams(const QJsonObject& params, const QString& parentKey, QWidget* parent, Qt::Orientation orientation)
+QLayout* WidgetFactory::getLayoutFromParams(const QJsonObject& params, const QString& parentKey, QWidget* parent, Qt::Orientation orientation, QStringList widgetOrder)
 {
     QBoxLayout* mainLayout;
 
@@ -228,60 +230,92 @@ QLayout* WidgetFactory::getLayoutFromParams(const QJsonObject& params, const QSt
         mainLayout = new QHBoxLayout();
 
     mainLayout->setMargin(0);
-    mainLayout->setSpacing(0);
+    mainLayout->setSpacing(2);
 
-    QJsonObject::const_iterator param;
-
-    for (param = params.begin(); param != params.end(); ++param)
+    // This will create the widgets in a certain order
+    if(!widgetOrder.isEmpty())
     {
-        auto key = param.key();
-
-        auto paramObj = param.value().toObject();
-        auto widget = this->getWidget(paramObj, key, parent);
-
-        if(widget != nullptr)
+        for(auto&& key : widgetOrder)
         {
-            widget->setObjectName(key);
+            auto paramObj = params.value(key).toObject();
 
-            widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+            auto res = addWidgetToLayout(paramObj,key,parent,mainLayout);
 
-            auto widgetLabelText = paramObj.value("NameToDisplay").toString();
-
-            if(widgetLabelText.isEmpty())
+            if(!res)
             {
-                this->errorMessage("Could not find the *NameToDisplay* key in object json for " + parentKey);
-                continue;
+                this->errorMessage("Could not create the widget " + parentKey);
+                break;
             }
+        }
+    }
+    else
+    {
+        QJsonObject::const_iterator param;
+        for (param = params.begin(); param != params.end(); ++param)
+        {
+            auto key = param.key();
 
+            auto paramObj = param.value().toObject();
 
-            auto widgetType = paramObj.value("WidgetType").toString();
+            auto res = addWidgetToLayout(paramObj,key,parent,mainLayout);
 
-            if(isNestedComboBoxWidget(paramObj))
+            if(!res)
             {
-                QLabel* widgetLabel = new QLabel(widgetLabelText,this->parentWidget());
-                mainLayout->addWidget(widgetLabel);
-                mainLayout->addWidget(widget);
-            }
-            else if(widgetType.compare("QWidget") == 0 || widgetType.compare("QCheckBox") == 0)
-            {
-                mainLayout->addWidget(widget);
-            }
-            else
-            {
-                QLabel* widgetLabel = new QLabel(widgetLabelText,this->parentWidget());
-                QGridLayout* newHLayout = new QGridLayout();
-                newHLayout->setMargin(0);
-                newHLayout->setSpacing(0);
-
-                newHLayout->addWidget(widgetLabel,0,0);
-                newHLayout->addWidget(widget,0,1);
-
-                mainLayout->addLayout(newHLayout);
+                this->errorMessage("Could not create the widget " + parentKey);
+                break;
             }
         }
     }
 
     return mainLayout;
+}
+
+
+bool WidgetFactory::addWidgetToLayout(const QJsonObject& paramObj, const QString& key, QWidget* parent, QBoxLayout* mainLayout)
+{
+    auto widget = this->getWidget(paramObj, key, parent);
+
+    if(widget == nullptr)
+        return false;
+
+    widget->setObjectName(key);
+
+    widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+
+    auto widgetLabelText = paramObj.value("NameToDisplay").toString();
+
+    if(widgetLabelText.isEmpty())
+    {
+        this->errorMessage("Could not find the *NameToDisplay* key in object json for " + key);
+        return false;
+    }
+
+    auto widgetType = paramObj.value("WidgetType").toString();
+
+    if(isNestedComboBoxWidget(paramObj))
+    {
+        QLabel* widgetLabel = new QLabel(widgetLabelText,this->parentWidget());
+        mainLayout->addWidget(widgetLabel);
+        mainLayout->addWidget(widget);
+    }
+    else if(widgetType.compare("QWidget") == 0 || widgetType.compare("QCheckBox") == 0)
+    {
+        mainLayout->addWidget(widget);
+    }
+    else
+    {
+        QLabel* widgetLabel = new QLabel(widgetLabelText,this->parentWidget());
+        QGridLayout* newHLayout = new QGridLayout();
+        newHLayout->setMargin(0);
+        newHLayout->setSpacing(0);
+
+        newHLayout->addWidget(widgetLabel,0,0);
+        newHLayout->addWidget(widget,0,1);
+
+        mainLayout->addLayout(newHLayout);
+    }
+
+    return true;
 }
 
 

@@ -31,6 +31,8 @@ public slots:
 
 private:
 
+    QString methodKey;
+
     JsonDefinedWidget* methodWidget;
 
     CustomListWidget* listWidget ;

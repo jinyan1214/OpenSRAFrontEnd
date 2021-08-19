@@ -111,6 +111,14 @@ PipelineNetworkWidget::~PipelineNetworkWidget()
 bool PipelineNetworkWidget::outputToJSON(QJsonObject &jsonObject)
 {
 
+    auto numComponents = theComponentInputWidget->getNumberOfComponents();
+
+    if(numComponents == 0)
+    {
+        errorMessage("No pipelines loaded");
+        return false;
+    }
+
     QJsonObject infrastructureObj;
 
     auto siteDataPath = theComponentInputWidget->getPathToComponentFile();
@@ -122,11 +130,40 @@ bool PipelineNetworkWidget::outputToJSON(QJsonObject &jsonObject)
     QString filterString = theComponentInputWidget->getFilterString();
     if(filterString.isEmpty())
     {
-        errorMessage("Please select components for analysis");
-        return false;
+        statusMessage("Selecting all components for analysis");
+
+        theComponentInputWidget->selectAllComponents();
+
+        filterString = theComponentInputWidget->getFilterString();
     }
 
     infrastructureObj.insert("filter",filterString);
+
+    QJsonObject locationParams;
+    theComponentInputWidget->outputToJSON(locationParams);
+
+    QJsonObject siteParamsObj;
+
+    QJsonObject::const_iterator locationObj;
+    for (locationObj = locationParams.begin(); locationObj != locationParams.end(); ++locationObj)
+    {
+        auto locObj = locationObj.value().toObject();
+
+        QJsonObject::const_iterator locationParamObj;
+        for (locationParamObj = locObj.begin(); locationParamObj != locObj.end(); ++locationParamObj)
+        {
+            auto key = locationParamObj.key();
+
+            auto val = locationParamObj.value().toObject().value(key).toString();
+
+            if(val.compare("N/A") == 0)
+                siteParamsObj[key] = QJsonValue::Null;
+            else
+                siteParamsObj[key] = locationParamObj.value().toObject().value(key).toString();
+        }
+    }
+
+    infrastructureObj["SiteLocationParams"] = siteParamsObj;
 
     jsonObject.insert("Infrastructure",infrastructureObj);
 

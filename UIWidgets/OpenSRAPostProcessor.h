@@ -147,6 +147,8 @@ private:
 
     int processPGDResults(const QVector<QStringList>& DVResults);
 
+    int processTotalResults(const QVector<QStringList>& DVResults);
+
     int importResultVisuals(const QString& pathToResults);
     int importFaultCrossings(const QString& pathToFile);
     int importScenarioTraces(const QString& pathToFile);
@@ -154,9 +156,11 @@ private:
 
     QVector<QStringList> RepairRatePGD;
     QVector<QStringList> RepairRatePGV;
+    QVector<QStringList> RepairRateAll;
 
     TreeItem* PGVTreeItem;
     TreeItem* PGDTreeItem;
+    TreeItem* totalTreeItem;
 
     QString outputFilePath;
 
@@ -173,8 +177,11 @@ private:
     std::unique_ptr<EmbeddedMapViewWidget> mapViewSubWidget;
     Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
 
-    // The number of header rows in the Pelicun results file
+    // The number of header rows in the results file
     int numHeaderRows;
+
+    // The number of columns that contain component information
+    int numInfoCols;
 
     ComponentDatabase* thePipelineDb;
 };
