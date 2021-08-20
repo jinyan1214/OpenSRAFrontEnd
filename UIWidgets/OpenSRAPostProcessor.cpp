@@ -891,11 +891,30 @@ void OpenSRAPostProcessor::clear(void)
         thePipelineDb->clear();
     PGVResultsTableWidget->clear();
     listWidget->clear();
+
+    if(PGVTreeItem != nullptr)
+    {
+        delete PGVTreeItem;
+        PGVTreeItem = nullptr;
+    }
+    if(PGDTreeItem != nullptr)
+    {
+        delete PGDTreeItem;
+        PGDTreeItem = nullptr;
+    }
+    if(totalTreeItem != nullptr)
+    {
+        delete totalTreeItem;
+        totalTreeItem = nullptr;
+    }
 }
 
 
 void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
 {
+    if(itemSelected == nullptr)
+        return;
+
     auto headerString = itemSelected->property("HeaderString").toString();
 
     if(headerString.isEmpty())
