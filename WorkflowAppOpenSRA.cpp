@@ -281,9 +281,9 @@ void WorkflowAppOpenSRA::initialize(void)
 //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex3_IMCorr_RepairRatePGV/Input/SetupConfig.json");
 //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex4_EDPs_and_RepairRatePGD/Input/SetupConfig.json");
 //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex5_MultipleMethods/Input/SetupConfig.json");
-//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex6_UserInputModelParams/Input/SetupConfig.json");
+    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex6_UserInputModelParams/Input/SetupConfig.json");
 
-//    theResultsWidget->processResults("/Users/steve/Desktop/ResToDelete/");
+    theResultsWidget->processResults("/Users/steve/Desktop/ResToDelete/");
 }
 
 

@@ -338,7 +338,14 @@ JsonWidget* EDPLandslideWidget::getYieldAccWidget()
 
     QLabel* widgetLabel = new QLabel(widgetLabelText, yieldAccWidget);
 
-    auto accWidgetInputLayout = theWidgetFactory->getLayoutFromParams(paramsObj,KyStr,yieldAccWidget);
+    auto dispOrderAray = thisObj["DisplayOrder"].toArray();
+
+    QStringList displayOrder;
+
+    for(auto&& varnt : dispOrderAray.toVariantList())
+        displayOrder.append(varnt.toString());
+
+    auto accWidgetInputLayout = theWidgetFactory->getLayoutFromParams(paramsObj,KyStr,yieldAccWidget,Qt::Vertical,displayOrder);
 
     QVBoxLayout* accWidgetLayout = new QVBoxLayout(yieldAccWidget);
     accWidgetLayout->addWidget(widgetLabel);

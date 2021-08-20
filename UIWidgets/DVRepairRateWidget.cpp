@@ -150,8 +150,10 @@ void DVRepairRateWidget::handleAddButtonPressed(void)
     }
 
     // Add the yield acceleration parameters
-    QJsonObject compPropObj;
-    componentPropertiesWidget->outputToJSON(compPropObj);
+    QJsonObject compPropOut;
+    componentPropertiesWidget->outputToJSON(compPropOut);
+
+    QJsonObject compPropObj = compPropOut.value("ComponentProperties").toObject();
 
     if(compPropObj.isEmpty())
     {
@@ -163,14 +165,16 @@ void DVRepairRateWidget::handleAddButtonPressed(void)
     QJsonObject typeObj;
     demandWidget->outputToJSON(typeObj);
 
-    auto keys = typeObj.keys();
+    auto demandObj = typeObj.value("Demand").toObject();
+
+    auto keys = demandObj.keys();
 
     for(int i = 0; i<keys.size(); ++i)
     {
         QJsonObject type;
 
         auto key = keys.at(i);
-        auto val = typeObj.value(key).toBool();
+        auto val = demandObj.value(key).toObject().value("ToInclude").toBool();
 
         type["ToInclude"] = val;
 
@@ -185,12 +189,12 @@ void DVRepairRateWidget::handleAddButtonPressed(void)
             for (prop = compPropObj.begin(); prop != compPropObj.end(); ++prop)
             {
                 auto propKey = prop.key();
-                auto propObj = prop.value().toObject();
+                auto propObj = prop.value().toObject().value(propKey).toObject();
 
                 if(!propObj.isEmpty())
                     typeMethodObj[propKey] = propObj;
                 else
-                    typeMethodObj[propKey] =  prop.value().toString();
+                    typeMethodObj[propKey] =  prop.value().toObject().value(propKey).toString();
 
             }
 

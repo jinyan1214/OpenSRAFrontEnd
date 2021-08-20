@@ -141,6 +141,8 @@ private slots:
 
     void clearAll(void);
 
+    void handleModifyLegend(void);
+
 private:
 
     int processPGVResults(const QVector<QStringList>& DVResults);

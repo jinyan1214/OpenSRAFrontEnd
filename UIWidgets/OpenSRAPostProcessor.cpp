@@ -78,6 +78,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTextCursor>
 #include <QTextTable>
 #include <QValueAxis>
+#include <QPushButton>
 
 // GIS headers
 #include "Basemap.h"
@@ -155,6 +156,12 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
     QVBoxLayout* rightHandLayout = new QVBoxLayout(rightHandWidget);
 
     rightHandLayout->addWidget(listWidget);
+
+    QPushButton* modifyLegendButton = new QPushButton("Modify Legend",this);
+    connect(modifyLegendButton, &QPushButton::clicked ,this, &OpenSRAPostProcessor::handleModifyLegend);
+
+    rightHandLayout->addWidget(modifyLegendButton);
+
     //    auto legView = theVisualizationWidget->getLegendView();
     //    if(legView != nullptr)
     //    {
@@ -174,6 +181,25 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
     Sizes.append(0.90 * sizeHint().width());
     Sizes.append(0.10 * sizeHint().width());
     mainWidget->setSizes(Sizes);
+}
+
+
+void OpenSRAPostProcessor::handleModifyLegend(void)
+{
+
+    auto pipelineInputWidget = theVisualizationWidget->getComponentWidget("GASPIPELINES");
+
+    if(pipelineInputWidget == nullptr)
+        return;
+
+    auto pipelineLayer = pipelineInputWidget->getSelectedFeatureLayer();
+
+    if(pipelineLayer == nullptr)
+        return;
+
+    auto layerId = pipelineLayer->layerId();
+
+    theVisualizationWidget->handlePlotColorChange(layerId);
 }
 
 
@@ -961,8 +987,15 @@ void OpenSRAPostProcessor::clearAll(void)
         if(arcGISFeature == nullptr)
             throw QString("ArcGIS feature is a null pointer for component ID " + QString::number(it.ID));
 
-        arcGISFeature->attributes()->replaceAttribute("RepairRate",0.0);
+        auto atrb = "RepairRate";
 
+        arcGISFeature->attributes()->replaceAttribute(atrb,0.0);
         arcGISFeature->featureTable()->updateFeature(arcGISFeature);
+
+        auto atrbVal = QVariant(0.0);
+
+        // Get the feature UID
+        auto uid = it.UID;
+        theVisualizationWidget->updateSelectedComponent("GASPIPELINES",uid,atrb,atrbVal);
     }
 }

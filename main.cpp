@@ -61,7 +61,7 @@ void customMessageOutput(QtMsgType type, const QMessageLogContext &context, cons
 int main(int argc, char *argv[])
 {
 
-    QString OpenSRAVersion = "0.3.6";
+    QString OpenSRAVersion = APP_VERSION;
 
     // Setting Core Application Name, Organization, Version
     QCoreApplication::setApplicationName("OpenSRA");
