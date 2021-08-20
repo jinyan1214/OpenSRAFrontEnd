@@ -178,7 +178,7 @@ QWidget* WidgetFactory::getCheckBoxWidget(const QJsonObject& obj, const QString&
         return nullptr;
 
     JsonWidget* mainWidget = new JsonWidget(parent);
-    mainWidget->setContentsMargins(0,0,0,0);
+    mainWidget->setContentsMargins(5,0,0,0);
     mainWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     mainWidget->setObjectName("NULL");
 
@@ -188,7 +188,7 @@ QWidget* WidgetFactory::getCheckBoxWidget(const QJsonObject& obj, const QString&
 
     QHBoxLayout* mainLayout = new QHBoxLayout(mainWidget);
     mainLayout->setMargin(0);
-    mainLayout->setSpacing(2);
+    mainLayout->setSpacing(4);
 
     auto text = obj.value("NameToDisplay").toString();
 
@@ -229,7 +229,7 @@ QLayout* WidgetFactory::getLayoutFromParams(const QJsonObject& params, const QSt
     else
         mainLayout = new QHBoxLayout();
 
-    mainLayout->setMargin(0);
+    mainLayout->setMargin(4);
     mainLayout->setSpacing(2);
 
     // This will create the widgets in a certain order
@@ -307,7 +307,7 @@ bool WidgetFactory::addWidgetToLayout(const QJsonObject& paramObj, const QString
         QLabel* widgetLabel = new QLabel(widgetLabelText,this->parentWidget());
         QGridLayout* newHLayout = new QGridLayout();
         newHLayout->setMargin(0);
-        newHLayout->setSpacing(0);
+        newHLayout->setSpacing(4);
 
         newHLayout->addWidget(widgetLabel,0,0);
         newHLayout->addWidget(widget,0,1);

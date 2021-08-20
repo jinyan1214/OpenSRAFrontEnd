@@ -64,7 +64,7 @@ SourceCharacterizationWidget::SourceCharacterizationWidget(QWidget *parent)
     mainLayout->addStretch();
 
     this->setLayout(mainLayout);
-    this->setMinimumWidth(640);
+//    this->setMinimumWidth(640);
     this->setMaximumWidth(1000);
 }
 

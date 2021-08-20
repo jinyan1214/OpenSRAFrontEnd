@@ -160,8 +160,9 @@ int main(int argc, char *argv[])
     // show the main window, set styles & start the event loop
     //
 
+    mainWindowApp.setWindowState(Qt::WindowMaximized);
     mainWindowApp.show();
-    mainWindowApp.statusBar()->showMessage("Ready", 5000);
+    // mainWindowApp.statusBar()->showMessage("Ready", 5000);
 
 #ifdef Q_OS_WIN
     QFile file(":/styles/stylesheetWIN.qss");

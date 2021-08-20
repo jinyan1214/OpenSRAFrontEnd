@@ -175,7 +175,7 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
 
     if(javaHomeVal.isEmpty())
     {
-        progressDialog->appendText("NO JAVA_HOME VARIABLE FOUND");
+        this->errorMessage("NO JAVA_HOME VARIABLE FOUND");
         qDebug() << "NO JAVA_HOME VARIABLE FOUND";
         return false;
     }
@@ -283,7 +283,7 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
     proc->start(python,args);
 
     bool failed = false;
-    if (!proc->waitForStarted(-1))
+    if (!proc->waitForStarted())
     {
         qDebug() << "Failed to start the workflow!!! exit code returned: " << proc->exitCode();
         qDebug() << proc->errorString().split('\n');
@@ -294,16 +294,16 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
         failed = true;
     }
 
-    if(!proc->waitForFinished(-1))
-    {
-        qDebug() << "Failed to finish running the workflow!!! exit code returned: " << proc->exitCode();
-        qDebug() << proc->errorString();
+//    if(!proc->waitForFinished(-1))
+//    {
+//        qDebug() << "Failed to finish running the workflow!!! exit code returned: " << proc->exitCode();
+//        qDebug() << proc->errorString();
 
-        errorMessage("Failed to finish running the workflow!!! exit code returned: " + QString::number(proc->exitCode()));
-        errorMessage(proc->errorString());
+//        errorMessage("Failed to finish running the workflow!!! exit code returned: " + QString::number(proc->exitCode()));
+//        errorMessage(proc->errorString());
 
-        failed = true;
-    }
+//        failed = true;
+//    }
 
     if(0 != proc->exitCode())
     {

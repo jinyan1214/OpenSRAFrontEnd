@@ -464,7 +464,7 @@ void DVRepairRateWidget::handleListItemSelected(const QModelIndex& index)
 
     if(res == false)
     {
-        this->errorMessage("Error importing from Json in " + QString(__PRETTY_FUNCTION__));
+        this->errorMessage("Error importing from Json in " + QString(__FUNCTION__));
         return;
     }
 
@@ -478,7 +478,7 @@ void DVRepairRateWidget::handleListItemSelected(const QModelIndex& index)
 
     if(res == false)
     {
-        this->errorMessage("Error importing from Json in " + QString(__PRETTY_FUNCTION__));
+        this->errorMessage("Error importing from Json in " + QString(__FUNCTION__));
         return;
     }
 
@@ -490,7 +490,7 @@ void DVRepairRateWidget::handleListItemSelected(const QModelIndex& index)
 
     if(res == false)
     {
-        this->errorMessage("Error importing from Json in " + QString(__PRETTY_FUNCTION__));
+        this->errorMessage("Error importing from Json in " + QString(__FUNCTION__));
         return;
     }
 

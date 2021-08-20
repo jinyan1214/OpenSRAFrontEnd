@@ -119,7 +119,7 @@ void JsonComboBox::setStackedWidget(JsonStackedWidget *value)
 
 void JsonComboBox::updateComboBoxValues(const QStringList& vals)
 {
-    this->reset();
+    QComboBox::clear();
     this->addItems(vals);
 }
 
