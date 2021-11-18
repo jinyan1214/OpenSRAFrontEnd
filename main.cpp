@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
     // show the main window, set styles & start the event loop
     //
 
-    mainWindowApp.setWindowState(Qt::WindowMaximized);
+    mainWindowApp.setWindowState((mainWindowApp.windowState() & ~(Qt::WindowMinimized | Qt::WindowFullScreen))| Qt::WindowMaximized);
     mainWindowApp.show();
     // mainWindowApp.statusBar()->showMessage("Ready", 5000);
 

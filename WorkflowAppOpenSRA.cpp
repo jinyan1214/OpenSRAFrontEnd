@@ -103,6 +103,7 @@ WorkflowAppOpenSRA::WorkflowAppOpenSRA(QWidget *parent) : WorkflowAppWidget(pare
     theInstance = this;
 
     resultsDialog = nullptr;
+
 }
 
 

@@ -2,16 +2,16 @@
 
 # Written by Stevan Gavrilovic, University of California, Berkeley
 # Usage: 
-# 	1) cd the build folder containing the .app file of your application
+# 	1) cd the build folder containing the .app file of your application (in OpenSRA backend folder remove the .git folder, examples, docs etc. to reduce space)
 # 	2) Copy this script file over to the build folder
-#   3) Set the path to macdeployqt on your system and change
-#   4) Change the AppName on line 16 to match the *.app file of your application
-#   5) Change the path on line 98
+#   3) Set the path to macdeployqt on your system
+#   4) Change the AppName to match the *.app file of your application
+#   5) Change the app version
 # 	6) Run: bash PackageApp.sh
 
 # ********* THINGS TO CHANGE START *********
 # Version
-appVers="0.3.6"
+appVers="0.4.0"
 
 # Set the path to your macdeployqt here
 pathMacDepQt="/Users/steve/Qt/5.15.2/clang_64/bin/macdeployqt"
@@ -49,6 +49,10 @@ if [ -f "$pathdmg" ]; then
 	rm $pathdmg	
 fi
 
+# On first run need to run mac deploy qt to copy over the frameworks folder
+$pathMacDepQt $pathApp
+
+# Copy over the esri library files
 	
 # Define the paths to the application and to libEsriCommonQt.dylib - this should not change
 pathAppBin=$pathApp/Contents/MacOS/OpenSRA
