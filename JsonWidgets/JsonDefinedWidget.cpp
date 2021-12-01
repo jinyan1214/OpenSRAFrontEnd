@@ -1,11 +1,12 @@
 #include "JsonDefinedWidget.h"
+#include "WorkflowAppOpenSRA.h"
 
 #include <QJsonArray>
 #include <QVariantList>
 
 JsonDefinedWidget::JsonDefinedWidget(QWidget* parent, const QJsonObject& obj, const QString parentKey) : JsonWidget(parent)
 {
-    theWidgetFactory = std::make_unique<WidgetFactory>(this);
+    auto theWidgetFactory = WorkflowAppOpenSRA::getInstance()->getTheWidgetFactory();
 
     auto params = obj["Params"].toObject();
 

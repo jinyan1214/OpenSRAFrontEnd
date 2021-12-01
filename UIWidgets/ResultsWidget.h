@@ -42,7 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class AssetInputDelegate;
 class OpenSRAPostProcessor;
-class VisualizationWidget;
+class QGISVisualizationWidget;
 
 class QStackedWidget;
 class QVBoxLayout;
@@ -56,7 +56,7 @@ class ResultsWidget : public SimCenterAppWidget
     Q_OBJECT
 public:
 
-    explicit ResultsWidget(QWidget *parent, VisualizationWidget* visWidget);
+    explicit ResultsWidget(QWidget *parent, QGISVisualizationWidget* visWidget);
     virtual ~ResultsWidget();
 
     virtual bool outputToJSON(QJsonObject &rvObject);
@@ -93,7 +93,7 @@ private:
     QWidget* resultsPageWidget;
 
     AssetInputDelegate* selectComponentsLineEdit;
-    VisualizationWidget* theVisualizationWidget;
+    QGISVisualizationWidget* theVisualizationWidget;
 
     std::unique_ptr<OpenSRAPostProcessor> theOpenSRAPostProcessor;
 

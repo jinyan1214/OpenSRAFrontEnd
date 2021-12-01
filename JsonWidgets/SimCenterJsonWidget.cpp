@@ -122,21 +122,26 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
     QJsonObject methodObj;
     methodWidget->outputToJSON(methodObj);
 
-    methodObj = methodObj.value("Method").toObject();
+    auto isObj = methodObj.value("Method").toObject();
 
-    if(methodObj.isEmpty())
+    QStringList keys;
+
+    if(!isObj.isEmpty())
+    {
+        methodObj = isObj;
+        keys = methodObj.keys();
+    }
+    else
+    {
+        keys.push_back(methodObj.value("Method").toString());
+    }
+
+    if(methodObj.isEmpty() || keys.size() != 1)
     {
         this->errorMessage("Error in getting the method in SimCenterJsonWidget");
         return;
     }
 
-    auto keys = methodObj.keys();
-
-    if(keys.size() != 1)
-    {
-        this->errorMessage("Error in getting the method in SimCenterJsonWidget");
-        return;
-    }
 
     auto key = keys.front();
 
@@ -146,7 +151,7 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
     double weight = weightLineEdit->text().toDouble();
     methodObj["ModelWeight"] = weight;
 
-    // Get the human or name to display
+    // Get the human readable text or name to display
     auto methodsAndParamsMap = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsMap();
     auto name = methodsAndParamsMap.value(key,QString());
 

@@ -5,13 +5,15 @@
 
 #include <QJsonObject>
 
+class ComponentInputWidget;
+
 class QFormLayout;
 class QBoxLayout;
 
 class WidgetFactory : public SimCenterWidget
 {
 public:
-    WidgetFactory(QWidget *parent = 0);
+    WidgetFactory(ComponentInputWidget* parent = nullptr);
 
     QLayout* getLayout(const QJsonObject& obj, const QString& parentKey, QWidget* parent, QStringList widgetOrder = QStringList());
 
@@ -29,6 +31,8 @@ private:
     QWidget* getBoxWidget(const QJsonObject& obj, const QString& parentKey, QWidget* parent);
 
     bool isNestedComboBoxWidget(const QJsonObject& obj);
+
+    ComponentInputWidget* parentInputWidget;
 };
 
 #endif // WIDGETFACTORY_H

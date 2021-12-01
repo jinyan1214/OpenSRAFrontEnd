@@ -7,6 +7,9 @@
 #include "JsonWidget.h"
 #include "JsonGroupBoxWidget.h"
 #include "ComponentInputWidget.h"
+#include "QGISGasPipelineInputWidget.h"
+#include "WorkflowAppOpenSRA.h"
+#include "PipelineNetworkWidget.h"
 
 #include <QGroupBox>
 #include <QCheckBox>
@@ -17,7 +20,7 @@
 #include <QFormLayout>
 #include <QHBoxLayout>
 
-WidgetFactory::WidgetFactory(QWidget *parent) : SimCenterWidget(parent)
+WidgetFactory::WidgetFactory(ComponentInputWidget *parent) : SimCenterWidget(parent), parentInputWidget(parent)
 {
     this->setObjectName("NULL");
 }
@@ -89,10 +92,7 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
     // Special case where the combo box is the column headers
     if(listKeys.contains("ColumnHeaders"))
     {
-        // This is being created as the program loads so header values must be set later
-        auto compInputWidget = ComponentInputWidget::getInstance();
-
-        connect(compInputWidget, &ComponentInputWidget::headingValuesChanged, comboWidget, &JsonComboBox::updateComboBoxValues);
+        connect(parentInputWidget, &ComponentInputWidget::headingValuesChanged, comboWidget, &JsonComboBox::updateComboBoxValues);
     }
     else
     {

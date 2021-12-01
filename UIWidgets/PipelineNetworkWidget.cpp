@@ -39,13 +39,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "PipelineNetworkWidget.h"
 #include "sectiontitle.h"
 #include "SimCenterComponentSelection.h"
-#include "GasPipelineInputWidget.h"
+#include "ComponentTableView.h"
+#include "QGISGasPipelineInputWidget.h"
 #include "VisualizationWidget.h"
-
-// GIS headers
-#include "Basemap.h"
-#include "Map.h"
-#include "MapGraphicsView.h"
 
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -61,8 +57,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDebug>
 #include <QFileDialog>
 #include <QPushButton>
-
-using namespace Esri::ArcGISRuntime;
 
 PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidget* visWidget)
     : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
@@ -87,15 +81,13 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     theHeaderLayout->addStretch(1);
     mainLayout->addLayout(theHeaderLayout);
 
-    theComponentInputWidget = std::make_unique<GasPipelineInputWidget>(this, "Components");
+    theComponentInputWidget = new QGISGasPipelineInputWidget(this, theVisualizationWidget, "Gas Pipelines","Gas Network");
     theComponentInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
-
-    theVisualizationWidget->registerComponentWidget("GASPIPELINES",theComponentInputWidget.get());
 
     theComponentInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
     theComponentInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
 
-    mainLayout->addWidget(theComponentInputWidget.get());
+    mainLayout->addWidget(theComponentInputWidget);
 
     mainLayout->addStretch();
 
@@ -111,7 +103,7 @@ PipelineNetworkWidget::~PipelineNetworkWidget()
 bool PipelineNetworkWidget::outputToJSON(QJsonObject &jsonObject)
 {
 
-    auto numComponents = theComponentInputWidget->getNumberOfComponents();
+    auto numComponents = theComponentInputWidget->getTableWidget()->rowCount();
 
     if(numComponents == 0)
     {
@@ -181,18 +173,19 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
-    theComponentInputWidget->loadFileFromPath(fileName);
+    if(!theComponentInputWidget->loadFileFromPath(fileName))
+    {
+        errorMessage("Failed to load the 'SiteDataFile': "+fileName);
+        return false;
+    }
 
     auto filter = jsonObject["filter"].toString();
 
     if(!filter.isEmpty())
         theComponentInputWidget->setFilterString(filter);
 
-    theComponentInputWidget->inputFromJSON(jsonObject);
-
-    return true;
+    return theComponentInputWidget->inputFromJSON(jsonObject);
 }
-
 
 
 bool PipelineNetworkWidget::copyFiles(QString &destDir)
@@ -201,7 +194,6 @@ bool PipelineNetworkWidget::copyFiles(QString &destDir)
 
     return false;
 }
-
 
 
 void PipelineNetworkWidget::clear(void)

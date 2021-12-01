@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "MainWindow.h"
 #include "WorkflowAppWidget.h"
+#include "WidgetFactory.h"
 
 #include <QWidget>
 #include <QJsonObject>
@@ -59,7 +60,7 @@ class IntensityMeasureWidget;
 class LoadResultsDialog;
 class RunLocalWidget;
 class RunWidget;
-class VisualizationWidget;
+class QGISVisualizationWidget;
 class UncertaintyQuantificationWidget;
 
 class QStackedWidget;
@@ -90,11 +91,15 @@ public:
     int getMaxNumParallelTasks();
     
     GeneralInformationWidget *getGeneralInformationWidget() const;
-    VisualizationWidget *getVisualizationWidget() const;
+    QGISVisualizationWidget *getVisualizationWidget() const;
 
     QJsonObject getMethodsAndParamsObj() const;
 
     QMap<QString, QString> getMethodsAndParamsMap() const;
+
+    WidgetFactory* getTheWidgetFactory() const;
+
+    void setTheWidgetFactory(WidgetFactory* value);
 
 signals:
     void setUpForApplicationRunDone(QString &tmpDirectory, QString &inputFile);
@@ -124,20 +129,22 @@ public slots:
 
 private:
 
+    std::unique_ptr<WidgetFactory> theWidgetFactory;
+
     // sidebar container selection
     SimCenterComponentSelection *theComponentSelection;
 
     // objects that go in sidebar
-    GeneralInformationWidget* theGenInfoWidget;
-    UncertaintyQuantificationWidget* theUQWidget;
-    PipelineNetworkWidget* thePipelineNetworkWidget;
-    IntensityMeasureWidget* theIntensityMeasureWidget;
-    DecisionVariableWidget* theDecisionVariableWidget;
-    DamageMeasureWidget* theDamageMeasureWidget;
-    EngDemandParamWidget* theEDPWidget;
-    CustomVisualizationWidget* theCustomVisualizationWidget;
-    VisualizationWidget* theVisualizationWidget;
-    ResultsWidget* theResultsWidget;
+    GeneralInformationWidget* theGenInfoWidget = nullptr;
+    UncertaintyQuantificationWidget* theUQWidget = nullptr;
+    PipelineNetworkWidget* thePipelineNetworkWidget = nullptr;
+    IntensityMeasureWidget* theIntensityMeasureWidget = nullptr;
+    DecisionVariableWidget* theDecisionVariableWidget = nullptr;
+    DamageMeasureWidget* theDamageMeasureWidget = nullptr;
+    EngDemandParamWidget* theEDPWidget = nullptr;
+    CustomVisualizationWidget* theCustomVisualizationWidget = nullptr;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+    ResultsWidget* theResultsWidget = nullptr;
 
     // objects for running the workflow and obtaining results
     RunWidget* theRunWidget;

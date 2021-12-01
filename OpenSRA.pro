@@ -10,7 +10,7 @@ VERSION=0.4.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\" OpenSRA
 
 # C++17 support
-CONFIG += c++14
+CONFIG += c++17
 
 # Full optimization on release
 QMAKE_CXXFLAGS_RELEASE += -O3
@@ -42,9 +42,14 @@ win32 {
 }
 
 
-ARCGIS_RUNTIME_VERSION = 100.9
-include($$PWD/arcgisruntime.pri)
+# GIS plugin
+DEFINES +=  Q_GIS
+PATH_TO_QGIS_PLUGIN=../../qgisplugin
+include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 
+#DEFINES += ARC_GIS
+#ARCGIS_RUNTIME_VERSION = 100.9
+#include($$PWD/arcgisruntime.pri)
 
 # Specify the path to R2D and common
 PATH_TO_R2D=../../R2DTool/R2DTool
@@ -54,6 +59,7 @@ PATH_TO_BACKEND=../../OpenSRABackEnd
 # To avoid code copying, include the common SimCenter code
 include(OpenSRACommon.pri)
 include($$PATH_TO_COMMON/Common/Common.pri)
+
 
 SOURCES += main.cpp \
     JsonWidgets/JsonDefinedWidget.cpp \

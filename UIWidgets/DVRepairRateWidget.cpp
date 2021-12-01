@@ -357,7 +357,7 @@ JsonGroupBoxWidget* DVRepairRateWidget::getDemandWidget()
         return nullptr;
     }
 
-    auto theWidgetFactory = std::make_unique<WidgetFactory>(this);
+    auto theWidgetFactory = WorkflowAppOpenSRA::getInstance()->getTheWidgetFactory();
 
     QJsonObject paramsObj = thisObj["Params"].toObject();
 
@@ -399,7 +399,7 @@ JsonGroupBoxWidget* DVRepairRateWidget::getComponentPropertiesWidget()
         return nullptr;
     }
 
-    auto theWidgetFactory = std::make_unique<WidgetFactory>(this);
+    auto theWidgetFactory = WorkflowAppOpenSRA::getInstance()->getTheWidgetFactory();
 
     QJsonObject paramsObj = thisObj["Params"].toObject();
 

@@ -37,16 +37,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "CustomVisualizationWidget.h"
-#include "VisualizationWidget.h"
+#include "QGISVisualizationWidget.h"
 #include "sectiontitle.h"
 #include "ShakeMapWidget.h"
 
 // GIS headers
-#include "GroupLayer.h"
-#include "LayerListModel.h"
-#include "FeatureLayer.h"
-#include "ArcGISMapImageLayer.h"
-#include "RasterLayer.h"
+#include <qgsvectorlayer.h>
 
 #include <QListWidget>
 #include <QVBoxLayout>
@@ -65,9 +61,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QSplitter>
 #include <QToolButton>
 
-using namespace Esri::ArcGISRuntime;
 
-CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  VisualizationWidget* visWidget)
+CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  QGISVisualizationWidget* visWidget)
     : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     this->setContentsMargins(0,0,0,0);
@@ -76,7 +71,6 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  Visualiza
     liquefactionLayer = nullptr;
     geologicMapLayer = nullptr;
 
-    downloadJsonReply = nullptr;
     baseCGSURL = "https://gis.conservation.ca.gov/server/rest/services/CGS/Geologic_Map_of_California/MapServer";
 
     QVBoxLayout *mainLayout = new QVBoxLayout();
@@ -101,13 +95,6 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  Visualiza
 
     auto visSelectBox = this->getVisSelectionGroupBox();
 
-    auto theVisWidget = theVisualizationWidget->getVisWidget();
-
-    legendView = new QListView();
-    legendView->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Minimum);
-    legendView->hide();
-//    theVisualizationWidget->setLegendView(legendView);
-
     QWidget* theLeftHandWidget = new QWidget(this);
 
     theLeftHandWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
@@ -116,10 +103,9 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  Visualiza
     theLeftHandLayout->setMargin(0);
 
     theLeftHandLayout->addWidget(visSelectBox);
-    theLeftHandLayout->addWidget(legendView);
 
     theVizLayout->addWidget(theLeftHandWidget);
-    theVizLayout->addWidget(theVisWidget);
+    theVizLayout->addWidget(theVisualizationWidget);
 
     theVizLayout->setStretchFactor(1,1);
 
@@ -153,6 +139,11 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  Visualiza
     buttonHandle->setStyleSheet("QToolButton{border:0px solid}; QToolButton:pressed {border:0px solid}");
     buttonHandle->setIconSize(buttonHandle->size());
     layout->addWidget(buttonHandle);
+
+    QList<int> sizes = {0,theVizLayout->width()};
+
+    theVizLayout->setSizes(sizes);
+
 }
 
 
@@ -176,14 +167,7 @@ bool CustomVisualizationWidget::inputFromJSON(QJsonObject &jsonObject)
 
 int CustomVisualizationWidget::processResults(QString &filenameResults)
 {
-
     return 0;
-}
-
-
-void CustomVisualizationWidget::setCurrentlyViewable(bool status)
-{
-    theVisualizationWidget->setCurrentlyViewable(status);
 }
 
 
@@ -219,68 +203,13 @@ QGroupBox* CustomVisualizationWidget::getVisSelectionGroupBox(void)
 }
 
 
-void CustomVisualizationWidget::processNetworkReply(QNetworkReply* pReply)
-{
-    if(pReply->error() != QNetworkReply::NoError)
-    {
-        QString err = "Error in connecting to the server at: " + pReply->url().toString();
-        errorMessage(err);
-        return;
-    }
-
-    if(pReply == downloadJsonReply)
-    {
-        this->createGSGLayers();
-    }
-
-}
-
-
-void CustomVisualizationWidget::createGSGLayers()
-{
-    //    auto eventLayer = new GroupLayer(QList<Layer*>{});
-    //    eventLayer->setName("California Geo Map");
-
-    //    auto data = downloadJsonReply->readAll();
-
-    //    QJsonDocument doc = QJsonDocument::fromJson(data);
-
-    //    auto jsonObject = doc.object();
-
-    //    QJsonValue nameValue = jsonObject["layers"];
-
-    //    auto layerArray = nameValue.toArray();
-
-    //    if(layerArray.size() == 0)
-    //        return;
-
-    //    auto urlToLayer = baseCGSURL;
-
-
-    //    for(auto&& it : layerArray)
-    //    {
-    //        auto ID = it.toObject()["id"];
-
-    //        auto name = it.toObject()["name"];
-
-    //        //      auto urlToLayer = baseCGSURL +"/" + QString::number(ID.toInt());
-
-    //        //      auto shpLayer = theVisualizationWidget->createAndAddMapServerLayer(urlToLayer,name.toString(),eventItem);
-
-    //        //      if(shpLayer != nullptr)
-    //        //          theVisualizationWidget->addLayerToMap(shpLayer);
-    //    }
-
-}
-
-
 void CustomVisualizationWidget::showCGSLandslideMap(bool state)
 {
     if(state == false)
     {
         if(landslideLayer != nullptr)
         {
-            theVisualizationWidget->removeLayerFromMapAndTree(landslideLayer->layerId());
+//            theVisualizationWidget->removeLayerFromMapAndTree(landslideLayer->layerId());
             delete landslideLayer;
             landslideLayer = nullptr;
         }
@@ -292,10 +221,8 @@ void CustomVisualizationWidget::showCGSLandslideMap(bool state)
     if(landslideLayer == nullptr)
     {
         QString mapServerUrl =  "https://gis.conservation.ca.gov/server/rest/services/CGS/MS58_LandslideSusceptibility_Classes/MapServer";
-        landslideLayer = theVisualizationWidget->createAndAddMapServerLayer(mapServerUrl,"Landslide Susceptibility Map",nullptr);
+//        landslideLayer = theVisualizationWidget->createAndAddMapServerLayer(mapServerUrl,"Landslide Susceptibility Map",nullptr);
     }
-
-    theVisualizationWidget->setViewElevation(7500000);
 
 }
 
@@ -306,18 +233,16 @@ void CustomVisualizationWidget::showCGSGeologicMap(bool state)
     {
         if(geologicMapLayer != nullptr)
         {
-            theVisualizationWidget->removeLayerFromMapAndTree(geologicMapLayer->layerId());
-            delete geologicMapLayer;
+            theVisualizationWidget->removeLayer(geologicMapLayer);
             geologicMapLayer = nullptr;
         }
 
         return;
     }
 
-    if(geologicMapLayer == nullptr)
-        geologicMapLayer = theVisualizationWidget->createAndAddMapServerLayer(baseCGSURL,"California Geological Map",nullptr);
+//    if(geologicMapLayer == nullptr)
+//        geologicMapLayer = theVisualizationWidget->createAndAddMapServerLayer(baseCGSURL,"California Geological Map",nullptr);
 
-    theVisualizationWidget->setViewElevation(10000000);
 }
 
 
@@ -327,8 +252,7 @@ void CustomVisualizationWidget::showCGSLiquefactionMap(bool state)
     {
         if(liquefactionLayer != nullptr)
         {
-            theVisualizationWidget->removeLayerFromMapAndTree(liquefactionLayer->layerId());
-            delete liquefactionLayer;
+            theVisualizationWidget->removeLayer(liquefactionLayer);
             liquefactionLayer = nullptr;
         }
 
@@ -338,27 +262,11 @@ void CustomVisualizationWidget::showCGSLiquefactionMap(bool state)
     if(liquefactionLayer == nullptr)
     {
         QString mapServerUrl =  "https://gis.conservation.ca.gov/server/rest/services/CGS_Earthquake_Hazard_Zones/SHP_Liquefaction_Zones/MapServer";
-        liquefactionLayer = theVisualizationWidget->createAndAddMapServerLayer(mapServerUrl,"Liquefaction Zones Map",nullptr);
+//        liquefactionLayer = theVisualizationWidget->createAndAddMapServerLayer(mapServerUrl,"Liquefaction Zones Map",nullptr);
     }
 
-    theVisualizationWidget->setViewElevation(7500000);
 }
 
-
-void CustomVisualizationWidget::showShakeMapLayer(bool state)
-{
-
-    theShakeMapWidget->showShakeMapLayers(state);
-
-    if(state == false)
-    {
-        loadShakeMapButton->setVisible(false);
-
-        return;
-    }
-
-    loadShakeMapButton->setVisible(true);
-}
 
 
 void CustomVisualizationWidget::clear()

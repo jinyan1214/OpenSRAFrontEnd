@@ -1,5 +1,4 @@
 // Written: Stevan Gavrilovic
-// Latest Revision: 09/20
 
 #include "MainWindowWorkflowApp.h"
 #include "WorkflowAppOpenSRA.h"
@@ -24,9 +23,7 @@
 
 static bool logToFile = false;
 
-#include "ArcGISRuntimeEnvironment.h"
-
-using namespace Esri::ArcGISRuntime;
+#include "qgsapplication.h"
 
 // customMessgaeOutput code taken from web:
 // https://stackoverflow.com/questions/4954140/how-to-redirect-qdebug-qwarning-qcritical-etc-output
@@ -71,7 +68,8 @@ int main(int argc, char *argv[])
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     // Set up the application
-    QApplication a(argc, argv);
+    // Start the Application
+    QgsApplication a( argc, argv, true );
 
     auto prefs = OpenSRAPreferences::getInstance();
 
@@ -122,7 +120,6 @@ int main(int argc, char *argv[])
     qInstallMessageHandler(customMessageOutput);
 
     // Set the key for the ArcGIS interface
-    ArcGISRuntimeEnvironment::setLicense(getArcGISKey());
 
     // create the main window
     WorkflowAppOpenSRA *theInputApp = new WorkflowAppOpenSRA();

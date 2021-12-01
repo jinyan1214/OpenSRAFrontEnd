@@ -11,7 +11,6 @@ public:
 
 
 private:
-    std::unique_ptr<WidgetFactory> theWidgetFactory;
 };
 
 #endif // JSONDEFINEDWIDGET_H

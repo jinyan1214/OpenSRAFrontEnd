@@ -63,7 +63,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 using namespace Esri::ArcGISRuntime;
 
-ResultsWidget::ResultsWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+ResultsWidget::ResultsWidget(QWidget *parent, QGISVisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {    
     resultsMainLabel = new QLabel("No results to display", this);
 

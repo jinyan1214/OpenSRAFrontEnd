@@ -49,7 +49,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "UIWidgets/ResultsWidget.h"
 #include "SimCenterComponentSelection.h"
 #include "UIWidgets/CustomVisualizationWidget.h"
-#include "VisualizationWidget.h"
+#include "QGISVisualizationWidget.h"
+#include "QGISGasPipelineInputWidget.h"
 #include "WorkflowAppOpenSRA.h"
 #include "UncertaintyQuantificationWidget.h"
 #include "MainWindowWorkflowApp.h"
@@ -95,6 +96,7 @@ WorkflowAppOpenSRA* WorkflowAppOpenSRA::getInstance()
 
 WorkflowAppOpenSRA *WorkflowAppOpenSRA::theInstance = nullptr;
 
+
 WorkflowAppOpenSRA::WorkflowAppOpenSRA(QWidget *parent) : WorkflowAppWidget(parent)
 {
     // set static pointer for global procedure
@@ -104,6 +106,7 @@ WorkflowAppOpenSRA::WorkflowAppOpenSRA(QWidget *parent) : WorkflowAppWidget(pare
 
     resultsDialog = nullptr;
 
+    theWidgetFactory = nullptr;
 }
 
 
@@ -226,12 +229,12 @@ void WorkflowAppOpenSRA::initialize(void)
     // Help menu
     theMainWindow->createHelpMenu();
 
-    theVisualizationWidget = new VisualizationWidget(this);
+    theVisualizationWidget = new QGISVisualizationWidget(theMainWindow);
 
     // Create the various widgets
+    thePipelineNetworkWidget = new PipelineNetworkWidget(this,theVisualizationWidget);
     theGenInfoWidget = new GeneralInformationWidget(this);
     theUQWidget = new UncertaintyQuantificationWidget(this);
-    thePipelineNetworkWidget = new PipelineNetworkWidget(this,theVisualizationWidget);
     theIntensityMeasureWidget = new IntensityMeasureWidget(theVisualizationWidget, this);
     theDamageMeasureWidget = new DamageMeasureWidget(this);
     theEDPWidget = new EngDemandParamWidget(this);
@@ -336,7 +339,8 @@ void WorkflowAppOpenSRA::replyFinished(QNetworkReply */*pReply*/)
     return;
 }
 
-VisualizationWidget *WorkflowAppOpenSRA::getVisualizationWidget() const
+
+QGISVisualizationWidget *WorkflowAppOpenSRA::getVisualizationWidget() const
 {
     return theVisualizationWidget;
 }
@@ -346,7 +350,6 @@ GeneralInformationWidget *WorkflowAppOpenSRA::getGeneralInformationWidget() cons
 {
     return theGenInfoWidget;
 }
-
 
 
 bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
@@ -615,7 +618,6 @@ void WorkflowAppOpenSRA::loadResults(void)
 }
 
 
-
 int WorkflowAppOpenSRA::loadFile(const QString fileName)
 {
 
@@ -680,10 +682,30 @@ void WorkflowAppOpenSRA::fatalMessage(QString message)
     progressDialog->appendErrorMessage(message);
 }
 
+
+WidgetFactory* WorkflowAppOpenSRA::getTheWidgetFactory() const
+{
+    return theWidgetFactory.get();
+}
+
+
+void WorkflowAppOpenSRA::setTheWidgetFactory(WidgetFactory* value)
+{
+    if(theWidgetFactory != nullptr)
+    {
+        this->errorMessage("Error, widget factory already created!");
+        return;
+    }
+
+    theWidgetFactory = std::unique_ptr<WidgetFactory>(value);
+}
+
+
 QJsonObject WorkflowAppOpenSRA::getMethodsAndParamsObj() const
 {
     return methodsAndParamsObj;
 }
+
 
 QMap<QString, QString> WorkflowAppOpenSRA::getMethodsAndParamsMap() const
 {

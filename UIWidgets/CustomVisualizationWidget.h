@@ -40,35 +40,22 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <SimCenterAppWidget.h>
 
-#include <QNetworkAccessManager>
-
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class ArcGISMapImageLayer;
-class GroupLayer;
-class FeatureCollectionLayer;
-class KmlLayer;
-}
-}
+class QGISVisualizationWidget;
 
 class QGroupBox;
 class QCheckBox;
 class QListView;
 class QPushButton;
-class VisualizationWidget;
-class ShakeMapWidget;
-class QNetworkReply;
+
+class QgsVectorLayer;
 
 class CustomVisualizationWidget : public SimCenterAppWidget
 {
-
     Q_OBJECT
 
 public:
 
-    explicit CustomVisualizationWidget(QWidget *parent, VisualizationWidget* visWidget);
+    explicit CustomVisualizationWidget(QWidget *parent, QGISVisualizationWidget* visWidget);
     virtual ~CustomVisualizationWidget();
 
     virtual bool outputToJSON(QJsonObject &rvObject);
@@ -82,43 +69,29 @@ signals:
 
 
 public slots:
-    void processNetworkReply(QNetworkReply* pReply);
-
     void showCGSGeologicMap(bool state);
 
     void showCGSLandslideMap(bool state);
 
     void showCGSLiquefactionMap(bool state);
 
-    void showShakeMapLayer(bool state);
-
-    void setCurrentlyViewable(bool status);
-
 protected:
 
 private:
 
-    void createGSGLayers();
-
     QGroupBox* getVisSelectionGroupBox(void);
-    QPushButton* loadShakeMapButton;
-    std::unique_ptr<ShakeMapWidget> theShakeMapWidget;
 
-    VisualizationWidget* theVisualizationWidget;
+    QGISVisualizationWidget* theVisualizationWidget;
 
-    QNetworkAccessManager m_WebCtrl;
-    QNetworkReply* downloadJsonReply;
     QString baseCGSURL;
 
-    Esri::ArcGISRuntime::ArcGISMapImageLayer* landslideLayer;
-    Esri::ArcGISRuntime::ArcGISMapImageLayer* liquefactionLayer;
-    Esri::ArcGISRuntime::ArcGISMapImageLayer* geologicMapLayer;
+    QgsVectorLayer* landslideLayer;
+    QgsVectorLayer* liquefactionLayer;
+    QgsVectorLayer* geologicMapLayer;
 
     QCheckBox* CGS1Checkbox;
     QCheckBox* CGS2Checkbox;
     QCheckBox* CGS3Checkbox;
-
-    QListView* legendView;
 
 };
 

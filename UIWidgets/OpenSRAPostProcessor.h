@@ -39,8 +39,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "ComponentDatabase.h"
-#include "MapViewSubWidget.h"
 #include "SimCenterAppWidget.h"
+#include "SimCenterMapcanvasWidget.h"
 
 #include <QString>
 
@@ -49,8 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class TreeItem;
 class REmpiricalProbabilityDistribution;
-class MapViewSubWidget;
-class VisualizationWidget;
+class QGISVisualizationWidget;
 class MutuallyExclusiveListWidget;
 
 class QSplitter;
@@ -82,7 +81,7 @@ class OpenSRAPostProcessor : public SimCenterAppWidget
 
 public:
 
-    OpenSRAPostProcessor(QWidget *parent, VisualizationWidget* visWidget);
+    OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWidget* visWidget);
 
     void importResults(const QString& pathToResults);
 
@@ -126,8 +125,6 @@ public:
     }
 
     void processResultsSubset(const std::set<int>& selectedComponentIDs);
-
-    void setCurrentlyViewable(bool status);
 
     void clear(void);
 
@@ -174,12 +171,11 @@ private:
     QTableWidget* PGVResultsTableWidget;
     QTableWidget* PGDResultsTableWidget;
 
-    VisualizationWidget* theVisualizationWidget;
+    QGISVisualizationWidget* theVisualizationWidget;
 
-    std::unique_ptr<EmbeddedMapViewWidget> mapViewSubWidget;
-    Esri::ArcGISRuntime::MapGraphicsView* mapViewMainWidget;
+    std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
 
-    // The number of header rows in the results file
+    //The number of header rows in the results file
     int numHeaderRows;
 
     // The number of columns that contain component information

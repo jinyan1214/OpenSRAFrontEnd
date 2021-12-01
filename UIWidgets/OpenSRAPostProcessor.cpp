@@ -44,12 +44,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "REmpiricalProbabilityDistribution.h"
 #include "TablePrinter.h"
 #include "TreeItem.h"
-#include "VisualizationWidget.h"
+#include "QGISVisualizationWidget.h"
+#include "ComponentDatabaseManager.h"
 #include "WorkflowAppOpenSRA.h"
-#include "SimCenterMapGraphicsView.h"
 #include "EmbeddedMapViewWidget.h"
 #include "MutuallyExclusiveListWidget.h"
-#include "LayerTreeView.h"
 
 #include <QBarCategoryAxis>
 #include <QBarSeries>
@@ -81,20 +80,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 
 // GIS headers
-#include "Basemap.h"
-#include "FeatureTable.h"
-#include "Map.h"
-#include "MapGraphicsView.h"
-#include "SimpleFillSymbol.h"
-#include "SimpleLineSymbol.h"
-#include "PolylineBuilder.h"
-#include "FeatureCollectionLayer.h"
-#include "SimpleRenderer.h"
+#include "qgslinesymbol.h"
+
 
 using namespace QtCharts;
-using namespace Esri::ArcGISRuntime;
 
-OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     PGVTreeItem = nullptr;
     PGDTreeItem = nullptr;
@@ -141,10 +132,12 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
     PGDResultsTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     PGDResultsTableWidget->setVisible(false);
 
-    // Create a map view that will be used for selecting the grid points
-    mapViewMainWidget = theVisualizationWidget->getMapViewWidget();
+    // Get the map view widget
+    auto mapView = theVisualizationWidget->getMapViewWidget("ResultsWidget");
+    mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
 
-    mapViewSubWidget = std::make_unique<EmbeddedMapViewWidget>(nullptr);
+    // Enable the selection tool
+    mapViewSubWidget->enableSelectionTool();
 
     // Popup stuff
     // Once map is set, connect to MapQuickView mouse clicked signal
@@ -187,19 +180,19 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, VisualizationWidget*
 void OpenSRAPostProcessor::handleModifyLegend(void)
 {
 
-    auto pipelineInputWidget = theVisualizationWidget->getComponentWidget("GASPIPELINES");
+//    auto pipelineInputWidget = theVisualizationWidget->getComponentWidget("GASPIPELINES");
 
-    if(pipelineInputWidget == nullptr)
-        return;
+//    if(pipelineInputWidget == nullptr)
+//        return;
 
-    auto pipelineLayer = pipelineInputWidget->getSelectedFeatureLayer();
+//    auto pipelineLayer = pipelineInputWidget->getSelectedFeatureLayer();
 
-    if(pipelineLayer == nullptr)
-        return;
+//    if(pipelineLayer == nullptr)
+//        return;
 
-    auto layerId = pipelineLayer->layerId();
+//    auto layerId = pipelineLayer->layerId();
 
-    theVisualizationWidget->handlePlotColorChange(layerId);
+//    theVisualizationWidget->handlePlotColorChange(layerId);
 }
 
 
@@ -259,12 +252,34 @@ int OpenSRAPostProcessor::importScenarioTraces(const QString& pathToFile)
         return 0;
     }
 
-    auto layersTreeView = theVisualizationWidget->getLayersTree();
+    QgsFields featFields;
+    featFields.append(QgsField("AssetType", QVariant::String));
+    featFields.append(QgsField("TabName", QVariant::String));
+    featFields.append(QgsField("SourceIndex", QVariant::String));
 
-    // Check if there is a 'Shake Map' root item in the tree
-    auto faultTracesTreeItem = layersTreeView->getTreeItem("Scenario Faults", nullptr);
+    // Create the pipelines layer
+    auto mainLayer = theVisualizationWidget->addVectorLayer("linestring","Scenario Faults");
 
-    QString layerName = "Scenario Traces";
+    if(mainLayer == nullptr)
+    {
+        this->errorMessage("Error adding a vector layer");
+        return -1;
+    }
+
+    QList<QgsField> attribFields;
+    for(int i = 0; i<featFields.size(); ++i)
+        attribFields.push_back(featFields[i]);
+
+    auto pr = mainLayer->dataProvider();
+
+    mainLayer->startEditing();
+
+    auto res = pr->addAttributes(attribFields);
+
+    if(!res)
+        this->errorMessage("Error adding attributes to the layer" + mainLayer->name());
+
+    mainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
 
     auto headers = traces.front();
 
@@ -272,16 +287,7 @@ int OpenSRAPostProcessor::importScenarioTraces(const QString& pathToFile)
 
     traces.pop_front();
 
-    auto featureCollection = new FeatureCollection(this);
-
-    QList<Field> tableFields;
-    tableFields.append(Field::createText("AssetType", "NULL",4));
-    tableFields.append(Field::createText("TabName", "NULL",4));
-    tableFields.append(Field::createText("SourceIndex", "NULL",4));
-
-    auto featureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Polyline, SpatialReference::wgs84(),this);
-
-    auto legendLabel = layerName;
+    auto numAtrb = attribFields.size();
 
     for(auto&& it : traces)
     {
@@ -291,46 +297,125 @@ int OpenSRAPostProcessor::importScenarioTraces(const QString& pathToFile)
 
         if(geometry.isEmpty())
         {
-            QString msg ="Error getting the feature geometry for " + layerName;
+            QString msg ="Error getting the feature geometry for scenario faults layer";
             this->errorMessage(msg);
-
-            // Clean up memory
-            delete featureCollection;
-            delete featureCollectionTable;
 
             return -1;
         }
 
-        QMap<QString, QVariant> featureAttributes;
-        featureAttributes.insert("AssetType", "SCENARIO_TRACES");
-        featureAttributes.insert("TabName", layerName);
-        featureAttributes.insert("SourceIndex", it.at(0));
+        // create the feature attributes
+        QgsAttributes featureAttributes(numAtrb);
 
-        auto feature = featureCollectionTable->createFeature(featureAttributes, geometry, this);
+        featureAttributes[0] = QVariant("SCENARIO_TRACES");
+        featureAttributes[1] = QVariant("Scenario Traces");
+        featureAttributes[2] = QVariant(it.at(0));
 
-        featureCollectionTable->addFeature(feature);
 
+        QgsFeature feature;
+        feature.setFields(featFields);
+
+        feature.setGeometry(geometry);
+
+        feature.setAttributes(featureAttributes);
+
+        if(!feature.isValid())
+            return -1;
+
+        auto res = pr->addFeature(feature, QgsFeatureSink::FastInsert);
+        if(!res)
+        {
+            this->errorMessage("Error adding the feature to the layer");
+            return -1;
+        }
     }
+
+    mainLayer->commitChanges(true);
+    mainLayer->updateExtents();
+
+    QgsLineSymbol* markerSymbol = new QgsLineSymbol();
 
     QColor featureColor = QColor(0,0,0,200);
     auto weight = 1.0;
 
-    SimpleLineSymbol* lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, featureColor, weight, this);
-    SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol, this);
-    lineRenderer->setLabel(legendLabel);
+    markerSymbol->setWidth(weight);
+    markerSymbol->setColor(featureColor);
+    theVisualizationWidget->createSimpleRenderer(markerSymbol,mainLayer);
 
-    featureCollectionTable->setRenderer(lineRenderer);
 
-    featureCollection->tables()->append(featureCollectionTable);
+    //***
 
-    // New geo json layer
-    auto newGeojsonLayer = new FeatureCollectionLayer(featureCollection,this);
+//    auto layersTreeView = theVisualizationWidget->getLayersTree();
 
-    newGeojsonLayer->setName(layerName);
+//    // Check if there is a 'Shake Map' root item in the tree
+//    auto faultTracesTreeItem = layersTreeView->getTreeItem("Scenario Faults", nullptr);
 
-    newGeojsonLayer->setAutoFetchLegendInfos(true);
+//    QString layerName = "Scenario Traces";
 
-    theVisualizationWidget->addLayerToMap(newGeojsonLayer,faultTracesTreeItem);
+//    auto headers = traces.front();
+
+//    auto indexListofTraces = headers.indexOf("ListOfTraces");
+
+//    traces.pop_front();
+
+//    auto featureCollection = new FeatureCollection(this);
+
+//    QList<Field> tableFields;
+//    tableFields.append(Field::createText("AssetType", "NULL",4));
+//    tableFields.append(Field::createText("TabName", "NULL",4));
+//    tableFields.append(Field::createText("SourceIndex", "NULL",4));
+
+//    auto featureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Polyline, SpatialReference::wgs84(),this);
+
+//    auto legendLabel = layerName;
+
+//    for(auto&& it : traces)
+//    {
+//        auto coordString = it.at(indexListofTraces);
+
+//        auto geometry = theVisualizationWidget->getMultilineStringGeometryFromJson(coordString);
+
+//        if(geometry.isEmpty())
+//        {
+//            QString msg ="Error getting the feature geometry for " + layerName;
+//            this->errorMessage(msg);
+
+//            // Clean up memory
+//            delete featureCollection;
+//            delete featureCollectionTable;
+
+//            return -1;
+//        }
+
+//        QMap<QString, QVariant> featureAttributes;
+//        featureAttributes.insert("AssetType", "SCENARIO_TRACES");
+//        featureAttributes.insert("TabName", layerName);
+//        featureAttributes.insert("SourceIndex", it.at(0));
+
+//        auto feature = featureCollectionTable->createFeature(featureAttributes, geometry, this);
+
+//        featureCollectionTable->addFeature(feature);
+
+//    }
+
+//    QColor featureColor = QColor(0,0,0,200);
+//    auto weight = 1.0;
+
+//    SimpleLineSymbol* lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, featureColor, weight, this);
+//    SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol, this);
+//    lineRenderer->setLabel(legendLabel);
+
+//    featureCollectionTable->setRenderer(lineRenderer);
+
+//    featureCollection->tables()->append(featureCollectionTable);
+
+//    // New geo json layer
+//    auto newGeojsonLayer = new FeatureCollectionLayer(featureCollection,this);
+
+//    newGeojsonLayer->setName(layerName);
+
+//    newGeojsonLayer->setAutoFetchLegendInfos(true);
+
+//    theVisualizationWidget->addLayerToMap(newGeojsonLayer,faultTracesTreeItem);
 
     return 0;
 }
@@ -349,15 +434,9 @@ void OpenSRAPostProcessor::importResults(const QString& pathToResults)
 
     QString errMsg;
 
-    auto pipelineInputWidget = theVisualizationWidget->getComponentWidget("GASPIPELINES");
-    if(pipelineInputWidget == nullptr)
-    {
-        errMsg = "Could not get the pipeline input widget";
-        throw errMsg;
-    }
 
     // Get the pipelines database
-    thePipelineDb = pipelineInputWidget->getComponentDatabase();
+    thePipelineDb = ComponentDatabaseManager::getInstance()->getPipelineComponentDb();
 
     if(thePipelineDb == nullptr)
     {
@@ -519,6 +598,8 @@ int OpenSRAPostProcessor::processPGVResults(const QVector<QStringList>& DVResult
     PGVResultsTableWidget->setHorizontalHeaderLabels(tableHeadings);
     PGVResultsTableWidget->setRowCount(DVResults.size()-numHeaderRows);
 
+    QVector<QVariant> attributes(DVResults.size()-numHeaderRows);
+
     // Start at the row where headers end
     for(int row = numHeaderRows, col = 0; row<numRows; ++row, ++col)
     {
@@ -526,12 +607,12 @@ int OpenSRAPostProcessor::processPGVResults(const QVector<QStringList>& DVResult
 
         auto pipelineID = objectToInt(inputRow.at(0));
 
-        Component& pipeline = thePipelineDb->getComponent(pipelineID);
+//        Component& pipeline = thePipelineDb->getComponent(pipelineID);
 
-        if(pipeline.ID == -1)
-            throw QString("Could not find the pipeline ID " + QString::number(pipelineID) + " in the database");
+//        if(pipeline.ID == -1)
+//            throw QString("Could not find the pipeline ID " + QString::number(pipelineID) + " in the database");
 
-        pipeline.ID = pipelineID;
+//        pipeline.ID = pipelineID;
 
         // Put the ID item in the table
         auto tableIDItem = new QTableWidgetItem(QString::number(pipelineID));
@@ -551,7 +632,7 @@ int OpenSRAPostProcessor::processPGVResults(const QVector<QStringList>& DVResult
             auto key = tableHeadings.at(j);
             auto value = inputRow.at(col).toDouble();
 
-            pipeline.addResult(key,value);
+            // pipeline.addResult(key,value);
         }
     }
 
@@ -616,12 +697,12 @@ int OpenSRAPostProcessor::processPGDResults(const QVector<QStringList>& DVResult
 
         auto pipelineID = objectToInt(inputRow.at(0));
 
-        Component& pipeline = thePipelineDb->getComponent(pipelineID);
+//        Component& pipeline = thePipelineDb->getComponent(pipelineID);
 
-        if(pipeline.ID == -1)
-            throw QString("Could not find the pipeline ID " + QString::number(pipelineID) + " in the database");
+//        if(pipeline.ID == -1)
+//            throw QString("Could not find the pipeline ID " + QString::number(pipelineID) + " in the database");
 
-        pipeline.ID = pipelineID;
+//        pipeline.ID = pipelineID;
 
         // Put the ID item in the table
         auto tableIDItem = new QTableWidgetItem(QString::number(pipelineID));
@@ -641,7 +722,7 @@ int OpenSRAPostProcessor::processPGDResults(const QVector<QStringList>& DVResult
             auto key = tableHeadings.at(j);
             auto value = inputRow.at(col).toDouble();
 
-            pipeline.addResult(key,value);
+//            pipeline.addResult(key,value);
         }
     }
 
@@ -701,18 +782,18 @@ int OpenSRAPostProcessor::processTotalResults(const QVector<QStringList>& DVResu
 
         auto pipelineID = objectToInt(inputRow.at(0));
 
-        Component& pipeline = thePipelineDb->getComponent(pipelineID);
+//        Component& pipeline = thePipelineDb->getComponent(pipelineID);
 
-        if(pipeline.ID == -1)
-            throw QString("Could not find the pipeline ID " + QString::number(pipelineID) + " in the database");
+//        if(pipeline.ID == -1)
+//            throw QString("Could not find the pipeline ID " + QString::number(pipelineID) + " in the database");
 
-        pipeline.ID = pipelineID;
+//        pipeline.ID = pipelineID;
 
         // Add the result to the database
         auto key = tableHeadings.at(indexOfTotals);
         auto value = inputRow.at(indexOfTotals).toDouble();
 
-        pipeline.addResult(key,value);
+//        pipeline.addResult(key,value);
     }
 
     item->setState(2);
@@ -851,7 +932,7 @@ int OpenSRAPostProcessor::assemblePDF(QImage screenShot)
     // Ratio of the page width that is printable
     auto useablePageWidth = printer.pageRect(QPrinter::Point).width()-(1.5*leftMargin);
 
-    QRect viewPortRect(0, mapViewMainWidget->height() - mapViewSubWidget->height(), mapViewSubWidget->width(), mapViewSubWidget->height());
+    QRect viewPortRect(0, mapViewSubWidget->height(), mapViewSubWidget->width(), mapViewSubWidget->height());
     QImage cropped = screenShot.copy(viewPortRect);
     document->addResource(QTextDocument::ImageResource,QUrl("Figure1"),cropped);
     QTextImageFormat imageFormatFig1;
@@ -887,23 +968,6 @@ void OpenSRAPostProcessor::sortTable(int index)
     else
         PGVResultsTableWidget->sortByColumn(index,Qt::DescendingOrder);
 
-}
-
-
-void OpenSRAPostProcessor::setCurrentlyViewable(bool status){
-
-    if (status == true)
-        mapViewSubWidget->setCurrentlyViewable(status);
-
-    // Set the legend to display the selected building layer
-    auto componentsWidget = theVisualizationWidget->getComponentWidget("GASPIPELINES");
-
-    if(componentsWidget)
-    {
-        auto selectedLayer = componentsWidget->getSelectedFeatureLayer();
-
-        theVisualizationWidget->handleLegendChange(selectedLayer);
-    }
 }
 
 
@@ -949,53 +1013,53 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
         return;
     }
 
-    auto componentMap = thePipelineDb->getComponentsMap();
+//    auto componentMap = thePipelineDb->getComponentsMap();
 
-    for(auto&& it: componentMap)
-    {
+//    for(auto&& it: componentMap)
+//    {
 
-        auto val = it.getResultValue(headerString);
+//        auto val = it.getResultValue(headerString);
 
-        auto arcGISFeature = it.ComponentFeature;
+//        auto arcGISFeature = it.ComponentFeature;
 
-        if(arcGISFeature == nullptr)
-            throw QString("ArcGIS feature is a null pointer for component ID " + QString::number(it.ID));
+//        if(arcGISFeature == nullptr)
+//            throw QString("ArcGIS feature is a null pointer for component ID " + QString::number(it.ID));
 
-        auto atrb = "RepairRate";
+//        auto atrb = "RepairRate";
 
-        arcGISFeature->attributes()->replaceAttribute(atrb,val);
-        arcGISFeature->featureTable()->updateFeature(arcGISFeature);
+//        arcGISFeature->attributes()->replaceAttribute(atrb,val);
+//        arcGISFeature->featureTable()->updateFeature(arcGISFeature);
 
-        auto atrbVal = QVariant(val);
+//        auto atrbVal = QVariant(val);
 
-        // Get the feature UID
-        auto uid = it.UID;
-        theVisualizationWidget->updateSelectedComponent("GASPIPELINES",uid,atrb,atrbVal);
-    }
+//        // Get the feature UID
+//        auto uid = it.UID;
+//        theVisualizationWidget->updateSelectedComponent("GASPIPELINES",uid,atrb,atrbVal);
+//    }
 }
 
 
 void OpenSRAPostProcessor::clearAll(void)
 {
 
-    auto componentMap = thePipelineDb->getComponentsMap();
+//    auto componentMap = thePipelineDb->getComponentsMap();
 
-    for(auto&& it: componentMap)
-    {
-        auto arcGISFeature = it.ComponentFeature;
+//    for(auto&& it: componentMap)
+//    {
+//        auto arcGISFeature = it.ComponentFeature;
 
-        if(arcGISFeature == nullptr)
-            throw QString("ArcGIS feature is a null pointer for component ID " + QString::number(it.ID));
+//        if(arcGISFeature == nullptr)
+//            throw QString("ArcGIS feature is a null pointer for component ID " + QString::number(it.ID));
 
-        auto atrb = "RepairRate";
+//        auto atrb = "RepairRate";
 
-        arcGISFeature->attributes()->replaceAttribute(atrb,0.0);
-        arcGISFeature->featureTable()->updateFeature(arcGISFeature);
+//        arcGISFeature->attributes()->replaceAttribute(atrb,0.0);
+//        arcGISFeature->featureTable()->updateFeature(arcGISFeature);
 
-        auto atrbVal = QVariant(0.0);
+//        auto atrbVal = QVariant(0.0);
 
-        // Get the feature UID
-        auto uid = it.UID;
-        theVisualizationWidget->updateSelectedComponent("GASPIPELINES",uid,atrb,atrbVal);
-    }
+//        // Get the feature UID
+//        auto uid = it.UID;
+//        theVisualizationWidget->updateSelectedComponent("GASPIPELINES",uid,atrb,atrbVal);
+//    }
 }

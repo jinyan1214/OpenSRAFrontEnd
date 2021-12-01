@@ -1,7 +1,6 @@
 #ifndef JsonGroupBoxWidget_H
 #define JsonGroupBoxWidget_H
 
-#include "WidgetFactory.h"
 #include "UI/JsonSerializable.h"
 
 #include <QGroupBox>
@@ -20,7 +19,6 @@ public:
     void reset(void);
 
 private:
-    std::unique_ptr<WidgetFactory> theWidgetFactory;
 };
 
 #endif // JsonGroupBoxWidget_H

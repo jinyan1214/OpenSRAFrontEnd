@@ -40,17 +40,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <SimCenterAppWidget.h>
 
-namespace Esri
-{
-namespace ArcGISRuntime
-{
-class Map;
-class MapGraphicsView;
-}
-}
-
 class QGroupBox;
-class GasPipelineInputWidget;
+class QGISGasPipelineInputWidget;
 class VisualizationWidget;
 
 class PipelineNetworkWidget : public  SimCenterAppWidget
@@ -73,7 +64,7 @@ public slots:
 
 private:
 
-    std::unique_ptr<GasPipelineInputWidget> theComponentInputWidget;
+    QGISGasPipelineInputWidget* theComponentInputWidget;
 
     VisualizationWidget* theVisualizationWidget;
 };
