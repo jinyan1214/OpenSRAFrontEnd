@@ -128,6 +128,10 @@ public:
 
     void clear(void);
 
+protected:
+
+    void showEvent(QShowEvent *e);
+
 private slots:
 
     int assemblePDF(QImage screenShot);
@@ -142,11 +146,11 @@ private slots:
 
 private:
 
-    int processPGVResults(const QVector<QStringList>& DVResults);
+    int processPGVResults(const QVector<QStringList>& DVResults, QStringList& fieldNames, QVector<QgsAttributes>& fieldAttributes);
 
-    int processPGDResults(const QVector<QStringList>& DVResults);
+    int processPGDResults(const QVector<QStringList>& DVResults, QStringList& fieldNames, QVector<QgsAttributes>& fieldAttributes);
 
-    int processTotalResults(const QVector<QStringList>& DVResults);
+    int processTotalResults(const QVector<QStringList>& DVResults, QStringList& fieldNames, QVector<QgsAttributes>& fieldAttributes);
 
     int importResultVisuals(const QString& pathToResults);
     int importFaultCrossings(const QString& pathToFile);
@@ -160,6 +164,8 @@ private:
     TreeItem* PGVTreeItem;
     TreeItem* PGDTreeItem;
     TreeItem* totalTreeItem;
+
+    TreeItem* defaultItem;
 
     QString outputFilePath;
 

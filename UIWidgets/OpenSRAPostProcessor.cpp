@@ -80,8 +80,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 
 // GIS headers
-#include "qgslinesymbol.h"
-
+#include <qgslinesymbol.h>
+#include <qgsmapcanvas.h>
+#include <qgsrenderer.h>
+#include <qgsgraduatedsymbolrenderer.h>
 
 using namespace QtCharts;
 
@@ -90,6 +92,7 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWid
     PGVTreeItem = nullptr;
     PGDTreeItem = nullptr;
     totalTreeItem = nullptr;
+    defaultItem = nullptr;
     thePipelineDb = nullptr;
     // The first n columns is information about the component and not results
     numInfoCols = 8;
@@ -193,6 +196,17 @@ void OpenSRAPostProcessor::handleModifyLegend(void)
 //    auto layerId = pipelineLayer->layerId();
 
 //    theVisualizationWidget->handlePlotColorChange(layerId);
+}
+
+
+void OpenSRAPostProcessor::showEvent(QShowEvent *e)
+{
+    auto mainCanvas = mapViewSubWidget->getMainCanvas();
+
+    auto mainExtent = mainCanvas->extent();
+
+    mapViewSubWidget->mapCanvas()->zoomToFeatureExtent(mainExtent);
+    QWidget::showEvent(e);
 }
 
 
@@ -342,81 +356,6 @@ int OpenSRAPostProcessor::importScenarioTraces(const QString& pathToFile)
     theVisualizationWidget->createSimpleRenderer(markerSymbol,mainLayer);
 
 
-    //***
-
-//    auto layersTreeView = theVisualizationWidget->getLayersTree();
-
-//    // Check if there is a 'Shake Map' root item in the tree
-//    auto faultTracesTreeItem = layersTreeView->getTreeItem("Scenario Faults", nullptr);
-
-//    QString layerName = "Scenario Traces";
-
-//    auto headers = traces.front();
-
-//    auto indexListofTraces = headers.indexOf("ListOfTraces");
-
-//    traces.pop_front();
-
-//    auto featureCollection = new FeatureCollection(this);
-
-//    QList<Field> tableFields;
-//    tableFields.append(Field::createText("AssetType", "NULL",4));
-//    tableFields.append(Field::createText("TabName", "NULL",4));
-//    tableFields.append(Field::createText("SourceIndex", "NULL",4));
-
-//    auto featureCollectionTable = new FeatureCollectionTable(tableFields, GeometryType::Polyline, SpatialReference::wgs84(),this);
-
-//    auto legendLabel = layerName;
-
-//    for(auto&& it : traces)
-//    {
-//        auto coordString = it.at(indexListofTraces);
-
-//        auto geometry = theVisualizationWidget->getMultilineStringGeometryFromJson(coordString);
-
-//        if(geometry.isEmpty())
-//        {
-//            QString msg ="Error getting the feature geometry for " + layerName;
-//            this->errorMessage(msg);
-
-//            // Clean up memory
-//            delete featureCollection;
-//            delete featureCollectionTable;
-
-//            return -1;
-//        }
-
-//        QMap<QString, QVariant> featureAttributes;
-//        featureAttributes.insert("AssetType", "SCENARIO_TRACES");
-//        featureAttributes.insert("TabName", layerName);
-//        featureAttributes.insert("SourceIndex", it.at(0));
-
-//        auto feature = featureCollectionTable->createFeature(featureAttributes, geometry, this);
-
-//        featureCollectionTable->addFeature(feature);
-
-//    }
-
-//    QColor featureColor = QColor(0,0,0,200);
-//    auto weight = 1.0;
-
-//    SimpleLineSymbol* lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, featureColor, weight, this);
-//    SimpleRenderer* lineRenderer = new SimpleRenderer(lineSymbol, this);
-//    lineRenderer->setLabel(legendLabel);
-
-//    featureCollectionTable->setRenderer(lineRenderer);
-
-//    featureCollection->tables()->append(featureCollectionTable);
-
-//    // New geo json layer
-//    auto newGeojsonLayer = new FeatureCollectionLayer(featureCollection,this);
-
-//    newGeojsonLayer->setName(layerName);
-
-//    newGeojsonLayer->setAutoFetchLegendInfos(true);
-
-//    theVisualizationWidget->addLayerToMap(newGeojsonLayer,faultTracesTreeItem);
-
     return 0;
 }
 
@@ -455,7 +394,6 @@ void OpenSRAPostProcessor::importResults(const QString& pathToResults)
 
 
     QString pathToScenarioTraces = pathToResults + QDir::separator() + "IM" + QDir::separator() + "SeismicSource";
-
     this->importResultVisuals(pathToScenarioTraces);
 
 
@@ -494,7 +432,12 @@ int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
             AllResultsSheet = it;
     }
 
+    // Create the CSV reader/writer tool
     CSVReaderWriter csvTool;
+
+    // Vector to hold the attributes
+    QVector< QgsAttributes > fieldAttributes;
+    QStringList fieldNames;
 
     if(!PGVResultsSheet.isEmpty())
     {
@@ -503,7 +446,7 @@ int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
             throw errMsg;
 
         if(!RepairRatePGV.empty())
-            this->processPGVResults(RepairRatePGV);
+            this->processPGVResults(RepairRatePGV,fieldNames,fieldAttributes);
         else
         {
             errMsg = "The PGV results are empty";
@@ -518,7 +461,7 @@ int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
             throw errMsg;
 
         if(!RepairRatePGD.empty())
-            this->processPGDResults(RepairRatePGD);
+            this->processPGDResults(RepairRatePGD,fieldNames,fieldAttributes);
         else
         {
             errMsg = "The PGD results are empty";
@@ -533,7 +476,7 @@ int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
             throw errMsg;
 
         if(!RepairRateAll.empty())
-            this->processTotalResults(RepairRateAll);
+            this->processTotalResults(RepairRateAll,fieldNames,fieldAttributes);
         else
         {
             errMsg = "The total results are empty";
@@ -541,6 +484,36 @@ int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
         }
     }
 
+    // Get the pipelines database
+    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getPipelineComponentDb();
+
+    if(thePipelineDB == nullptr)
+    {
+        QString msg = "Error getting the pipeline database from the input widget!";
+        throw msg;
+    }
+
+    if(thePipelineDB->isEmpty())
+    {
+        QString msg = "Pipeline database is empty";
+        throw msg;
+    }
+
+    auto selFeatLayer = thePipelineDB->getSelectedLayer();
+    mapViewSubWidget->setCurrentLayer(selFeatLayer);
+
+    // Starting editing
+    thePipelineDB->startEditing();
+
+    auto res = thePipelineDB->addNewComponentAttributes(fieldNames,fieldAttributes,errMsg);
+    if(!res)
+        throw errMsg;
+
+    // Commit the changes
+    thePipelineDB->commitChanges();
+
+
+    defaultItem->setState(2);
 
     listWidget->expandAll();
 
@@ -548,7 +521,7 @@ int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
 }
 
 
-int OpenSRAPostProcessor::processPGVResults(const QVector<QStringList>& DVResults)
+int OpenSRAPostProcessor::processPGVResults(const QVector<QStringList>& DVResults, QStringList& fieldNames, QVector<QgsAttributes>& fieldAttributes)
 {
 
     auto numRows = DVResults.size();
@@ -598,49 +571,52 @@ int OpenSRAPostProcessor::processPGVResults(const QVector<QStringList>& DVResult
     PGVResultsTableWidget->setHorizontalHeaderLabels(tableHeadings);
     PGVResultsTableWidget->setRowCount(DVResults.size()-numHeaderRows);
 
-    QVector<QVariant> attributes(DVResults.size()-numHeaderRows);
+    QVector< QgsAttributes > attributes(DVResults.size()-numHeaderRows, QgsAttributes(numHeaderColumns-numInfoCols));
 
     // Start at the row where headers end
-    for(int row = numHeaderRows, col = 0; row<numRows; ++row, ++col)
+    for(int row = numHeaderRows, count = 0; row<numRows; ++row, ++count)
     {
         auto inputRow = DVResults.at(row);
 
         auto pipelineID = objectToInt(inputRow.at(0));
 
-//        Component& pipeline = thePipelineDb->getComponent(pipelineID);
-
-//        if(pipeline.ID == -1)
-//            throw QString("Could not find the pipeline ID " + QString::number(pipelineID) + " in the database");
-
-//        pipeline.ID = pipelineID;
-
         // Put the ID item in the table
         auto tableIDItem = new QTableWidgetItem(QString::number(pipelineID));
         PGVResultsTableWidget->setItem(row-1,0, tableIDItem);
 
+        auto& rowData = attributes[count];
+
         // Populate the table and database with the results
-        for(int j = 1, col = numInfoCols; col<numHeaderColumns; ++col, ++j)
+        for(int j = 1, k = numInfoCols; k<numHeaderColumns; ++k, ++j)
         {
             // Add add the result to the table
-            auto tableVal = QString(inputRow.at(col));
+            auto tableVal = QString(inputRow.at(k));
 
             auto tableItem = new QTableWidgetItem(tableVal);
 
             PGVResultsTableWidget->setItem(row-1,j, tableItem);
 
             // Add the result to the database
-            auto key = tableHeadings.at(j);
-            auto value = inputRow.at(col).toDouble();
+            auto value = inputRow.at(k);
 
-            // pipeline.addResult(key,value);
+            rowData[j-1] = QVariant(value.toDouble());
         }
     }
+
+    // Append the new fields and data
+
+    // We do not need the first column that contains the id
+    tableHeadings.pop_front();
+
+    fieldNames.append(tableHeadings);
+
+    fieldAttributes.append(attributes);
 
     return 0;
 }
 
 
-int OpenSRAPostProcessor::processPGDResults(const QVector<QStringList>& DVResults)
+int OpenSRAPostProcessor::processPGDResults(const QVector<QStringList>& DVResults, QStringList& fieldNames, QVector<QgsAttributes>& fieldAttributes)
 {
 
     auto numRows = DVResults.size();
@@ -686,51 +662,55 @@ int OpenSRAPostProcessor::processPGDResults(const QVector<QStringList>& DVResult
         item->setProperty("HeaderString",headerStr);
     }
 
+    auto numNewAttributes = numRows-numHeaderRows;
+
     PGDResultsTableWidget->setColumnCount(tableHeadings.size());
     PGDResultsTableWidget->setHorizontalHeaderLabels(tableHeadings);
-    PGDResultsTableWidget->setRowCount(DVResults.size()-numHeaderRows);
+    PGDResultsTableWidget->setRowCount(numNewAttributes);
 
-    // Start at the row where headers end
-    for(int row = numHeaderRows, col = 0; row<numRows; ++row, ++col)
+    // Start at the row where headers end  
+    for(int row = numHeaderRows, count = 0; row<numRows; ++row, ++count)
     {
         auto inputRow = DVResults.at(row);
 
         auto pipelineID = objectToInt(inputRow.at(0));
 
-//        Component& pipeline = thePipelineDb->getComponent(pipelineID);
-
-//        if(pipeline.ID == -1)
-//            throw QString("Could not find the pipeline ID " + QString::number(pipelineID) + " in the database");
-
-//        pipeline.ID = pipelineID;
 
         // Put the ID item in the table
         auto tableIDItem = new QTableWidgetItem(QString::number(pipelineID));
         PGDResultsTableWidget->setItem(row-1,0, tableIDItem);
 
+        auto& rowData = fieldAttributes[count];
+        rowData.reserve(rowData.size()+numNewAttributes);
+
         // Populate the table and database with the results
-        for(int j = 1, col = numInfoCols; col<numHeaderColumns; ++col, ++j)
+        for(int j = 1, k = numInfoCols; k<numHeaderColumns; ++k, ++j)
         {
             // Add add the result to the table
-            auto tableVal = QString(inputRow.at(col));
+            auto tableVal = QString(inputRow.at(k));
 
             auto tableItem = new QTableWidgetItem(tableVal);
 
             PGDResultsTableWidget->setItem(row-1,j, tableItem);
 
             // Add the result to the database
-            auto key = tableHeadings.at(j);
-            auto value = inputRow.at(col).toDouble();
+            auto value = inputRow.at(k);
 
-//            pipeline.addResult(key,value);
+            rowData.push_back(QVariant(value.toDouble()));
         }
     }
+
+    // Append the new fields
+    // We do not need the first column that contains the id
+    tableHeadings.pop_front();
+
+    fieldNames.append(tableHeadings);
 
     return 0;
 }
 
 
-int OpenSRAPostProcessor::processTotalResults(const QVector<QStringList>& DVResults)
+int OpenSRAPostProcessor::processTotalResults(const QVector<QStringList>& DVResults, QStringList& fieldNames, QVector<QgsAttributes>& fieldAttributes)
 {
 
     auto numRows = DVResults.size();
@@ -770,33 +750,23 @@ int OpenSRAPostProcessor::processTotalResults(const QVector<QStringList>& DVResu
 
     QString itemStr = "All demands";
 
-    auto item = listWidget->addItem(itemStr,totalTreeItem);
+    defaultItem = listWidget->addItem(itemStr,totalTreeItem);
 
     // Set the header string as a property so I can find the header value later
-    item->setProperty("HeaderString",headerStr);
+    defaultItem->setProperty("HeaderString",headerStr);
 
     // Start at the row where headers end
-    for(int row = numHeaderRows; row<numRows; ++row)
+    for(int row = numHeaderRows, count = 0; row<numRows; ++row, ++count)
     {
         auto inputRow = DVResults.at(row);
 
-        auto pipelineID = objectToInt(inputRow.at(0));
-
-//        Component& pipeline = thePipelineDb->getComponent(pipelineID);
-
-//        if(pipeline.ID == -1)
-//            throw QString("Could not find the pipeline ID " + QString::number(pipelineID) + " in the database");
-
-//        pipeline.ID = pipelineID;
-
         // Add the result to the database
-        auto key = tableHeadings.at(indexOfTotals);
         auto value = inputRow.at(indexOfTotals).toDouble();
 
-//        pipeline.addResult(key,value);
+        fieldAttributes[count].push_back(QVariant(value));
     }
 
-    item->setState(2);
+    fieldNames.append(headerStr);
 
     return 0;
 
@@ -868,7 +838,7 @@ void OpenSRAPostProcessor::processResultsSubset(const std::set<int>& selectedCom
         }
     }
 
-    this->processPGVResults(DVsubset);
+//    this->processPGVResults(DVsubset);
 }
 
 
@@ -1009,33 +979,83 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
 
     if(headerString.isEmpty())
     {
-        qDebug()<<"Could not find the property "<<"HeaderString"<<" in item "<<itemSelected->getName();
+        this->errorMessage("Could not find the property "+headerString+" in item "+itemSelected->getName());
         return;
     }
 
-//    auto componentMap = thePipelineDb->getComponentsMap();
+    // Get the pipelines database
+    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getPipelineComponentDb();
 
-//    for(auto&& it: componentMap)
-//    {
+    if(thePipelineDB == nullptr)
+    {
+        this->errorMessage("Error getting the pipeline database from the input widget!");
+        return;
+    }
 
-//        auto val = it.getResultValue(headerString);
+    if(thePipelineDB->isEmpty())
+    {
+        this->errorMessage("Pipeline database is empty");
+        return;
+    }
 
-//        auto arcGISFeature = it.ComponentFeature;
+    auto selFeatLayer = thePipelineDB->getSelectedLayer();
+    if(selFeatLayer == nullptr)
+    {
+        this->errorMessage("Layer is a nullptr in handleListSelection");
+        return;
+    }
 
-//        if(arcGISFeature == nullptr)
-//            throw QString("ArcGIS feature is a null pointer for component ID " + QString::number(it.ID));
+    // Check to see if that field exists in the layer
+    auto idx = selFeatLayer->dataProvider()->fieldNameIndex(headerString);
 
-//        auto atrb = "RepairRate";
+    if(idx == -1)
+    {
+        this->errorMessage("Could not find the field "+headerString+" in layer "+selFeatLayer->name());
+        return;
+    }
 
-//        arcGISFeature->attributes()->replaceAttribute(atrb,val);
-//        arcGISFeature->featureTable()->updateFeature(arcGISFeature);
+    auto layerRenderer = selFeatLayer->renderer();
+    if(layerRenderer == nullptr)
+    {
+        this->errorMessage("No layer renderer available in layer "+selFeatLayer->name());
+        return;
+    }
 
-//        auto atrbVal = QVariant(val);
+    // Create a graduated renderer if one does not exist
+    if(layerRenderer->type().compare("graduatedSymbol") != 0)
+    {
+        QVector<QPair<double,double>>classBreaks;
+        QVector<QColor> colors;
 
-//        // Get the feature UID
-//        auto uid = it.UID;
-//        theVisualizationWidget->updateSelectedComponent("GASPIPELINES",uid,atrb,atrbVal);
-//    }
+        classBreaks.append(QPair<double,double>(0.0, 1E-03));
+        classBreaks.append(QPair<double,double>(1.00E-03, 1.00E-02));
+        classBreaks.append(QPair<double,double>(1.00E-02, 1.00E-01));
+        classBreaks.append(QPair<double,double>(1.00E-01, 1.00E+00));
+        classBreaks.append(QPair<double,double>(1.00E+00, 1.00E+01));
+        classBreaks.append(QPair<double,double>(1.00E+01, 1.00E+10));
+
+        colors.push_back(Qt::darkBlue);
+        colors.push_back(QColor(255,255,178));
+        colors.push_back(QColor(253,204,92));
+        colors.push_back(QColor(253,141,60));
+        colors.push_back(QColor(240,59,32));
+        colors.push_back(QColor(189,0,38));
+
+        // createCustomClassBreakRenderer(const QString attrName, const QVector<QPair<double,double>>& classBreaks, const QVector<QColor>& colors, QgsVectorLayer * vlayer)
+        theVisualizationWidget->createCustomClassBreakRenderer(headerString,selFeatLayer,Qgis::SymbolType::Line,classBreaks,colors);
+    }
+    else if(auto graduatedRender = dynamic_cast<QgsGraduatedSymbolRenderer*>(layerRenderer))
+    {
+        graduatedRender->setClassAttribute(headerString);
+    }
+    else
+    {
+        this->errorMessage("Unrecognized type of layer renderer available in layer "+selFeatLayer->name());
+        return;
+    }
+
+
+    theVisualizationWidget->markDirty();
 }
 
 
