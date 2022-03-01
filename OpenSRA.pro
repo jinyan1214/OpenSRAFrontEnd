@@ -70,12 +70,14 @@ SOURCES += main.cpp \
     JsonWidgets/JsonWidget.cpp \
     JsonWidgets/JsonStackedWidget.cpp \
     JsonWidgets/SimCenterJsonWidget.cpp \
+    UIWidgets/ClickableLabel.cpp \
     UIWidgets/DVRepairRateWidget.cpp \
     UIWidgets/EDPLandslideWidget.cpp \
     UIWidgets/MonteCarloSamplingWidget.cpp \
     UIWidgets/FixedResidualsSamplingWidget.cpp \
     UIWidgets/OpenSHAWidget.cpp \
     UIWidgets/OpenSRAPostProcessor.cpp \
+    UIWidgets/OpenSRAPreProcessor.cpp \
     UIWidgets/ResultsWidget.cpp \
     UIWidgets/UncertaintyQuantificationWidget.cpp \
     UIWidgets/WidgetFactory.cpp \
@@ -92,6 +94,9 @@ SOURCES += main.cpp \
     UIWidgets/GeneralInformationWidget.cpp \
     UIWidgets/IntensityMeasureWidget.cpp \
     UIWidgets/DamageMeasureWidget.cpp \
+    UIWidgets/RandomVariablesWidget.cpp \
+    ModelViewItems/RVTableView.cpp \
+    ModelViewItems/RVTableModel.cpp \
     RunWidget.cpp \
 
 HEADERS  += \
@@ -104,15 +109,18 @@ HEADERS  += \
     JsonWidgets/SimCenterJsonWidget.h \
     JsonWidgets/JsonGroupBoxWidget.h \
     OpenSRAUserPass.h \
+    UIWidgets/ClickableLabel.h \
     UIWidgets/DVRepairRateWidget.h \
     UIWidgets/EDPLandslideWidget.h \
     UIWidgets/MonteCarloSamplingWidget.h \
     UIWidgets/FixedResidualsSamplingWidget.h \
     UIWidgets/OpenSHAWidget.h \
     UIWidgets/OpenSRAPostProcessor.h \
+    UIWidgets/OpenSRAPreProcessor.h \
     UIWidgets/ResultsWidget.h \
     UIWidgets/UncertaintyQuantificationWidget.h \
     UIWidgets/WidgetFactory.h \
+    UIWidgets/RandomVariablesWidget.h \
     WorkflowAppOpenSRA.h \
     WorkflowAppWidget.h \
     MainWindowWorkflowApp.h \
@@ -127,6 +135,8 @@ HEADERS  += \
     UIWidgets/GeneralInformationWidget.h \
     UIWidgets/IntensityMeasureWidget.h \
     UIWidgets/DamageMeasureWidget.h \
+    ModelViewItems/RVTableView.h \
+    ModelViewItems/RVTableModel.h \
 
 RESOURCES += \
     images.qrc \
@@ -136,6 +146,7 @@ INCLUDEPATH += $$PWD/Utils \
                $$PWD/styles \
                $$PWD/UIWidgets \
                $$PWD/JsonWidgets \
+               $$PWD/ModelViewItems \
 
 
 # Copies over the examples folder into the build directory

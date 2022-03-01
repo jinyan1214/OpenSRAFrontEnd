@@ -77,6 +77,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTextCursor>
 #include <QTextTable>
 #include <QValueAxis>
+#include <QToolButton>
 #include <QPushButton>
 
 // GIS headers
@@ -84,6 +85,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsmapcanvas.h>
 #include <qgsrenderer.h>
 #include <qgsgraduatedsymbolrenderer.h>
+#include <qgslayertreeview.h>
 
 using namespace QtCharts;
 
@@ -98,9 +100,11 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWid
     numInfoCols = 8;
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
 
     // Create a view menu for the dockable windows
-    mainWidget = new QSplitter(this);
+    mainWidget = new QSplitter();
     mainWidget->setOrientation(Qt::Horizontal);
     mainWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
@@ -150,6 +154,8 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWid
 
     QWidget* rightHandWidget = new QWidget();
     QVBoxLayout* rightHandLayout = new QVBoxLayout(rightHandWidget);
+    rightHandLayout->setMargin(0);
+    rightHandLayout->setContentsMargins(0, 0, 0, 0);
 
     rightHandLayout->addWidget(listWidget);
 
@@ -173,10 +179,34 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWid
     // The number of header rows in the Pelicun results file
     numHeaderRows = 1;
 
-    QList<int> Sizes;
-    Sizes.append(0.90 * sizeHint().width());
-    Sizes.append(0.10 * sizeHint().width());
-    mainWidget->setSizes(Sizes);
+    mainWidget->setStretchFactor(0,2);
+
+    // Now add the splitter handle
+    // Note: index 0 handle is always hidden, index 1 is between the two widgets
+    QSplitterHandle *handle = mainWidget->handle(1);
+
+    if(handle == nullptr)
+    {
+        qDebug()<<"Error getting the handle";
+        return;
+    }
+
+    auto buttonHandle = new QToolButton(handle);
+    QVBoxLayout *layout = new QVBoxLayout(handle);
+    layout->setSpacing(0);
+    layout->setMargin(0);
+
+    mainWidget->setHandleWidth(15);
+
+    buttonHandle->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    buttonHandle->setDown(false);
+    buttonHandle->setAutoRaise(false);
+    buttonHandle->setCheckable(false);
+    buttonHandle->setArrowType(Qt::LeftArrow);
+    buttonHandle->setStyleSheet("QToolButton{border:0px solid}; QToolButton:pressed {border:0px solid}");
+    buttonHandle->setIconSize(buttonHandle->size());
+    layout->addWidget(buttonHandle);
+
 }
 
 
@@ -502,6 +532,8 @@ int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
     auto selFeatLayer = thePipelineDB->getSelectedLayer();
     mapViewSubWidget->setCurrentLayer(selFeatLayer);
 
+//    mapViewSubWidget->addLayerToLegend(selFeatLayer);
+
     // Starting editing
     thePipelineDB->startEditing();
 
@@ -511,7 +543,6 @@ int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
 
     // Commit the changes
     thePipelineDB->commitChanges();
-
 
     defaultItem->setState(2);
 
@@ -967,6 +998,13 @@ void OpenSRAPostProcessor::clear(void)
         delete totalTreeItem;
         totalTreeItem = nullptr;
     }
+    if(defaultItem != nullptr)
+    {
+        delete defaultItem;
+        defaultItem = nullptr;
+    }
+
+    mapViewSubWidget->clear();
 }
 
 
@@ -1062,24 +1100,33 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
 void OpenSRAPostProcessor::clearAll(void)
 {
 
-//    auto componentMap = thePipelineDb->getComponentsMap();
+    // Get the pipelines database
+    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getPipelineComponentDb();
 
-//    for(auto&& it: componentMap)
-//    {
-//        auto arcGISFeature = it.ComponentFeature;
+    if(thePipelineDB == nullptr)
+    {
+        this->errorMessage("Error getting the pipeline database from the input widget!");
+        return;
+    }
 
-//        if(arcGISFeature == nullptr)
-//            throw QString("ArcGIS feature is a null pointer for component ID " + QString::number(it.ID));
+    if(thePipelineDB->isEmpty())
+    {
+        this->errorMessage("Pipeline database is empty");
+        return;
+    }
 
-//        auto atrb = "RepairRate";
+    auto selFeatLayer = thePipelineDB->getSelectedLayer();
+    if(selFeatLayer == nullptr)
+    {
+        this->errorMessage("Layer is a nullptr in handleListSelection");
+        return;
+    }
 
-//        arcGISFeature->attributes()->replaceAttribute(atrb,0.0);
-//        arcGISFeature->featureTable()->updateFeature(arcGISFeature);
+    QgsLineSymbol* selectedLayerMarkerSymbol = new QgsLineSymbol();
 
-//        auto atrbVal = QVariant(0.0);
+    selectedLayerMarkerSymbol->setWidth(2.0);
+    selectedLayerMarkerSymbol->setColor(Qt::darkBlue);
+    theVisualizationWidget->createSimpleRenderer(selectedLayerMarkerSymbol,selFeatLayer);
 
-//        // Get the feature UID
-//        auto uid = it.UID;
-//        theVisualizationWidget->updateSelectedComponent("GASPIPELINES",uid,atrb,atrbVal);
-//    }
+    theVisualizationWidget->markDirty();
 }

@@ -50,6 +50,7 @@ class InputWidgetBIM;
 class InputWidgetUQ;
 class PipelineNetworkWidget;
 class DecisionVariableWidget;
+class RandomVariablesWidget;
 class DamageMeasureWidget;
 class UQOptions;
 class ResultsWidget;
@@ -85,6 +86,8 @@ public:
     bool inputFromJSON(QJsonObject &rvObject);
 
     void onRunButtonClicked();
+    void onPreprocessButtonClicked();
+
     void onRemoteRunButtonClicked();
     void onRemoteGetButtonClicked();
     void onExitButtonClicked();
@@ -92,6 +95,7 @@ public:
     
     GeneralInformationWidget *getGeneralInformationWidget() const;
     QGISVisualizationWidget *getVisualizationWidget() const;
+    PipelineNetworkWidget *getThePipelineNetworkWidget() const;
 
     QJsonObject getMethodsAndParamsObj() const;
 
@@ -100,6 +104,7 @@ public:
     WidgetFactory* getTheWidgetFactory() const;
 
     void setTheWidgetFactory(WidgetFactory* value);
+
 
 signals:
     void setUpForApplicationRunDone(QString &tmpDirectory, QString &inputFile);
@@ -111,7 +116,7 @@ public slots:
     void clearWorkDir(void);
 
     void setUpForApplicationRun(QString &, QString &);
-    void processResults(QString doesNothing1, QString doesNothing2, QString doesNothing3);
+    void postprocessResults(QString doesNothing1, QString doesNothing2, QString doesNothing3);
 
     int loadFile(QString filename);
     void replyFinished(QNetworkReply*);
@@ -140,6 +145,7 @@ private:
     PipelineNetworkWidget* thePipelineNetworkWidget = nullptr;
     IntensityMeasureWidget* theIntensityMeasureWidget = nullptr;
     DecisionVariableWidget* theDecisionVariableWidget = nullptr;
+    RandomVariablesWidget* theRandomVariableWidget = nullptr;
     DamageMeasureWidget* theDamageMeasureWidget = nullptr;
     EngDemandParamWidget* theEDPWidget = nullptr;
     CustomVisualizationWidget* theCustomVisualizationWidget = nullptr;

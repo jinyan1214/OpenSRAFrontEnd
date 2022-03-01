@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "DamageMeasureWidget.h"
 #include "DecisionVariableWidget.h"
 #include "EngDemandParamWidget.h"
+#include "RandomVariablesWidget.h"
 #include "UIWidgets/GeneralInformationWidget.h"
 #include "UIWidgets/IntensityMeasureWidget.h"
 #include "LocalApplication.h"
@@ -57,6 +58,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "OpenSRAPreferences.h"
 #include "LoadResultsDialog.h"
 #include "Utils/PythonProgressDialog.h"
+#include "OpenSRAPreProcessor.h"
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -74,9 +76,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 #include <QSettings>
 #include <QUuid>
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkReply>
-#include <QtNetwork/QNetworkRequest>
+
 
 // static pointer for global procedure set in constructor
 static WorkflowAppOpenSRA *theApp = nullptr;
@@ -240,6 +240,7 @@ void WorkflowAppOpenSRA::initialize(void)
     theEDPWidget = new EngDemandParamWidget(this);
     theCustomVisualizationWidget = new CustomVisualizationWidget(this,theVisualizationWidget);
     theDecisionVariableWidget = new DecisionVariableWidget(this);
+    theRandomVariableWidget = new RandomVariablesWidget(this);
     theResultsWidget = new ResultsWidget(this,theVisualizationWidget);
 
 
@@ -253,7 +254,7 @@ void WorkflowAppOpenSRA::initialize(void)
 
     connect(localApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
     connect(this,SIGNAL(setUpForApplicationRunDone(QString&, QString &)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString &)));
-    connect(localApp,SIGNAL(processResults(QString,QString,QString)), this, SLOT(processResults(QString, QString, QString)));
+    connect(localApp,SIGNAL(postprocessResults(QString,QString,QString)), this, SLOT(postprocessResults(QString, QString, QString)));
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
@@ -274,6 +275,7 @@ void WorkflowAppOpenSRA::initialize(void)
     theComponentSelection->addComponent(QString("Engineering\nDemand\nParameter"), theEDPWidget);
     theComponentSelection->addComponent(QString("Damage\nMeasure"), theDamageMeasureWidget);
     theComponentSelection->addComponent(QString("Decision\nVariable"), theDecisionVariableWidget);
+    theComponentSelection->addComponent(QString("Random\nVariables"), theRandomVariableWidget);
     theComponentSelection->addComponent(QString("Results"), theResultsWidget);
     theComponentSelection->setWidth(120);
     theComponentSelection->setItemWidthHeight(120,70);
@@ -396,7 +398,7 @@ bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
 }
 
 
-void WorkflowAppOpenSRA::processResults(QString resultsDirectory, QString /*doesNothing2*/, QString /*doesNothing3*/)
+void WorkflowAppOpenSRA::postprocessResults(QString resultsDirectory, QString /*doesNothing2*/, QString /*doesNothing3*/)
 {
     theResultsWidget->processResults(resultsDirectory);
     theRunWidget->hide();
@@ -444,70 +446,62 @@ void WorkflowAppOpenSRA::clearWorkDir(void)
 
 bool WorkflowAppOpenSRA::inputFromJSON(QJsonObject &jsonObject)
 {
-    bool res = true;
 
     auto genJsonObj = jsonObject.value("General").toObject();
-    res = theGenInfoWidget->inputFromJSON(genJsonObj);
-
-    if(res == false)
+    if(theGenInfoWidget->inputFromJSON(genJsonObj) == false)
     {
         errorMessage("Error loading .json input file at " + theGenInfoWidget->objectName() + " panel");
         return false;
     }
 
     auto UQJsonObj = jsonObject.value("SamplingMethod").toObject();
-    res = theUQWidget->inputFromJSON(UQJsonObj);
-
-    if(res == false)
+    if(theUQWidget->inputFromJSON(UQJsonObj) == false)
     {
         errorMessage("Error loading .json input file at " + theUQWidget->objectName() + " panel");
         return false;
     }
 
     auto InfraJsonObj = jsonObject.value("Infrastructure").toObject();
-    res = thePipelineNetworkWidget->inputFromJSON(InfraJsonObj);
-
-    if(res == false)
+    if(thePipelineNetworkWidget->inputFromJSON(InfraJsonObj) == false)
     {
         errorMessage("Error loading .json input file at " + thePipelineNetworkWidget->objectName() + " panel");
         return false;
     }
 
     auto IntensityMeasObj = jsonObject.value("IntensityMeasure").toObject();
-    res = theIntensityMeasureWidget->inputFromJSON(IntensityMeasObj);
-
-    if(res == false)
+    if(theIntensityMeasureWidget->inputFromJSON(IntensityMeasObj) == false)
     {
         errorMessage("Error loading .json input file at " + theIntensityMeasureWidget->objectName() + " panel");
         return false;
     }
 
     auto EDPObj = jsonObject.value("EngineeringDemandParameter").toObject();
-    res = theEDPWidget->inputFromJSON(EDPObj);
-
-    if(res == false)
+    if(theEDPWidget->inputFromJSON(EDPObj) == false)
     {
         errorMessage("Error loading .json input file at " + theEDPWidget->objectName() + " panel");
         return false;
     }
 
     auto DamageMeasureObj = jsonObject.value("DamageMeasure").toObject();
-    res = theDamageMeasureWidget->inputFromJSON(DamageMeasureObj);
-
-    if(res == false)
+    if(theDamageMeasureWidget->inputFromJSON(DamageMeasureObj) == false)
     {
         errorMessage("Error loading .json input file at " + theDamageMeasureWidget->objectName() + " panel");
         return false;
     }
 
     auto DecisionVarObj = jsonObject.value("DecisionVariable").toObject();
-    res = theDecisionVariableWidget->inputFromJSON(DecisionVarObj);
-
-    if(res == false)
+    if(theDecisionVariableWidget->inputFromJSON(DecisionVarObj) == false)
     {
         errorMessage("Error loading .json input file at " + theDecisionVariableWidget->objectName() + " panel");
         return false;
     }
+
+    if(theRandomVariableWidget->inputFromJSON(EDPObj) == false)
+    {
+        errorMessage("Error loading .json input file at " + theRandomVariableWidget->objectName() + " panel");
+        return false;
+    }
+
 
     return true;
 }
@@ -518,6 +512,26 @@ void WorkflowAppOpenSRA::onRunButtonClicked()
     theRunWidget->hide();
     theRunWidget->setMinimumWidth(this->width()*0.5);
     theRunWidget->showLocalApplication();
+}
+
+
+void WorkflowAppOpenSRA::onPreprocessButtonClicked()
+{
+
+    //auto backEndFilePath = appDir + QDir::separator() + "OpenSRABackend";
+
+    // Run GIS pre-processing
+    //    OpenSRAPreProcessor GISPreProcessor(backEndFilePath);
+
+    //    statusMessage("Starting GIS Preprocessing");
+
+//    if(GISPreProcessor.run() != 0)
+//    {
+//        errorMessage("Failed in GIS PreProcessing step");
+//        return false;
+//    }
+
+//    statusMessage("GIS Preprocessing Finished");
 }
 
 
@@ -548,6 +562,7 @@ int WorkflowAppOpenSRA::getMaxNumParallelTasks()
 
 void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &subDir)
 {
+    Q_UNUSED(subDir);
 
     //
     // create temporary directory in working dir
@@ -680,6 +695,12 @@ void WorkflowAppOpenSRA::errorMessage(QString message)
 void WorkflowAppOpenSRA::fatalMessage(QString message)
 {
     progressDialog->appendErrorMessage(message);
+}
+
+
+PipelineNetworkWidget *WorkflowAppOpenSRA::getThePipelineNetworkWidget() const
+{
+    return thePipelineNetworkWidget;
 }
 
 

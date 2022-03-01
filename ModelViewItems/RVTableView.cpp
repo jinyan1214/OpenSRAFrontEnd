@@ -1,7 +1,5 @@
-#ifndef GENERALINFORMATIONWIDGET_H
-#define GENERALINFORMATIONWIDGET_H
 /* *****************************************************************************
-Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -38,38 +36,71 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
-#include "SimCenterAppWidget.h"
+#include "ComponentTableModel.h"
+#include "RVTableView.h"
+#include "VisualizationWidget.h"
 
-class QComboBox;
-class QVBoxLayout;
-class QLineEdit;
+#include <QDebug>
+#include <QMenu>
+#include <QVariant>
+#include <QHeaderView>
 
-class GeneralInformationWidget : public SimCenterAppWidget
+RVTableView::RVTableView(QWidget *parent) : QTableView(parent)
 {
-    Q_OBJECT
+    tableModel = new ComponentTableModel();
+    this->setModel(tableModel);
 
-public:
+    this->hide();
+    this->setToolTip("Component details");
+    this->verticalHeader()->setVisible(false);
+    this->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    explicit GeneralInformationWidget(QWidget *parent = 0);
-    ~GeneralInformationWidget();
-    bool outputToJSON(QJsonObject &rvObject);
-    bool inputFromJSON(QJsonObject &rvObject);
+    this->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    void clear(void);
+    this->setEditTriggers(EditTrigger::DoubleClicked);
+    this->setSelectionMode(SelectionMode::SingleSelection);
+}
 
-private slots:
-    void chooseDirectoryDialog(void);
-    void showToolTip(void);
-
-private:
-
-    QVBoxLayout* getInfoLayout(void);
-
-    QLineEdit* analysisLineEdit;
-    QLineEdit* workingDirectoryLineEdit;
-
-    QComboBox* unitsCombo;
-};
+void RVTableView::clear(void)
+{
+    tableModel->clear();
+}
 
 
-#endif // GENERALINFORMATIONWIDGET_H
+int RVTableView::columnCount(void)
+{
+    return tableModel->columnCount();
+}
+
+
+int RVTableView::rowCount(void)
+{
+    return tableModel->rowCount();
+}
+
+
+QString RVTableView::horizontalHeaderItem(int section)
+{
+    return this->horizontalHeaderItemVariant(section).toString();
+}
+
+
+QVariant RVTableView::horizontalHeaderItemVariant(int section)
+{
+    auto headerData = tableModel->headerData(section, Qt::Horizontal);
+
+    return headerData;
+}
+
+
+ComponentTableModel *RVTableView::getTableModel() const
+{
+    return tableModel;
+}
+
+
+QVariant RVTableView::item(int row, int col)
+{
+    return tableModel->item(row,col);
+}

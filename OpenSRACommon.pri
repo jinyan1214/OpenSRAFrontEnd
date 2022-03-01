@@ -10,6 +10,7 @@ INCLUDEPATH +=  $$PATH_TO_R2D \
                 $$PATH_TO_COMMON/Workflow \
                 $$PATH_TO_COMMON/Workflow/WORKFLOW \
                 $$PATH_TO_COMMON/Workflow/EXECUTION \
+                $$PATH_TO_COMMON/Workflow/GRAPHICS \
                 $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems \
                 $$PATH_TO_COMMON/RandomVariables \
 
@@ -17,6 +18,7 @@ INCLUDEPATH +=  $$PATH_TO_R2D \
 SOURCES +=  $$PATH_TO_R2D/Tools/CSVReaderWriter.cpp \
             $$PATH_TO_R2D/Tools/XMLAdaptor.cpp \
             $$PATH_TO_R2D/Tools/AssetInputDelegate.cpp \
+            $$PATH_TO_R2D/Tools/AssetFilterDelegate.cpp \
             $$PATH_TO_R2D/Tools/ComponentDatabase.cpp \
             $$PATH_TO_R2D/Tools/ComponentDatabaseManager.cpp \
             $$PATH_TO_R2D/Tools/TablePrinter.cpp \
@@ -48,13 +50,30 @@ SOURCES +=  $$PATH_TO_R2D/Tools/CSVReaderWriter.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/SimCenterComponentSelection.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/CustomizedItemModel.cpp \
             $$PATH_TO_COMMON/Workflow/EXECUTION/Application.cpp \
+            $$PATH_TO_COMMON/Workflow/GRAPHICS/SimCenterGraphPlot.cpp \
+            $$PATH_TO_COMMON/Workflow/GRAPHICS/qcustomplot.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/TreeItem.cpp \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/CheckableTreeModel.cpp \
-
+            $$PATH_TO_COMMON/RandomVariables/RandomVariableDistribution.cpp \
+            $$PATH_TO_COMMON/RandomVariables/RandomVariable.cpp \
+            $$PATH_TO_COMMON/RandomVariables/BetaDistribution.cpp \
+            $$PATH_TO_COMMON/RandomVariables/ChiSquaredDistribution.cpp \
+            $$PATH_TO_COMMON/RandomVariables/ContinuousDesignDistribution.cpp \
+            $$PATH_TO_COMMON/RandomVariables/GammaDistribution.cpp \
+            $$PATH_TO_COMMON/RandomVariables/GumbelDistribution.cpp \
+            $$PATH_TO_COMMON/RandomVariables/NormalDistribution.cpp \
+            $$PATH_TO_COMMON/RandomVariables/UniformDistribution.cpp \
+            $$PATH_TO_COMMON/RandomVariables/WeibullDistribution.cpp \
+            $$PATH_TO_COMMON/RandomVariables/ConstantDistribution.cpp \
+            $$PATH_TO_COMMON/RandomVariables/DiscreteDistribution.cpp \
+            $$PATH_TO_COMMON/RandomVariables/LognormalDistribution.cpp \
+            $$PATH_TO_COMMON/RandomVariables/ExponentialDistribution.cpp \
+            $$PATH_TO_COMMON/RandomVariables/TruncatedExponentialDistribution.cpp \
 
 HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
             $$PATH_TO_R2D/Tools/CSVReaderWriter.h \
             $$PATH_TO_R2D/Tools/AssetInputDelegate.h \
+            $$PATH_TO_R2D/Tools/AssetFilterDelegate.h \
             $$PATH_TO_R2D/Tools/ComponentDatabase.h \
             $$PATH_TO_R2D/Tools/TablePrinter.h \
             $$PATH_TO_R2D/Tools/ComponentDatabaseManager.h \
@@ -89,3 +108,22 @@ HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/TreeItem.h \
             $$PATH_TO_COMMON/Workflow/WORKFLOW/ModelViewItems/CheckableTreeModel.h \
             $$PATH_TO_COMMON/Workflow/EXECUTION/Application.h \
+            $$PATH_TO_COMMON/Workflow/GRAPHICS/SimCenterGraphPlot.h \
+            $$PATH_TO_COMMON/Workflow/GRAPHICS/qcustomplot.h \
+            $$PATH_TO_COMMON/RandomVariables/RandomVariableDistribution.h \
+            $$PATH_TO_COMMON/RandomVariables/RandomVariable.h \
+            $$PATH_TO_COMMON/RandomVariables/BetaDistribution.h \
+            $$PATH_TO_COMMON/RandomVariables/ChiSquaredDistribution.h \
+            $$PATH_TO_COMMON/RandomVariables/ContinuousDesignDistribution.h \
+            $$PATH_TO_COMMON/RandomVariables/GammaDistribution.h \
+            $$PATH_TO_COMMON/RandomVariables/GumbelDistribution.h \
+            $$PATH_TO_COMMON/RandomVariables/NormalDistribution.h \
+            $$PATH_TO_COMMON/RandomVariables/UniformDistribution.h \
+            $$PATH_TO_COMMON/RandomVariables/WeibullDistribution.h \
+            $$PATH_TO_COMMON/RandomVariables/ConstantDistribution.h \
+            $$PATH_TO_COMMON/RandomVariables/DiscreteDistribution.h \
+            $$PATH_TO_COMMON/RandomVariables/LognormalDistribution.h \
+            $$PATH_TO_COMMON/RandomVariables/ExponentialDistribution.h \
+            $$PATH_TO_COMMON/RandomVariables/TruncatedExponentialDistribution.h \
+
+

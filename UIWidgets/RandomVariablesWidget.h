@@ -1,5 +1,6 @@
-#ifndef UQ_ENGINE_SELECTION_H
-#define UQ_ENGINE_SELECTION_H
+#ifndef RANDOM_VARIABLES_CONTAINER_H
+#define RANDOM_VARIABLES_CONTAINER_H
+
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +20,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,39 +37,64 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Dr. Stevan Gavrilovic, UC Berkeley
+#include <SimCenterWidget.h>
 
-#include <SimCenterAppWidget.h>
+class RandomVariable;
+class RVTableView;
 
-class QGroupBox;
-class QGISGasPipelineInputWidget;
-class VisualizationWidget;
+class QVBoxLayout;
+class QDialog;
+class QCheckBox;
 
-class PipelineNetworkWidget : public  SimCenterAppWidget
+class RandomVariablesWidget : public SimCenterWidget
 {
     Q_OBJECT
-
 public:
-    explicit PipelineNetworkWidget(QWidget *parent, VisualizationWidget* visWidget);
-    ~PipelineNetworkWidget();
+    explicit RandomVariablesWidget(QWidget *parent = 0);
+    ~RandomVariablesWidget();
 
-    bool outputToJSON(QJsonObject &rvObject);
+    void addRandomVariable(RandomVariable *theRV);
     bool inputFromJSON(QJsonObject &rvObject);
-    bool copyFiles(QString &destName);
+    bool outputToJSON(QJsonObject &rvObject);
 
-    void clear(void);
+    //void setInitialConstantRVs(QStringList &varNamesAndValues);
 
-    QGISGasPipelineInputWidget *getTheComponentInputWidget() const;
+    void addRandomVariable(QString &rvName);
+    void addRVs(QStringList &varNames);
+    void addRVsWithValues(QStringList &varNames);  
+    void addConstantRVs(QStringList &varNamesAndValues);
+    void addUniformRVs(QStringList &varNamesAndValues);
+    void addNormalRVs(QStringList &varNamesAndValues);
 
-signals:
+    void removeRandomVariable(QString &varName);
+    void removeRandomVariables(QStringList &varNames);
+
+    QStringList getRandomVariableNames(void);
+    int getNumRandomVariables(void);
+    QVector<RandomVariable *> getRVdists(void);
+    void copyRVs(RandomVariablesWidget *oldRVcontainers);
+    void copyFiles(QString fileName);
 
 public slots:
+   void addRandomVariable(void);
+   void removeRandomVariable(void);
+
+   void loadRVsFromJson(void);
+   void saveRVsToJson(void);
+
+   void clear(void);
 
 private:
+    int addRVsType;
+    void makeRVWidget(void);
+    QVBoxLayout *verticalLayout;
 
-    QGISGasPipelineInputWidget* theComponentInputWidget;
+    RVTableView* theRVTableView = nullptr;
 
-    VisualizationWidget* theVisualizationWidget;
+    QVector<RandomVariable *>theRandomVariables;
+    QCheckBox *checkbox;
+
+    QStringList randomVariableNames;
 };
 
-#endif // WIND_SELECTION_H
+#endif // RANDOM_VARIABLES_CONTAINER_H

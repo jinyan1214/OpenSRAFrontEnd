@@ -91,6 +91,11 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
 
     mainLayout->addStretch();
 
+    // Test to remove start
+//    theComponentInputWidget->loadFileFromPath("/Users/steve/Downloads/10000_random_sites_in_ca.csv");
+//    theComponentInputWidget->selectAllComponents();
+    // Test to remove end
+
 }
 
 
@@ -199,4 +204,10 @@ bool PipelineNetworkWidget::copyFiles(QString &destDir)
 void PipelineNetworkWidget::clear(void)
 {
     theComponentInputWidget->clear();
+}
+
+
+QGISGasPipelineInputWidget *PipelineNetworkWidget::getTheComponentInputWidget() const
+{
+    return theComponentInputWidget;
 }

@@ -111,6 +111,11 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
     // create the buttons widget and a layout for it
     QHBoxLayout *pushButtonLayout = new QHBoxLayout();
 
+    // Create the preprocess button
+    QPushButton *preProcessButton = new QPushButton();
+    preProcessButton->setText(tr("PREPROCESS"));
+    pushButtonLayout->addWidget(preProcessButton);
+
     // Create run and exit buttons
     QPushButton *runButton = new QPushButton();
     runButton->setText(tr("RUN"));
@@ -122,9 +127,7 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
 
 
     // connect some signals and slots
-
-    // connect(runButton, SIGNAL(clicked(bool)),this,SLOT(onRunButtonClicked()));
-    // connect job manager
+    connect(preProcessButton, SIGNAL(clicked(bool)),this,SLOT(onPreprocessButtonClicked()));
     connect(runButton, SIGNAL(clicked(bool)),this,SLOT(onRunButtonClicked()));
     connect(exitButton, SIGNAL(clicked(bool)),this,SLOT(onExitButtonClicked()));
 
@@ -515,6 +518,12 @@ void MainWindowWorkflowApp::setFeedbackURL(QString &newText)
 void MainWindowWorkflowApp::setCite(QString &newText)
 {
     citeText = newText;
+}
+
+
+void MainWindowWorkflowApp::onPreprocessButtonClicked()
+{
+    inputWidget->onPreprocessButtonClicked();
 }
 
 

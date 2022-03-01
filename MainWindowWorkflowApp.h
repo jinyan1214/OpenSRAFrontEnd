@@ -60,6 +60,7 @@ public:
     // for main actions
     void onRunButtonClicked();
     void onExitButtonClicked();
+    void onPreprocessButtonClicked();
 
  private:
     void setCurrentFile(const QString &fileName);

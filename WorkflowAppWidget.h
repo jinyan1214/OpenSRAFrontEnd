@@ -59,6 +59,7 @@ public:
     virtual bool inputFromJSON(QJsonObject &rvObject) = 0;
     virtual void clear(void) = 0;
     virtual void onRunButtonClicked() = 0;
+    virtual void onPreprocessButtonClicked() = 0;
     virtual void onRemoteRunButtonClicked() = 0;
     virtual void onRemoteGetButtonClicked() = 0;
     virtual void onExitButtonClicked() = 0;
@@ -75,7 +76,7 @@ signals:
 
 public slots:  
     virtual void setUpForApplicationRun(QString &, QString &) =0;
-    virtual void processResults(QString pathToResults, QString doesNothing1, QString doesNothing2) =0;
+    virtual void postprocessResults(QString pathToResults, QString doesNothing1, QString doesNothing2) =0;
 
     void showOutputDialog(void);
 

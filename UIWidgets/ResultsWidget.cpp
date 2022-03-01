@@ -70,23 +70,24 @@ ResultsWidget::ResultsWidget(QWidget *parent, QGISVisualizationWidget* visWidget
     mainStackedWidget = new QStackedWidget(this);
 
     mainLayout = new QVBoxLayout(this);
+    mainLayout->setMargin(0);
     mainLayout->setContentsMargins(5,0,0,0);
 
     // Header layout and objects
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
+    theHeaderLayout->setContentsMargins(0,0,0,0);
     SectionTitle *label = new SectionTitle();
     label->setText(tr("Regional Results Summary"));
     label->setMinimumWidth(150);
 
     theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
-    theHeaderLayout->addItem(spacer);
     theHeaderLayout->addStretch(1);
 
     // Layout to display the results
     resultsPageWidget = new QWidget();
 
     mainStackedWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+    mainStackedWidget->setContentsMargins(0,0,0,0);
 
     mainStackedWidget->addWidget(resultsPageWidget);
 

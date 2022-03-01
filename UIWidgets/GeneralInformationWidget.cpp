@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "UIWidgets/GeneralInformationWidget.h"
 #include "OpenSRAPreferences.h"
 #include "sectiontitle.h"
+#include "ClickableLabel.h"
 
 #include <QGridLayout>
 #include <QGroupBox>
@@ -55,6 +56,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMetaEnum>
 #include <QStandardPaths>
 #include <QApplication>
+#include <QToolTip>
 
 GeneralInformationWidget::GeneralInformationWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
@@ -151,6 +153,9 @@ void GeneralInformationWidget::clear(void)
 
 QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
 {
+    // Get a rectangular message box on this window that could be help text box
+
+
     auto analysisLabel = new QLabel("Analysis ID:", this);
     analysisLineEdit = new QLineEdit();
     analysisLineEdit->setText("Analysis_ID");
@@ -162,6 +167,7 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     unitsCombo->setCurrentIndex(0);
     unitsCombo->setMaximumWidth(500);
     unitsCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    unitsCombo->setToolTip("This is an example tool tip. It can be long or short. I dont know what else to write here -Steve");
 
     QPushButton *loadFileButton = new QPushButton(this);
     loadFileButton->setText(tr("Browse"));
@@ -191,20 +197,38 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     // Layout the UI components in a grid
     QVBoxLayout* layout = new QVBoxLayout();
 
+    ClickableLabel* helpLabel1 = new ClickableLabel("   ?");
+    helpLabel1->setStyleSheet("font: italic large; color: blue; QToolTip {font-size:12pt; color:white; padding:2px; border-width:2px; border-style:solid; border-radius:4px }");
+    helpLabel1->setToolTip("Enter a unique analysis name.");
+    connect(helpLabel1,&ClickableLabel::clicked,this,&GeneralInformationWidget::showToolTip);
+
     QHBoxLayout* analysisNameLayout = new QHBoxLayout();
     analysisNameLayout->addWidget(analysisLabel);
     analysisNameLayout->addWidget(analysisLineEdit);
+    analysisNameLayout->addWidget(helpLabel1);
     analysisNameLayout->addStretch();
+
+    ClickableLabel* helpLabel2 = new ClickableLabel("   ?");
+    helpLabel2->setStyleSheet("font: italic large; color: blue; QToolTip {font-size:12pt; color:white; padding:2px; border-width:2px; border-style:solid; border-radius:4px }");
+    helpLabel2->setToolTip("Enter or select the path to the working directory,  i.e.,  where OpenSRA will store the analysis inputs and results.");
+    connect(helpLabel2,&ClickableLabel::clicked,this,&GeneralInformationWidget::showToolTip);
 
     QHBoxLayout* workingDirLayout = new QHBoxLayout();
     workingDirLayout->addWidget(workingDirectoryLabel);
     workingDirLayout->addWidget(workingDirectoryLineEdit);
     workingDirLayout->addWidget(loadFileButton);
+    workingDirLayout->addWidget(helpLabel2);
     workingDirLayout->addStretch();
+
+    ClickableLabel* helpLabel3 = new ClickableLabel("  ?");
+    helpLabel3->setStyleSheet("font: italic large; color: blue; QToolTip {font-size:12pt; color:white; padding:2px; border-width:2px; border-style:solid; border-radius:4px }");
+    helpLabel3->setToolTip("Select the analysis unit system.");
+    connect(helpLabel3,&ClickableLabel::clicked,this,&GeneralInformationWidget::showToolTip);
 
     QHBoxLayout* unitsLayout = new QHBoxLayout();
     unitsLayout->addWidget(unitSystemLabel);
     unitsLayout->addWidget(unitsCombo);
+    unitsLayout->addWidget(helpLabel3);
     unitsLayout->addStretch();
 
     layout->addLayout(analysisNameLayout);
@@ -247,6 +271,18 @@ void GeneralInformationWidget::chooseDirectoryDialog(void)
     prefs->setLocalWorkDir(pathToWorkingDirectoryFile);
 
     return;
+}
+
+void GeneralInformationWidget::showToolTip(void)
+{
+    QWidget* obj = dynamic_cast<QWidget*>(sender());
+
+    if(obj == nullptr)
+        return;
+
+    auto toolTipStr = obj->toolTip();
+
+    QToolTip::showText(obj->mapToGlobal(QPoint(0,0)), toolTipStr, obj/*, QRect(), 200000*/);
 }
 
 
