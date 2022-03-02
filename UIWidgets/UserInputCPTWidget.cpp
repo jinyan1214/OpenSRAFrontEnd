@@ -44,6 +44,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterUnitsWidget.h"
 #include "ComponentTableView.h"
 #include "ComponentTableModel.h"
+#include "AssetInputDelegate.h"
+#include "ComponentDatabaseManager.h"
 
 #include <QApplication>
 #include <QHeaderView>
@@ -69,21 +71,27 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 
 
-UserInputCPTWidget::UserInputCPTWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+UserInputCPTWidget::UserInputCPTWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
 {
-    eventFile = "";
-    motionDir = "";
+    theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
+    assert(theVisualizationWidget);
 
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(this->getUserInputCPTWidget());
+    theComponentDb = ComponentDatabaseManager::getInstance()->getCPTComponentDb();
+    theComponentDb->setOffset(1);
+
+    eventFile = "";
+    cptDataDir = "";
+
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    QStackedWidget* CPTWidget = this->getUserInputCPTWidget();
+    layout->addWidget(CPTWidget);
     layout->addStretch();
-    this->setLayout(layout);
 
     // Test Start
     eventFile = "/Users/steve/Desktop/SimCenter/Examples/CPTs/CPTSites.csv";
-    motionDir = "/Users/steve/Desktop/SimCenter/Examples/CPTs/CPTs";
+    cptDataDir = "/Users/steve/Desktop/SimCenter/Examples/CPTs/CPTs";
     CPTSitesFileLineEdit->setText(eventFile);
-    CPTDirLineEdit->setText(motionDir);
+    CPTDirLineEdit->setText(cptDataDir);
     this->loadUserCPTData();
     // Test end
 }
@@ -122,9 +130,9 @@ bool UserInputCPTWidget::outputToJSON(QJsonObject &jsonObj)
 
     // output motionDir if not same as eventFile's path
     QString eventFilePath = QFileInfo(eventFile).absolutePath();
-    if (eventFilePath != motionDir) {
+    if (eventFilePath != cptDataDir) {
 
-        QFileInfo theDir(motionDir);
+        QFileInfo theDir(cptDataDir);
         if (theDir.exists()) {
             jsonObj["motionDir"]=theDir.absoluteFilePath();
         } else {
@@ -132,14 +140,13 @@ bool UserInputCPTWidget::outputToJSON(QJsonObject &jsonObj)
         }
     }
 
-    auto res = unitsWidget->outputToJSON(jsonObj);
-
-    return res;
+    return true;
 }
 
 
 bool UserInputCPTWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 {
+    Q_UNUSED(jsonObj);
     return true;
 }
 
@@ -174,57 +181,34 @@ bool UserInputCPTWidget::inputFromJSON(QJsonObject &jsonObject)
     eventFile = fullFilePath;
 
     if (jsonObject.contains("motionDir")) {
-        motionDir = jsonObject["motionDir"].toString();
+        cptDataDir = jsonObject["motionDir"].toString();
 
-        QDir motionD(motionDir);
+        QDir motionD(cptDataDir);
 
         if (!motionD.exists()){
 
             QString trialDir = QDir::currentPath() +
-                    QDir::separator() + "input_data" + motionDir;
+                    QDir::separator() + "input_data" + cptDataDir;
             if (motionD.exists(trialDir)) {
-                motionDir = trialDir;
+                cptDataDir = trialDir;
                 CPTDirLineEdit->setText(trialDir);
             } else {
-                this->errorMessage("UserInputGM - could not find motion dir" + motionDir + " " + trialDir);
+                this->errorMessage("UserInputGM - could not find motion dir" + cptDataDir + " " + trialDir);
                 return false;
             }
         }
     } else {
-        motionDir = QFileInfo(fullFilePath).absolutePath();
+        cptDataDir = QFileInfo(fullFilePath).absolutePath();
     }
 
     // set the line dit
-    CPTDirLineEdit->setText(motionDir);
+    CPTDirLineEdit->setText(cptDataDir);
 
 
     // load the motions
     this->loadUserCPTData();
 
-    // read in the units
-    bool res = unitsWidget->inputFromJSON(jsonObject);
-
-    // If setting of units failed, provide default units and issue a warning
-    if(!res)
-    {
-        auto paramNames = unitsWidget->getParameterNames();
-
-        this->infoMessage("Warning \\!/: Failed to find/import the units in 'User Specified Ground Motion' widget. Setting default units for the following parameters:");
-
-        for(auto&& it : paramNames)
-        {
-            auto res = unitsWidget->setUnit(it,"g");
-
-            if(res == 0)
-                this->infoMessage("For parameter "+it+" setting default unit as: g");
-            else
-                this->errorMessage("Failed to set default units for parameter "+it);
-        }
-
-        this->infoMessage("Warning \\!/: Check if the units are correct!");
-    }
-
-    return res;
+    return true;
 }
 
 
@@ -241,10 +225,8 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
 
     fileInputWidget = new QWidget();
     QGridLayout *fileLayout = new QGridLayout(fileInputWidget);
-    fileInputWidget->setLayout(fileLayout);
 
-
-    QLabel* selectComponentsText = new QLabel("File Containing Locations of CPT Test Sites");
+    QLabel* selectComponentsText = new QLabel("File Containing CPT Locations");
     CPTSitesFileLineEdit = new QLineEdit();
     QPushButton *browseFileButton = new QPushButton("Browse");
 
@@ -260,13 +242,42 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
 
     connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseMotionDirDialog()));
     
-    unitsWidget = new SimCenterUnitsWidget("CPT Units");
+    QGroupBox* unitsWidget = new QGroupBox("Units");
+    QVBoxLayout* vbox = new QVBoxLayout(unitsWidget);
+
+    QLabel* unitsLabel = new QLabel("Z [placeholder]        qt [placeholder]       fs [placeholder]        u2 [placeholder]");
+    vbox->addWidget(unitsLabel);
 
     fileLayout->addWidget(selectFolderText,   1,0);
     fileLayout->addWidget(CPTDirLineEdit, 1,1);
     fileLayout->addWidget(browseFolderButton, 1,2);
 
     fileLayout->addWidget(unitsWidget,2,0,1,3);
+
+    selectComponentsLineEdit = new AssetInputDelegate();
+    connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&UserInputCPTWidget::handleComponentSelection);
+
+    QPushButton *selectComponentsButton = new QPushButton();
+    selectComponentsButton->setText(tr("Select"));
+    selectComponentsButton->setMaximumWidth(150);
+
+    connect(selectComponentsButton,SIGNAL(clicked()),this,SLOT(selectComponents()));
+
+    QPushButton *clearSelectionButton = new QPushButton();
+    clearSelectionButton->setText(tr("Clear Selection"));
+    clearSelectionButton->setMaximumWidth(150);
+
+    connect(clearSelectionButton,SIGNAL(clicked()),this,SLOT(clearComponentSelection()));
+
+    auto selectedLabel = new QLabel("Enter the IDs of one or more CPT sites to analyze.  Define a range of sites with a dash and separate multiple sites with a comma.");
+
+    QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
+    selectComponentsLayout->addWidget(selectedLabel);
+    selectComponentsLayout->addWidget(selectComponentsLineEdit);
+    selectComponentsLayout->addWidget(selectComponentsButton);
+    selectComponentsLayout->addWidget(clearSelectionButton);
+
+    fileLayout->addLayout(selectComponentsLayout,3,0,1,3);
 
     siteListTableWidget = new ComponentTableView();
     siteListTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -290,8 +301,8 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
     tableSplitter->addWidget(siteListTableWidget);
     tableSplitter->addWidget(siteDataTableWidget);
 
-    fileLayout->addWidget(tableSplitter,3,0,1,3);
-    fileLayout->setRowStretch(4,1);
+    fileLayout->addWidget(tableSplitter,4,0,1,3);
+    fileLayout->setRowStretch(5,1);
 
     //
     // progress bar
@@ -380,11 +391,11 @@ void UserInputCPTWidget::chooseEventFileDialog(void)
     eventFile = newEventFile;
     CPTSitesFileLineEdit->setText(eventFile);
 
-    // check if file in dir with all motions, if so set motionDir
+    // check if file in dir with all CPTs
     // Pop off the row that contains the header information
     data.pop_front();
     auto numRows = data.size();
-    int count = 0;
+
     QFileInfo eventFileInfo(eventFile);
     QDir fileDir(eventFileInfo.absolutePath());
     QStringList filesInDir = fileDir.entryList(QStringList() << "*", QDir::Files);
@@ -401,11 +412,11 @@ void UserInputCPTWidget::chooseEventFileDialog(void)
     }
 
     if (allThere == true) {
-        motionDir = fileDir.path();
+        cptDataDir = fileDir.path();
         CPTDirLineEdit->setText(fileDir.path());
         this->loadUserCPTData();
     } else {
-        QDir motionDirDir(motionDir);
+        QDir motionDirDir(cptDataDir);
         if (motionDirDir.exists()) {
             QStringList filesInDir = motionDirDir.entryList(QStringList() << "*", QDir::Files);
             bool allThere = true;
@@ -436,13 +447,13 @@ void UserInputCPTWidget::chooseMotionDirDialog(void)
     dialog.close();
 
     // Return if the user cancels or enters same dir
-    if(newPath.isEmpty() || newPath == motionDir)
+    if(newPath.isEmpty() || newPath == cptDataDir)
     {
         return;
     }
 
-    motionDir = newPath;
-    // motionDirLineEdit->setText(motionDir);
+    cptDataDir = newPath;
+    CPTDirLineEdit->setText(cptDataDir);
 
     // check if dir contains EventGrid.csv file, if it does set the file
     QFileInfo eventFileInfo(newPath, "EventGrid.csv");
@@ -461,12 +472,20 @@ void UserInputCPTWidget::chooseMotionDirDialog(void)
 void UserInputCPTWidget::clear(void)
 {
     eventFile.clear();
-    motionDir.clear();
+    cptDataDir.clear();
+
+    theComponentDb->clear();
+    selectComponentsLineEdit->clear();
+
+    siteListTableWidget->clear();
+    siteDataTableWidget->clear();
+
+    siteListTableWidget->hide();
+    siteDataTableWidget->hide();
 
     CPTSitesFileLineEdit->clear();
     CPTDirLineEdit->clear();
     stationMap.clear();
-    unitsWidget->clear();
 }
 
 
@@ -507,7 +526,7 @@ void UserInputCPTWidget::loadUserCPTData(void)
     auto stationName = rowStr[0];
 
     // Path to station files, e.g., site0.csv
-    auto stationFilePath = motionDir + QDir::separator() + stationName;
+    auto stationFilePath = cptDataDir + QDir::separator() + stationName;
 
     QString err2;
     QVector<QStringList> sampleStationData = csvTool.parseCSVFile(stationFilePath,err);
@@ -530,6 +549,7 @@ void UserInputCPTWidget::loadUserCPTData(void)
 
     // Create the fields
     QList<QgsField> attribFields;
+    attribFields.push_back(QgsField("ID", QVariant::Int));
     attribFields.push_back(QgsField("AssetType", QVariant::String));
     attribFields.push_back(QgsField("Station Name", QVariant::String));
     attribFields.push_back(QgsField("Latitude", QVariant::Double));
@@ -538,7 +558,6 @@ void UserInputCPTWidget::loadUserCPTData(void)
     for(auto&& it : stationDataHeadings)
     {
         attribFields.push_back(QgsField(it, QVariant::String));
-        unitsWidget->addNewUnitItem(it);
     }
 
     // Get the headings from the list before you pop it off
@@ -557,12 +576,12 @@ void UserInputCPTWidget::loadUserCPTData(void)
     // Get the data
     for(int i = 0; i<numRows; ++i)
     {
-        auto rowStr = data.at(i);
+        QStringList& rowStr = data[i];
 
         auto stationName = rowStr[0];
 
         // Path to station files, e.g., site0.csv
-        auto stationPath = motionDir + QDir::separator() + stationName;
+        auto stationPath = cptDataDir + QDir::separator() + stationName;
 
         bool ok;
         auto longitude = rowStr[1].toDouble(&ok);
@@ -608,10 +627,11 @@ void UserInputCPTWidget::loadUserCPTData(void)
         // create the feature attributes
         QgsAttributes featAttributes(attribFields.size());
 
-        featAttributes[0] = "CPTDataPoint";     // "AssetType"
-        featAttributes[1] = stationName;                 // "Station Name"
-        featAttributes[2] = latitude;                    // "Latitude"
-        featAttributes[3] = longitude;                   // "Longitude"
+        featAttributes[0] = QString::number(i);     // "AssetType"
+        featAttributes[1] = "CPTDataPoint";     // "AssetType"
+        featAttributes[2] = stationName;                 // "Station Name"
+        featAttributes[3] = latitude;                    // "Latitude"
+        featAttributes[4] = longitude;                   // "Longitude"
 
         // The number of headings in the file
         auto numParams = stationData.front().size();
@@ -638,7 +658,7 @@ void UserInputCPTWidget::loadUserCPTData(void)
             if(maxToDisp<stationData.size())
                 str += "...";
 
-            featAttributes[4+j] = str;
+            featAttributes[5+j] = str;
         }
 
         // Create the feature
@@ -651,35 +671,41 @@ void UserInputCPTWidget::loadUserCPTData(void)
         progressLabel->clear();
         progressBar->setValue(count);
 
+        rowStr.prepend(QString::number(i));
+
         QApplication::processEvents();
     }
 
-    auto vectorLayer = qgisVizWidget->addVectorLayer("Point", "CPT Data");
+    mainLayer = qgisVizWidget->addVectorLayer("Point", "CPT Data");
 
-    if(vectorLayer == nullptr)
+    if(mainLayer == nullptr)
     {
         this->errorMessage("Error creating a layer");
         this->hideProgressBar();
         return;
     }
 
-    auto dProvider = vectorLayer->dataProvider();
+    auto dProvider = mainLayer->dataProvider();
     auto res = dProvider->addAttributes(attribFields);
 
     if(!res)
     {
         this->errorMessage("Error adding attribute fields to layer");
-        qgisVizWidget->removeLayer(vectorLayer);
+        qgisVizWidget->removeLayer(mainLayer);
         this->hideProgressBar();
         return;
     }
 
-    vectorLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+    mainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+
+    theComponentDb->setMainLayer(mainLayer);
 
     dProvider->addFeatures(featureList);
-    vectorLayer->updateExtents();
+    mainLayer->updateExtents();
 
-    qgisVizWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Cross,Qt::black,2.0,vectorLayer);
+    qgisVizWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Circle,Qt::red,3.0,mainLayer);
+
+    listHeadings.prepend("ID");
 
     // Populate the table view with the data
     siteListTableWidget->getTableModel()->populateData(data, listHeadings);
@@ -693,6 +719,38 @@ void UserInputCPTWidget::loadUserCPTData(void)
 
     if(theStackedWidget->isModal())
         theStackedWidget->close();
+
+    auto layerId = mainLayer->id();
+
+    theVisualizationWidget->registerLayerForSelection(layerId,this);
+
+    // Create the selected building layer
+    selectedFeaturesLayer = theVisualizationWidget->addVectorLayer("Point","Selected CPT Data");
+
+    if(selectedFeaturesLayer == nullptr)
+    {
+        this->errorMessage("Error adding the selected assets vector layer");
+        return;
+    }
+
+    qgisVizWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Circle,Qt::darkBlue,3.0,selectedFeaturesLayer);
+
+    auto pr2 = selectedFeaturesLayer->dataProvider();
+
+    auto res2 = pr2->addAttributes(attribFields);
+
+    if(!res2)
+        this->errorMessage("Error adding attributes to the layer");
+
+    selectedFeaturesLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+
+    theComponentDb->setSelectedLayer(selectedFeaturesLayer);
+
+    QVector<QgsMapLayer*> mapLayers;
+    mapLayers.push_back(selectedFeaturesLayer);
+    mapLayers.push_back(mainLayer);
+
+    theVisualizationWidget->createLayerGroup(mapLayers,"CPT Data");
 
     return;
 }
@@ -723,11 +781,11 @@ bool UserInputCPTWidget::copyFiles(QString &destDir)
         return false;
     }
 
-    QDir motionDirInfo(motionDir);
+    QDir motionDirInfo(cptDataDir);
     if (motionDirInfo.exists()) {
-        return this->copyPath(motionDir, destDir, false);
+        return this->copyPath(cptDataDir, destDir, false);
     } else {
-        qDebug() << "UserInputCPTWidget::copyFiles motionDir does not exist: " << motionDir;
+        qDebug() << "UserInputCPTWidget::copyFiles motionDir does not exist: " << cptDataDir;
         return false;
     }
 
@@ -751,7 +809,7 @@ void UserInputCPTWidget::handleRowSelect(const QModelIndex &index)
 
     auto row = index.row();
 
-    auto key = siteListTableWidget->getTableModel()->item(row,0).toString();
+    auto key = siteListTableWidget->getTableModel()->item(row,1).toString();
 
     auto val = stationMap.value(key);
 
@@ -761,4 +819,128 @@ void UserInputCPTWidget::handleRowSelect(const QModelIndex &index)
     auto headings = val.first();
     val.pop_front();
     siteDataTableWidget->getTableModel()->populateData(val,headings);
+}
+
+
+void UserInputCPTWidget::insertSelectedAssets(QgsFeatureIds& featureIds)
+{
+    QVector<int> assetIds;
+    assetIds.reserve(featureIds.size());
+
+    for(auto&& it : featureIds)
+        assetIds.push_back(it-1);
+
+    selectComponentsLineEdit->insertSelectedComponents(assetIds);
+
+    this->selectComponents();
+}
+
+
+void UserInputCPTWidget::selectComponents(void)
+{
+    try
+    {
+        selectComponentsLineEdit->selectComponents();
+    }
+    catch (const QString msg)
+    {
+        this->errorMessage(msg);
+    }
+}
+
+
+void UserInputCPTWidget::handleComponentSelection(void)
+{
+
+    auto nRows = siteListTableWidget->rowCount();
+
+    if(nRows == 0)
+        return;
+
+    // Get the ID of the first and last component
+    bool OK;
+    auto firstID = siteListTableWidget->item(0,0).toInt(&OK);
+
+    if(!OK)
+    {
+        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+        this->errorMessage(msg);
+        return;
+    }
+
+    auto lastID = siteListTableWidget->item(nRows-1,0).toInt(&OK);
+
+    if(!OK)
+    {
+        QString msg = "Error in getting the component ID in " + QString(__FUNCTION__);
+        this->errorMessage(msg);
+        return;
+    }
+
+    auto selectedComponentIDs = selectComponentsLineEdit->getSelectedComponentIDs();
+
+    // First check that all of the selected IDs are within range
+    for(auto&& it : selectedComponentIDs)
+    {
+        if(it<firstID || it>lastID)
+        {
+            QString msg = "The component ID " + QString::number(it) + " is out of range of the components provided";
+            this->errorMessage(msg);
+            selectComponentsLineEdit->clear();
+            return;
+        }
+    }
+
+    auto numAssets = selectedComponentIDs.size();
+    QString msg = "A total of "+ QString::number(numAssets) + " CPT sites are selected for analysis";
+    this->statusMessage(msg);
+
+    theComponentDb->startEditing();
+
+    // Test to remove
+    //    auto start = high_resolution_clock::now();
+
+    theComponentDb->addFeaturesToSelectedLayer(selectedComponentIDs);
+
+    // Test to remove
+    //    auto stop = high_resolution_clock::now();
+    //    auto duration = duration_cast<milliseconds>(stop - start);
+    //    this->statusMessage("Done ALL "+QString::number(duration.count()));
+
+    theComponentDb->commitChanges();
+
+    // Hide all of the rows that are not selecetd. Takes a long time!
+    //    // Hide all rows in the table
+    //    for(int i = 0; i<nRows; ++i)
+    //        componentTableWidget->setRowHidden(i,true);
+
+    //    // Unhide the selected rows
+    //    for(auto&& it : selectedComponentIDs)
+    //        componentTableWidget->setRowHidden(it - firstID,false);
+
+
+}
+
+
+void UserInputCPTWidget::clearComponentSelection(void)
+{
+    // auto nRows = componentTableWidget->rowCount();
+
+    // Hide all rows in the table
+    //    for(int i = 0; i<nRows; ++i)
+    //    {
+    //        componentTableWidget->setRowHidden(i,false);
+    //    }
+
+    selectComponentsLineEdit->clear();
+
+    theComponentDb->clearSelectedLayer();
+
+    theComponentDb->getSelectedLayer()->updateExtents();
+}
+
+
+void UserInputCPTWidget::clearSelectedAssets(void)
+{
+    this->clearComponentSelection();
 }

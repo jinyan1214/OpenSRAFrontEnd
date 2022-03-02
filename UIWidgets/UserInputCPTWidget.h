@@ -38,6 +38,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
+#include "GISSelectable.h"
+
 #include <qgsfeature.h>
 
 #include "SimCenterAppWidget.h"
@@ -46,22 +48,28 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QMap>
 
+class QGISVisualizationWidget;
 class VisualizationWidget;
 class SimCenterUnitsWidget;
 class ComponentTableView;
+class AssetInputDelegate;
+class ComponentDatabase;
 
 class QStackedWidget;
 class QLineEdit;
 class QProgressBar;
 class QLabel;
 
-class UserInputCPTWidget : public SimCenterAppWidget
+class UserInputCPTWidget : public SimCenterAppWidget, public GISSelectable
 {
     Q_OBJECT
 
 public:
     UserInputCPTWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~UserInputCPTWidget();
+
+    void insertSelectedAssets(QgsFeatureIds& featureIds);
+    void clearSelectedAssets(void);
 
     QStackedWidget* getUserInputCPTWidget(void);
 
@@ -73,7 +81,7 @@ public:
     void clear(void);
 
 public slots:
-
+    void handleComponentSelection(void);
     void showUserGMSelectDialog(void);
 
 private slots:
@@ -88,19 +96,29 @@ signals:
     void eventTypeChangedSignal(QString eventType);
     void loadingComplete(const bool value);
 
+private slots:
+    void selectComponents(void);
+    void clearComponentSelection(void);
+
 private:
     void showProgressBar(void);
     void hideProgressBar(void);
 
-    QStackedWidget* theStackedWidget;
+    QStackedWidget* theStackedWidget = nullptr;
+    ComponentDatabase*  theComponentDb = nullptr;
 
     ComponentTableView* siteListTableWidget = nullptr;
     ComponentTableView* siteDataTableWidget = nullptr;
 
-    VisualizationWidget* theVisualizationWidget = nullptr;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+
+    QgsVectorLayer* mainLayer = nullptr;
+    QgsVectorLayer* selectedFeaturesLayer = nullptr;
 
     QString eventFile;
-    QString motionDir;
+    QString cptDataDir;
+
+    AssetInputDelegate* selectComponentsLineEdit = nullptr;
 
     QLineEdit *CPTSitesFileLineEdit = nullptr;
     QLineEdit *CPTDirLineEdit = nullptr;
@@ -111,8 +129,6 @@ private:
     QProgressBar* progressBar = nullptr;
 
     QMap<QString,QVector<QStringList>> stationMap;
-
-    SimCenterUnitsWidget* unitsWidget = nullptr;
 
 };
 

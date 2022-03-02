@@ -412,6 +412,8 @@ void WorkflowAppOpenSRA::clear(void)
 {
     theGenInfoWidget->clear();
     theUQWidget->clear();
+    theGISDataWidget->clear();
+    theRandomVariableWidget->clear();
     thePipelineNetworkWidget->clear();
     theIntensityMeasureWidget->clear();
     theDecisionVariableWidget->clear();
