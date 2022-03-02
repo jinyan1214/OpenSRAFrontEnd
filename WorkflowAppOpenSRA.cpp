@@ -38,6 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "CustomizedItemModel.h"
 #include "DamageMeasureWidget.h"
+#include "GeospatialDataWidget.h"
 #include "DecisionVariableWidget.h"
 #include "EngDemandParamWidget.h"
 #include "RandomVariablesWidget.h"
@@ -242,7 +243,7 @@ void WorkflowAppOpenSRA::initialize(void)
     theDecisionVariableWidget = new DecisionVariableWidget(this);
     theRandomVariableWidget = new RandomVariablesWidget(this);
     theResultsWidget = new ResultsWidget(this,theVisualizationWidget);
-
+    theGISDataWidget = new GeospatialDataWidget(this,theVisualizationWidget);
 
     SimCenterWidget *theWidgets[1];
 
@@ -269,6 +270,7 @@ void WorkflowAppOpenSRA::initialize(void)
 
     theComponentSelection->addComponent(QString("Visualization"), theCustomVisualizationWidget);
     theComponentSelection->addComponent(QString("General\nInformation"), theGenInfoWidget);
+    theComponentSelection->addComponent(QString("GIS\nData"), theGISDataWidget);
     theComponentSelection->addComponent(QString("Sampling\nMethod"), theUQWidget);
     theComponentSelection->addComponent(QString("Infrastructure"), thePipelineNetworkWidget);
     theComponentSelection->addComponent(QString("Intensity\nMeasure"), theIntensityMeasureWidget);
@@ -496,13 +498,6 @@ bool WorkflowAppOpenSRA::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
-    if(theRandomVariableWidget->inputFromJSON(EDPObj) == false)
-    {
-        errorMessage("Error loading .json input file at " + theRandomVariableWidget->objectName() + " panel");
-        return false;
-    }
-
-
     return true;
 }
 
@@ -517,6 +512,14 @@ void WorkflowAppOpenSRA::onRunButtonClicked()
 
 void WorkflowAppOpenSRA::onPreprocessButtonClicked()
 {
+
+    if(theRandomVariableWidget->inputFromJSON(methodsAndParamsObj) == false)
+    {
+        errorMessage("Error loading RVs in " + theRandomVariableWidget->objectName() + " from methods and params file");
+        return;
+    }
+
+
 
     //auto backEndFilePath = appDir + QDir::separator() + "OpenSRABackend";
 

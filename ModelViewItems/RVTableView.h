@@ -41,7 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QTableView>
 #include <QDebug>
 
-class ComponentTableModel;
+class RVTableModel;
 
 class RVTableView : public QTableView
 {
@@ -59,13 +59,12 @@ public:
 
     QVariant horizontalHeaderItemVariant(int section);
 
-    ComponentTableModel *getTableModel() const;
+    RVTableModel *getTableModel() const;
 
     QVariant item(int row, int col);
 
 private:
-
-    ComponentTableModel* tableModel;
+    RVTableModel* tableModel = nullptr;
 };
 
 #endif // RVTableView_H

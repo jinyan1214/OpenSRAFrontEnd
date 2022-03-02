@@ -50,6 +50,7 @@ class InputWidgetBIM;
 class InputWidgetUQ;
 class PipelineNetworkWidget;
 class DecisionVariableWidget;
+class GeospatialDataWidget;
 class RandomVariablesWidget;
 class DamageMeasureWidget;
 class UQOptions;
@@ -140,6 +141,7 @@ private:
     SimCenterComponentSelection *theComponentSelection;
 
     // objects that go in sidebar
+    GeospatialDataWidget* theGISDataWidget = nullptr;
     GeneralInformationWidget* theGenInfoWidget = nullptr;
     UncertaintyQuantificationWidget* theUQWidget = nullptr;
     PipelineNetworkWidget* thePipelineNetworkWidget = nullptr;

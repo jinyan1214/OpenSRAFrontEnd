@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class RandomVariable;
 class RVTableView;
+class ComboBoxDelegate;
 
 class QVBoxLayout;
 class QDialog;
@@ -88,6 +89,9 @@ private:
     int addRVsType;
     void makeRVWidget(void);
     QVBoxLayout *verticalLayout;
+
+    ComboBoxDelegate* distTypeComboDelegate = nullptr;
+    ComboBoxDelegate* sourceComboDelegate = nullptr;
 
     RVTableView* theRVTableView = nullptr;
 

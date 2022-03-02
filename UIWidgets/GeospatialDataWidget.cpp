@@ -1,5 +1,3 @@
-#ifndef RVTableModel_H
-#define RVTableModel_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,51 +34,37 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Dr. Stevan Gavrilovic, UC Berkeley
+// Written by: Stevan Gavrilovic
 
-#include <QAbstractTableModel>
+#include "GeospatialDataWidget.h"
+#include "GenericModelWidget.h"
 
-class RVTableModel : public QAbstractTableModel
+#include "UserInputCPTWidget.h"
+
+GeospatialDataWidget::GeospatialDataWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppSelection(QString("Geospatial Data"),QString("Data"), parent), visualizationWidget(visWidget)
 {
-    Q_OBJECT
+    cptInputWidget = new UserInputCPTWidget(visualizationWidget, this);
+    this->addComponent("CPT Borehole Input", "CPTs", cptInputWidget);
 
-public:
-    explicit RVTableModel(QObject *parent = nullptr);
-    ~RVTableModel();
+    genericModelWidget = new GenericModelWidget();
+    this->addComponent("Test Generic Model Widget", "GM", genericModelWidget);
+}
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 
-    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
+GeospatialDataWidget::~GeospatialDataWidget()
+{
 
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole)  Q_DECL_OVERRIDE;
+}
 
-    void populateData(const QVector<QVector<QVariant>>& data);
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+void GeospatialDataWidget::clear(void)
+{
+    cptInputWidget->clear();
+}
 
-    void clear(void);
 
-    QVariant item(const int row, const int col) const;
 
-    QVector<QVector<QVariant>>& getTableData();
 
-    QStringList getHeaderStringList() const;
 
-    void setHeaderStringList(const QStringList &newHeaderStringList);
 
-signals:
 
-    void handleCellChanged(int row, int col);
-
-private:
-
-    QVector<QVector<QVariant>> tableData;
-    QStringList headerStringList;
-
-    int numRows;
-    int numCols;
-};
-
-#endif // RVTableModel_H

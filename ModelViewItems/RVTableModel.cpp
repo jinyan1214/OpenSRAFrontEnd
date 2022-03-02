@@ -58,10 +58,9 @@ RVTableModel::~RVTableModel()
 
 
 // Create a method to populate the model with data:
-void RVTableModel::populateData(const QVector<QStringList>& data, const QStringList& header)
+void RVTableModel::populateData(const QVector<QVector<QVariant>>& data)
 {
     tableData = data;
-    headerStringList = header;
 
     numRows = rowCount();
     numCols = columnCount();
@@ -125,7 +124,7 @@ QVariant RVTableModel::data(const QModelIndex &index, int role) const
 
 bool RVTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (!index.isValid() || role != Qt::EditRole)
+    if (!index.isValid() || role != Qt::EditRole || value == "")
         return false;
 
     auto col = index.column();
@@ -134,13 +133,8 @@ bool RVTableModel::setData(const QModelIndex &index, const QVariant &value, int 
     if(col>= numCols || row>= numRows || row < 0 || col < 0)
         return false;
 
-    auto strVal = value.toString();
-
-    if(!strVal.isEmpty())
-    {
-        tableData[row][col] = strVal;
-        emit handleCellChanged(row,col);
-    }
+    tableData[row][col] = value;
+    emit handleCellChanged(row,col);
 
     return true;
 }
@@ -167,7 +161,7 @@ QVariant RVTableModel::item(const int row, const int col) const
 }
 
 
-QVector<QStringList>& RVTableModel::getTableData()
+QVector<QVector<QVariant>>& RVTableModel::getTableData()
 {
     return tableData;
 }
@@ -176,4 +170,11 @@ QVector<QStringList>& RVTableModel::getTableData()
 QStringList RVTableModel::getHeaderStringList() const
 {
     return headerStringList;
+}
+
+
+void RVTableModel::setHeaderStringList(const QStringList &newHeaderStringList)
+{
+    headerStringList = newHeaderStringList;
+    emit layoutChanged();
 }

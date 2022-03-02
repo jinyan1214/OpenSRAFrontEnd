@@ -41,8 +41,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "NormalDistribution.h"
 #include "UniformDistribution.h"
 #include "RVTableView.h"
+#include "RVTableModel.h"
+
+#include "ComboBoxDelegate.h"
 
 #include <QVBoxLayout>
+#include <QHeaderView>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <sectiontitle.h>
@@ -60,12 +64,12 @@ RandomVariablesWidget::RandomVariablesWidget(QWidget *parent) : SimCenterWidget(
 
 void RandomVariablesWidget::addRVsWithValues(QStringList &varNamesAndValues)
 {
-  if (addRVsType == 0)
-    this->addConstantRVs(varNamesAndValues);
-  else if (addRVsType == 1)
-    this->addUniformRVs(varNamesAndValues);
-  else
-    this->addNormalRVs(varNamesAndValues);      
+    if (addRVsType == 0)
+        this->addConstantRVs(varNamesAndValues);
+    else if (addRVsType == 1)
+        this->addUniformRVs(varNamesAndValues);
+    else
+        this->addNormalRVs(varNamesAndValues);
 }
 
 
@@ -206,98 +210,116 @@ void RandomVariablesWidget::makeRVWidget(void)
     SectionTitle *title=new SectionTitle();
     title->setText(tr("Random Variables"));
     title->setMinimumWidth(250);
-//    QSpacerItem *spacer1 = new QSpacerItem(50,10);
-//    QSpacerItem *spacer2 = new QSpacerItem(20,10);
-//    QSpacerItem *spacer3 = new QSpacerItem(20,10);
-//    QSpacerItem *spacer4 = new QSpacerItem(50,10);
-//    QSpacerItem *spacer5 = new QSpacerItem(20,10);
+    //    QSpacerItem *spacer1 = new QSpacerItem(50,10);
+    //    QSpacerItem *spacer2 = new QSpacerItem(20,10);
+    //    QSpacerItem *spacer3 = new QSpacerItem(20,10);
+    //    QSpacerItem *spacer4 = new QSpacerItem(50,10);
+    //    QSpacerItem *spacer5 = new QSpacerItem(20,10);
 
 
-//    QPushButton *addRV = new QPushButton();
-//    addRV->setMinimumWidth(75);
-//    addRV->setMaximumWidth(75);
-//    addRV->setText(tr("Add"));
-//    connect(addRV,SIGNAL(clicked()),this,SLOT(addRandomVariable()));
+    //    QPushButton *addRV = new QPushButton();
+    //    addRV->setMinimumWidth(75);
+    //    addRV->setMaximumWidth(75);
+    //    addRV->setText(tr("Add"));
+    //    connect(addRV,SIGNAL(clicked()),this,SLOT(addRandomVariable()));
 
 
-//    QPushButton *removeRV = new QPushButton();
-//    removeRV->setMinimumWidth(75);
-//    removeRV->setMaximumWidth(75);
-//    removeRV->setText(tr("Remove"));
-//    connect(removeRV,SIGNAL(clicked()),this,SLOT(removeRandomVariable()));
+    //    QPushButton *removeRV = new QPushButton();
+    //    removeRV->setMinimumWidth(75);
+    //    removeRV->setMaximumWidth(75);
+    //    removeRV->setText(tr("Remove"));
+    //    connect(removeRV,SIGNAL(clicked()),this,SLOT(removeRandomVariable()));
 
 
-//    QPushButton *RVsFromJson = new QPushButton();
-//    RVsFromJson->setMinimumWidth(75);
-//    RVsFromJson->setMaximumWidth(75);
-//    RVsFromJson->setText(tr("Import"));
-//    RVsFromJson->setStyleSheet("background-color: dodgerblue;border-color:dodgerblue");
-//    connect(RVsFromJson,SIGNAL(clicked()),this,SLOT(loadRVsFromJson()));
+    //    QPushButton *RVsFromJson = new QPushButton();
+    //    RVsFromJson->setMinimumWidth(75);
+    //    RVsFromJson->setMaximumWidth(75);
+    //    RVsFromJson->setText(tr("Import"));
+    //    RVsFromJson->setStyleSheet("background-color: dodgerblue;border-color:dodgerblue");
+    //    connect(RVsFromJson,SIGNAL(clicked()),this,SLOT(loadRVsFromJson()));
 
 
-//    QPushButton *RVsToJson = new QPushButton();
-//    RVsToJson->setMinimumWidth(75);
-//    RVsToJson->setMaximumWidth(75);
-//    RVsToJson->setText(tr("Export"));
-//    RVsToJson->setStyleSheet("background-color: dodgerblue;border-color:dodgerblue");
-//    connect(RVsToJson,SIGNAL(clicked()),this,SLOT(saveRVsToJson()));
+    //    QPushButton *RVsToJson = new QPushButton();
+    //    RVsToJson->setMinimumWidth(75);
+    //    RVsToJson->setMaximumWidth(75);
+    //    RVsToJson->setText(tr("Export"));
+    //    RVsToJson->setStyleSheet("background-color: dodgerblue;border-color:dodgerblue");
+    //    connect(RVsToJson,SIGNAL(clicked()),this,SLOT(saveRVsToJson()));
 
-//    // padhye, adding the button for correlation matrix, we need to add a condition here
-//    // that whether the uqMehod selected is that of Dakota and sampling type? only then we need correlation matrix
+    //    // padhye, adding the button for correlation matrix, we need to add a condition here
+    //    // that whether the uqMehod selected is that of Dakota and sampling type? only then we need correlation matrix
 
-//    /* FMK */
-//    addCorrelation = new QPushButton(tr("Correlation Matrix"));
-//    connect(addCorrelation,SIGNAL(clicked()),this,SLOT(addCorrelationMatrix()));
+    //    /* FMK */
+    //    addCorrelation = new QPushButton(tr("Correlation Matrix"));
+    //    connect(addCorrelation,SIGNAL(clicked()),this,SLOT(addCorrelationMatrix()));
 
-//    flag_for_correlationMatrix=1;
+    //    flag_for_correlationMatrix=1;
 
-//    /********************* moving to sampling method input ***************************
-//    QCheckBox *checkbox =new QCheckBox("Sobolev Index", this);
-//    connect(checkbox,SIGNAL(clicked(bool)),this,SLOT(addSobolevIndices(bool)));
-//    flag_for_sobolev_indices=0;
-//    ******************************************************************************** */
+    //    /********************* moving to sampling method input ***************************
+    //    QCheckBox *checkbox =new QCheckBox("Sobolev Index", this);
+    //    connect(checkbox,SIGNAL(clicked(bool)),this,SLOT(addSobolevIndices(bool)));
+    //    flag_for_sobolev_indices=0;
+    //    ******************************************************************************** */
 
     titleLayout->addWidget(title);
-//    titleLayout->addItem(spacer1);
-//    titleLayout->addWidget(addRV);
-//    titleLayout->addItem(spacer2);
-//    titleLayout->addWidget(removeRV);
-//    titleLayout->addItem(spacer3);
+    //    titleLayout->addItem(spacer1);
+    //    titleLayout->addWidget(addRV);
+    //    titleLayout->addItem(spacer2);
+    //    titleLayout->addWidget(removeRV);
+    //    titleLayout->addItem(spacer3);
 
-//    //titleLayout->addWidget(addCorrelation,0,Qt::AlignTop);
-//    QString appName = QApplication::applicationName();
-//    if (appName == "quoFEM") {
-//        titleLayout->addWidget(addCorrelation);
-//        titleLayout->addItem(spacer4);
-//    }
+    //    //titleLayout->addWidget(addCorrelation,0,Qt::AlignTop);
+    //    QString appName = QApplication::applicationName();
+    //    if (appName == "quoFEM") {
+    //        titleLayout->addWidget(addCorrelation);
+    //        titleLayout->addItem(spacer4);
+    //    }
 
-//    titleLayout->addWidget(RVsToJson);
-//    titleLayout->addItem(spacer5);
-//    titleLayout->addWidget(RVsFromJson);
-//    titleLayout->addStretch();
+    //    titleLayout->addWidget(RVsToJson);
+    //    titleLayout->addItem(spacer5);
+    //    titleLayout->addWidget(RVsFromJson);
+    //    titleLayout->addStretch();
 
     verticalLayout->addLayout(titleLayout);
     theRVTableView = new RVTableView();
+
     verticalLayout->addWidget(theRVTableView);
-    theRVTableView->show();
 
-//    QScrollArea *sa = new QScrollArea;
-//    sa->setWidgetResizable(true);
-//    sa->setLineWidth(0);
-//    sa->setFrameShape(QFrame::NoFrame);
+    RVTableModel* tableModel = theRVTableView->getTableModel();
+    QStringList headers = {"Name","Source", "Mean", "Sigma","CoV", "Distribution Min", "Distribution Max","Distribution Type"};
+    tableModel->setHeaderStringList(headers);
 
-//    //rv = new QGroupBox(tr(""));
-//    rv = new QWidget;
+    // Distribution type
+    distTypeComboDelegate = new ComboBoxDelegate(this);
+    QStringList distTypes = {"Lognormal","Normal","N/A"};
+    distTypeComboDelegate->setItems(distTypes);
+    theRVTableView->setItemDelegateForColumn(7, distTypeComboDelegate);
 
-//    rvLayout = new QVBoxLayout;
-//    rvLayout->addStretch();
-//    rv->setLayout(rvLayout);
+    // Source type
+    sourceComboDelegate = new ComboBoxDelegate(this);
+    QStringList sourceTypes = {"Preferred","User-defined","Distribution"};
+    sourceComboDelegate->setItems(sourceTypes);
+    theRVTableView->setItemDelegateForColumn(1, sourceComboDelegate);
 
-//   // this->addRandomVariable();
-//     sa->setWidget(rv);
-//     verticalLayout->addWidget(sa);
+    theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
-     verticalLayout->stretch(1);
+    //    QScrollArea *sa = new QScrollArea;
+    //    sa->setWidgetResizable(true);
+    //    sa->setLineWidth(0);
+    //    sa->setFrameShape(QFrame::NoFrame);
+
+    //    //rv = new QGroupBox(tr(""));
+    //    rv = new QWidget;
+
+    //    rvLayout = new QVBoxLayout;
+    //    rvLayout->addStretch();
+    //    rv->setLayout(rvLayout);
+
+    //   // this->addRandomVariable();
+    //     sa->setWidget(rv);
+    //     verticalLayout->addWidget(sa);
+
+    verticalLayout->addStretch(1);
 }
 
 
@@ -306,7 +328,7 @@ void RandomVariablesWidget::addRandomVariable(void) {
     RandomVariable *theRV = new RandomVariable("Uncertain", "OpenSRA");
     theRandomVariables.append(theRV);
 
-   // rvLayout->insertWidget(rvLayout->count()-1, theRV);
+    // rvLayout->insertWidget(rvLayout->count()-1, theRV);
 
 }
 
@@ -363,8 +385,8 @@ void RandomVariablesWidget::loadRVsFromJson(void)
 void RandomVariablesWidget::saveRVsToJson(void)
 {
     QString RVsFileDir = QFileDialog::getSaveFileName(this,
-                                                   tr("Save Data"), "RVs",
-                                                   tr("JSON File (*.json)"));
+                                                      tr("Save Data"), "RVs",
+                                                      tr("JSON File (*.json)"));
     QFile file(RVsFileDir);
     if (file.open(QIODevice::WriteOnly))
     {
@@ -406,7 +428,7 @@ void RandomVariablesWidget::addRandomVariable(RandomVariable *theRV) {
         theRV->refCount = 1;
         theRV->variableName->setReadOnly(true);
 
-       // connect(this,SLOT(randomVariableErrorMessage(QString)), theRV, SIGNAL(sendErrorMessage(QString)));
+        // connect(this,SLOT(randomVariableErrorMessage(QString)), theRV, SIGNAL(sendErrorMessage(QString)));
         connect(theRV->variableName, SIGNAL(textEdited(const QString &)), this, SLOT(variableNameChanged(const QString &)));
 
         randomVariableNames << theRV->variableName->text();
@@ -416,16 +438,16 @@ void RandomVariablesWidget::addRandomVariable(RandomVariable *theRV) {
 
 void RandomVariablesWidget::clear(void) {
 
-  // loop over random variables, removing from layout & deleting
-  for (int i = 0; i <theRandomVariables.size(); ++i) {
-    RandomVariable *theRV = theRandomVariables.at(i);
-    //rvLayout->removeWidget(theRV);
-    delete theRV;
-  }
+    // loop over random variables, removing from layout & deleting
+    for (int i = 0; i <theRandomVariables.size(); ++i) {
+        RandomVariable *theRV = theRandomVariables.at(i);
+        //rvLayout->removeWidget(theRV);
+        delete theRV;
+    }
 
-  theRandomVariables.clear();
-  randomVariableNames.clear();
-  theRVTableView->clear();
+    theRandomVariables.clear();
+    randomVariableNames.clear();
+    theRVTableView->clear();
 
 }
 
@@ -462,7 +484,7 @@ QStringList RandomVariablesWidget::getRandomVariableNames(void)
 
 int RandomVariablesWidget::getNumRandomVariables(void)
 {
-    return theRandomVariables.size(); 
+    return theRandomVariables.size();
 }
 
 
@@ -476,59 +498,89 @@ void RandomVariablesWidget::copyFiles(QString fileDir)
 
 bool RandomVariablesWidget::inputFromJSON(QJsonObject &rvObject)
 {
-  bool result = true;
+    bool result = true;
 
-  // clean out current list
-  this->clear();
-
-  //
-  // go get randomvariables array from the JSON object
-  // for each object in array:
-  //    1)get it'is type,
-  //    2)instantiate one
-  //    4) get it to input itself
-  //    5) finally add it to layout
-  //
+    //
+    // go get randomvariables array from the JSON object
+    // for each object in array:
+    //    1)get it'is type,
+    //    2)instantiate one
+    //    4) get it to input itself
+    //    5) finally add it to layout
+    //
 
 
-  // get randomVariables & add
-//  int numRandomVariables = 0;
-//  if (rvObject.contains("randomVariables")) {
-//      if (rvObject["randomVariables"].isArray()) {
+    // get randomVariables & add
+    //  int numRandomVariables = 0;
+    //  if (rvObject.contains("randomVariables")) {
+    //      if (rvObject["randomVariables"].isArray()) {
 
-//          QJsonArray rvArray = rvObject["randomVariables"].toArray();
+    //          QJsonArray rvArray = rvObject["randomVariables"].toArray();
 
-//          // foreach object in array
-//          foreach (const QJsonValue &rvValue, rvArray) {
+    //          // foreach object in array
+    //          foreach (const QJsonValue &rvValue, rvArray) {
 
-//              QJsonObject rvObject = rvValue.toObject();
+    //              QJsonObject rvObject = rvValue.toObject();
 
-//              if (rvObject.contains("variableClass")) {
-//                  QJsonValue typeRV = rvObject["variableClass"];
-//                  RandomVariable *theRV = 0;
-//                  QString classType = typeRV.toString();
-//                  theRV = new RandomVariable(classType,"OpenSRA");
-//                  connect(theRV->variableName, SIGNAL(textEdited(const QString &)), this, SLOT(variableNameChanged(const QString &)));
+    //              if (rvObject.contains("variableClass")) {
+    //                  QJsonValue typeRV = rvObject["variableClass"];
+    //                  RandomVariable *theRV = 0;
+    //                  QString classType = typeRV.toString();
+    //                  theRV = new RandomVariable(classType,"OpenSRA");
+    //                  connect(theRV->variableName, SIGNAL(textEdited(const QString &)), this, SLOT(variableNameChanged(const QString &)));
 
-//                  //connect(theRV,SIGNAL(sendErrorMessage(QString)),this,SLOT(errorMessage(QString)));
+    //                  //connect(theRV,SIGNAL(sendErrorMessage(QString)),this,SLOT(errorMessage(QString)));
 
-//                  if (theRV->inputFromJSON(rvObject)) { // this method is where type is set
-//                      theRandomVariables.append(theRV);
-//                      randomVariableNames << theRV->variableName->text();
-//                      theRV->variableName->setReadOnly(true);
+    //                  if (theRV->inputFromJSON(rvObject)) { // this method is where type is set
+    //                      theRandomVariables.append(theRV);
+    //                      randomVariableNames << theRV->variableName->text();
+    //                      theRV->variableName->setReadOnly(true);
 
-//                      //rvLayout->insertWidget(rvLayout->count()-1, theRV);
-//                      numRandomVariables++;
-//                  } else {
-//                      result = false;
-//                  }
-//              } else {
-//                  result = false;
-//              }
-//          }
-//      }
-//  }
+    //                      //rvLayout->insertWidget(rvLayout->count()-1, theRV);
+    //                      numRandomVariables++;
+    //                  } else {
+    //                      result = false;
+    //                  }
+    //              } else {
+    //                  result = false;
+    //              }
+    //          }
+    //      }
+    //  }
 
-  return result;
+    theRVTableView->show();
+
+    QJsonObject paramsObject = rvObject["EngineeringDemandParameter"].toObject()["Landslide"].toObject()["Params"].toObject()["YieldAcceleration"].toObject()["Params"].toObject();
+
+    auto objKeys = paramsObject.keys();
+
+    RVTableModel* tableModel = theRVTableView->getTableModel();
+
+    QVector<QVector<QVariant>> data;
+
+    for(auto&& it : objKeys)
+    {
+        if(it == "MethodForKy")
+            continue;
+
+        // "Name","Source", "Mean", "Sigma","cov", "dist. min", "dist. max","dist. type"
+        QVector<QVariant> row(8);
+
+        row[0] = it;
+        row[1] = QVariant("Preferred");
+        row[2] = QVariant(0.0);
+        row[3] = QVariant(0.0);
+        row[4] = QVariant(0.0);
+        row[5] = QVariant(0.0);
+        row[6] = QVariant(0.0);
+        row[7] = QVariant("Lognormal");
+
+        // auto itObj = paramsObject.value(it).toObject();
+        data.push_back(row);
+    }
+
+    tableModel->populateData(data);
+
+    return result;
 }
 

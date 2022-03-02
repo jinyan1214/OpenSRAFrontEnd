@@ -70,6 +70,7 @@ SOURCES += main.cpp \
     JsonWidgets/JsonWidget.cpp \
     JsonWidgets/JsonStackedWidget.cpp \
     JsonWidgets/SimCenterJsonWidget.cpp \
+    ModelViewItems/ComboBoxDelegate.cpp \
     UIWidgets/ClickableLabel.cpp \
     UIWidgets/DVRepairRateWidget.cpp \
     UIWidgets/EDPLandslideWidget.cpp \
@@ -95,6 +96,9 @@ SOURCES += main.cpp \
     UIWidgets/IntensityMeasureWidget.cpp \
     UIWidgets/DamageMeasureWidget.cpp \
     UIWidgets/RandomVariablesWidget.cpp \
+    UIWidgets/UserInputCPTWidget.cpp \
+    UIWidgets/GeospatialDataWidget.cpp \
+    UIWidgets/GenericModelWidget.cpp \
     ModelViewItems/RVTableView.cpp \
     ModelViewItems/RVTableModel.cpp \
     RunWidget.cpp \
@@ -108,6 +112,7 @@ HEADERS  += \
     JsonWidgets/JsonStackedWidget.h \
     JsonWidgets/SimCenterJsonWidget.h \
     JsonWidgets/JsonGroupBoxWidget.h \
+    ModelViewItems/ComboBoxDelegate.h \
     OpenSRAUserPass.h \
     UIWidgets/ClickableLabel.h \
     UIWidgets/DVRepairRateWidget.h \
@@ -121,6 +126,9 @@ HEADERS  += \
     UIWidgets/UncertaintyQuantificationWidget.h \
     UIWidgets/WidgetFactory.h \
     UIWidgets/RandomVariablesWidget.h \
+    UIWidgets/UserInputCPTWidget.h \
+    UIWidgets/GeospatialDataWidget.h \
+    UIWidgets/GenericModelWidget.h \
     WorkflowAppOpenSRA.h \
     WorkflowAppWidget.h \
     MainWindowWorkflowApp.h \

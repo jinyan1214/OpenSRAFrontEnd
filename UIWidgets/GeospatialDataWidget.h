@@ -1,10 +1,10 @@
-#ifndef RVTableModel_H
-#define RVTableModel_H
+#ifndef GeospatialDataWidget_H
+#define GeospatialDataWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
+Redistribution and use in source and binary forms, with or without 
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -28,59 +28,37 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Dr. Stevan Gavrilovic, UC Berkeley
+// Written by: Stevan Gavrilovic
 
-#include <QAbstractTableModel>
+#include "SimCenterAppSelection.h"
 
-class RVTableModel : public QAbstractTableModel
+class UserInputCPTWidget;
+class VisualizationWidget;
+class GenericModelWidget;
+
+class GeospatialDataWidget : public  SimCenterAppSelection
 {
     Q_OBJECT
 
 public:
-    explicit RVTableModel(QObject *parent = nullptr);
-    ~RVTableModel();
-
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
-
-    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
-
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole)  Q_DECL_OVERRIDE;
-
-    void populateData(const QVector<QVector<QVariant>>& data);
-
-    int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+    explicit GeospatialDataWidget(QWidget *parent, VisualizationWidget* visWidget);
+    ~GeospatialDataWidget();
 
     void clear(void);
 
-    QVariant item(const int row, const int col) const;
-
-    QVector<QVector<QVariant>>& getTableData();
-
-    QStringList getHeaderStringList() const;
-
-    void setHeaderStringList(const QStringList &newHeaderStringList);
-
-signals:
-
-    void handleCellChanged(int row, int col);
-
 private:
 
-    QVector<QVector<QVariant>> tableData;
-    QStringList headerStringList;
-
-    int numRows;
-    int numCols;
+    UserInputCPTWidget* cptInputWidget = nullptr;
+    VisualizationWidget* visualizationWidget = nullptr;
+    GenericModelWidget* genericModelWidget = nullptr;
 };
 
-#endif // RVTableModel_H
+#endif // GeospatialDataWidget_H

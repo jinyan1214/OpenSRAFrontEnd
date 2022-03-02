@@ -22,6 +22,7 @@ SOURCES +=  $$PATH_TO_R2D/Tools/CSVReaderWriter.cpp \
             $$PATH_TO_R2D/Tools/ComponentDatabase.cpp \
             $$PATH_TO_R2D/Tools/ComponentDatabaseManager.cpp \
             $$PATH_TO_R2D/Tools/TablePrinter.cpp \
+            $$PATH_TO_R2D/Tools/SimCenterUnitsCombo.cpp \
             $$PATH_TO_R2D/Events/UI/SiteConfig.cpp \
             $$PATH_TO_R2D/Events/UI/site.cpp \
             $$PATH_TO_R2D/Events/UI/SiteGrid.cpp \
@@ -41,6 +42,7 @@ SOURCES +=  $$PATH_TO_R2D/Tools/CSVReaderWriter.cpp \
             $$PATH_TO_R2D/UIWidgets/ShakeMapWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/GroundMotionStation.cpp \
             $$PATH_TO_R2D/UIWidgets/GroundMotionTimeHistory.cpp \
+            $$PATH_TO_R2D/UIWidgets/SimCenterUnitsWidget.cpp \
             $$PATH_TO_R2D/ModelViewItems/CustomListWidget.cpp \
             $$PATH_TO_R2D/ModelViewItems/MutuallyExclusiveListWidget.cpp \
             $$PATH_TO_R2D/ModelViewItems/ComponentTableModel.cpp \
@@ -76,6 +78,7 @@ HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
             $$PATH_TO_R2D/Tools/AssetFilterDelegate.h \
             $$PATH_TO_R2D/Tools/ComponentDatabase.h \
             $$PATH_TO_R2D/Tools/TablePrinter.h \
+            $$PATH_TO_R2D/Tools/SimCenterUnitsCombo.h \
             $$PATH_TO_R2D/Tools/ComponentDatabaseManager.h \
             $$PATH_TO_R2D/Events/UI/SiteConfig.h \
             $$PATH_TO_R2D/Events/UI/site.h \
@@ -97,6 +100,7 @@ HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
             $$PATH_TO_R2D/UIWidgets/ShakeMapWidget.h \
             $$PATH_TO_R2D/UIWidgets/GroundMotionStation.h \
             $$PATH_TO_R2D/UIWidgets/GroundMotionTimeHistory.h \
+            $$PATH_TO_R2D/UIWidgets/SimCenterUnitsWidget.h \
             $$PATH_TO_R2D/ModelViewItems/CustomListWidget.h \
             $$PATH_TO_R2D/ModelViewItems/MutuallyExclusiveListWidget.h \
             $$PATH_TO_R2D/ModelViewItems/ComponentTableModel.h \

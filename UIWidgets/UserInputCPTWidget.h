@@ -1,5 +1,5 @@
-#ifndef RVTableModel_H
-#define RVTableModel_H
+#ifndef UserInputCPTWidget_H
+#define UserInputCPTWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,51 +36,84 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Dr. Stevan Gavrilovic, UC Berkeley
+// Written by: Stevan Gavrilovic
 
-#include <QAbstractTableModel>
+#include <qgsfeature.h>
 
-class RVTableModel : public QAbstractTableModel
+#include "SimCenterAppWidget.h"
+
+#include <memory>
+
+#include <QMap>
+
+class VisualizationWidget;
+class SimCenterUnitsWidget;
+class ComponentTableView;
+
+class QStackedWidget;
+class QLineEdit;
+class QProgressBar;
+class QLabel;
+
+class UserInputCPTWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 
 public:
-    explicit RVTableModel(QObject *parent = nullptr);
-    ~RVTableModel();
+    UserInputCPTWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    ~UserInputCPTWidget();
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    QStackedWidget* getUserInputCPTWidget(void);
 
-    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
-
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole)  Q_DECL_OVERRIDE;
-
-    void populateData(const QVector<QVector<QVariant>>& data);
-
-    int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-
+    bool inputFromJSON(QJsonObject &jsonObject);
+    bool outputToJSON(QJsonObject &jsonObj);
+    bool inputAppDataFromJSON(QJsonObject &jsonObj);
+    bool outputAppDataToJSON(QJsonObject &jsonObj);
+    bool copyFiles(QString &destDir);
     void clear(void);
 
-    QVariant item(const int row, const int col) const;
+public slots:
 
-    QVector<QVector<QVariant>>& getTableData();
+    void showUserGMSelectDialog(void);
 
-    QStringList getHeaderStringList() const;
+private slots:
 
-    void setHeaderStringList(const QStringList &newHeaderStringList);
+    void loadUserCPTData(void);
+    void chooseEventFileDialog(void);
+    void chooseMotionDirDialog(void);
+    void handleRowSelect(const QModelIndex &index);
 
 signals:
-
-    void handleCellChanged(int row, int col);
+    void outputDirectoryPathChanged(QString motionDir, QString eventFile);
+    void eventTypeChangedSignal(QString eventType);
+    void loadingComplete(const bool value);
 
 private:
+    void showProgressBar(void);
+    void hideProgressBar(void);
 
-    QVector<QVector<QVariant>> tableData;
-    QStringList headerStringList;
+    QStackedWidget* theStackedWidget;
 
-    int numRows;
-    int numCols;
+    ComponentTableView* siteListTableWidget = nullptr;
+    ComponentTableView* siteDataTableWidget = nullptr;
+
+    VisualizationWidget* theVisualizationWidget = nullptr;
+
+    QString eventFile;
+    QString motionDir;
+
+    QLineEdit *CPTSitesFileLineEdit = nullptr;
+    QLineEdit *CPTDirLineEdit = nullptr;
+
+    QLabel* progressLabel = nullptr;
+    QWidget* progressBarWidget = nullptr;
+    QWidget* fileInputWidget = nullptr;
+    QProgressBar* progressBar = nullptr;
+
+    QMap<QString,QVector<QStringList>> stationMap;
+
+    SimCenterUnitsWidget* unitsWidget = nullptr;
+
 };
 
-#endif // RVTableModel_H
+#endif // UserInputCPTWidget_H

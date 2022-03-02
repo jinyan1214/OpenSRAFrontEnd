@@ -1,10 +1,11 @@
-#ifndef RVTableModel_H
-#define RVTableModel_H
+#ifndef RANDOM_VARIABLES_CONTAINER_H
+#define RANDOM_VARIABLES_CONTAINER_H
+
 /* *****************************************************************************
-Copyright (c) 2016-2021, The Regents of the University of California (Regents).
+Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
+Redistribution and use in source and binary forms, with or without 
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -28,59 +29,48 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Dr. Stevan Gavrilovic, UC Berkeley
+// Created by: Dr. Stevan Gavrilovic, UC Berkeley
 
-#include <QAbstractTableModel>
+#include <SimCenterAppWidget.h>
 
-class RVTableModel : public QAbstractTableModel
+class RVTableView;
+class ComboBoxDelegate;
+
+class QVBoxLayout;
+class QDialog;
+
+class GenericModelWidget : public SimCenterAppWidget
 {
     Q_OBJECT
-
 public:
-    explicit RVTableModel(QObject *parent = nullptr);
-    ~RVTableModel();
+    explicit GenericModelWidget(QWidget *parent = 0);
+    ~GenericModelWidget();
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    bool inputFromJSON(QJsonObject &rvObject);
+    bool outputToJSON(QJsonObject &rvObject);
 
-    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
+    void copyFiles(QString fileName);
 
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole)  Q_DECL_OVERRIDE;
-
-    void populateData(const QVector<QVector<QVariant>>& data);
-
-    int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-
-    void clear(void);
-
-    QVariant item(const int row, const int col) const;
-
-    QVector<QVector<QVariant>>& getTableData();
-
-    QStringList getHeaderStringList() const;
-
-    void setHeaderStringList(const QStringList &newHeaderStringList);
-
-signals:
-
-    void handleCellChanged(int row, int col);
+public slots:
+   void clear(void);
 
 private:
+    void makeRVWidget(void);
+    QVBoxLayout *verticalLayout;
 
-    QVector<QVector<QVariant>> tableData;
-    QStringList headerStringList;
+    ComboBoxDelegate* levelComboDelegate = nullptr;
+    ComboBoxDelegate* applyLnComboDelegate = nullptr;
+    ComboBoxDelegate* powerComboDelegate = nullptr;
 
-    int numRows;
-    int numCols;
+    RVTableView* theRVTableView = nullptr;
 };
 
-#endif // RVTableModel_H
+#endif // RANDOM_VARIABLES_CONTAINER_H

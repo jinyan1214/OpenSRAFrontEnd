@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
-#include "ComponentTableModel.h"
+#include "RVTableModel.h"
 #include "RVTableView.h"
 #include "VisualizationWidget.h"
 
@@ -47,20 +47,22 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 RVTableView::RVTableView(QWidget *parent) : QTableView(parent)
 {
-    tableModel = new ComponentTableModel();
+    tableModel = new RVTableModel();
     this->setModel(tableModel);
-
     this->hide();
-    this->setToolTip("Component details");
+    this->setToolTip("Specify the random variables");
     this->verticalHeader()->setVisible(false);
-    this->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    this->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
     this->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
-    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    this->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
 
     this->setEditTriggers(EditTrigger::DoubleClicked);
     this->setSelectionMode(SelectionMode::SingleSelection);
 }
+
 
 void RVTableView::clear(void)
 {
@@ -94,7 +96,7 @@ QVariant RVTableView::horizontalHeaderItemVariant(int section)
 }
 
 
-ComponentTableModel *RVTableView::getTableModel() const
+RVTableModel *RVTableView::getTableModel() const
 {
     return tableModel;
 }
