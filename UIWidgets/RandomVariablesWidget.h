@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class RandomVariable;
 class RVTableView;
 class ComboBoxDelegate;
+class MixedDelegate;
 
 class QVBoxLayout;
 class QDialog;
@@ -79,6 +80,8 @@ public:
 public slots:
    void addRandomVariable(void);
    void removeRandomVariable(void);
+   void handleCellChanged(int row, int col);
+   void handleCellClicked(const QModelIndex &index);
 
    void loadRVsFromJson(void);
    void saveRVsToJson(void);
@@ -90,14 +93,16 @@ private:
     void makeRVWidget(void);
     QVBoxLayout *verticalLayout;
 
-    ComboBoxDelegate* distTypeComboDelegate = nullptr;
     ComboBoxDelegate* sourceComboDelegate = nullptr;
+    MixedDelegate* distTypeComboDelegate = nullptr;
+    MixedDelegate* colDataComboDelegate = nullptr;
 
     RVTableView* theRVTableView = nullptr;
 
     QVector<RandomVariable *>theRandomVariables;
     QCheckBox *checkbox;
 
+    QStringList tableHeaders;
     QStringList randomVariableNames;
 };
 

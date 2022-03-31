@@ -41,20 +41,23 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RVTableModel.h"
 
 #include "ComboBoxDelegate.h"
+#include "sectiontitle.h"
 
+#include <QGroupBox>
+#include <QComboBox>
+#include <QPushButton>
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QJsonArray>
 #include <QJsonDocument>
-#include <sectiontitle.h>
 #include <QLineEdit>
 #include <QFileDialog>
 
 GenericModelWidget::GenericModelWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
     verticalLayout = new QVBoxLayout(this);
-    verticalLayout->setMargin(0);
-    verticalLayout->setSpacing(0);
+    verticalLayout->setMargin(2);
+    verticalLayout->setSpacing(2);
     this->makeRVWidget();
 }
 
@@ -74,77 +77,107 @@ void GenericModelWidget::makeRVWidget(void)
     SectionTitle *title=new SectionTitle();
     title->setText(tr("Generic Model Definition"));
     title->setMinimumWidth(250);
-    //    QSpacerItem *spacer1 = new QSpacerItem(50,10);
-    //    QSpacerItem *spacer2 = new QSpacerItem(20,10);
-    //    QSpacerItem *spacer3 = new QSpacerItem(20,10);
-    //    QSpacerItem *spacer4 = new QSpacerItem(50,10);
-    //    QSpacerItem *spacer5 = new QSpacerItem(20,10);
 
+    QPushButton *addParam = new QPushButton();
+    addParam->setMinimumWidth(75);
+    addParam->setMaximumWidth(75);
+    addParam->setText(tr("Add"));
+    connect(addParam,SIGNAL(clicked()),this,SLOT(addParam()));
 
-    //    QPushButton *addRV = new QPushButton();
-    //    addRV->setMinimumWidth(75);
-    //    addRV->setMaximumWidth(75);
-    //    addRV->setText(tr("Add"));
-    //    connect(addRV,SIGNAL(clicked()),this,SLOT(addRandomVariable()));
+    QPushButton *removeParam= new QPushButton();
+    removeParam->setMinimumWidth(75);
+    removeParam->setMaximumWidth(75);
+    removeParam->setText(tr("Remove"));
+    connect(removeParam,SIGNAL(clicked()),this,SLOT(removeParam()));
 
-
-    //    QPushButton *removeRV = new QPushButton();
-    //    removeRV->setMinimumWidth(75);
-    //    removeRV->setMaximumWidth(75);
-    //    removeRV->setText(tr("Remove"));
-    //    connect(removeRV,SIGNAL(clicked()),this,SLOT(removeRandomVariable()));
-
-
-    //    QPushButton *RVsFromJson = new QPushButton();
-    //    RVsFromJson->setMinimumWidth(75);
-    //    RVsFromJson->setMaximumWidth(75);
-    //    RVsFromJson->setText(tr("Import"));
-    //    RVsFromJson->setStyleSheet("background-color: dodgerblue;border-color:dodgerblue");
-    //    connect(RVsFromJson,SIGNAL(clicked()),this,SLOT(loadRVsFromJson()));
-
-
-    //    QPushButton *RVsToJson = new QPushButton();
-    //    RVsToJson->setMinimumWidth(75);
-    //    RVsToJson->setMaximumWidth(75);
-    //    RVsToJson->setText(tr("Export"));
-    //    RVsToJson->setStyleSheet("background-color: dodgerblue;border-color:dodgerblue");
-    //    connect(RVsToJson,SIGNAL(clicked()),this,SLOT(saveRVsToJson()));
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    buttonLayout->addWidget(addParam);
+    buttonLayout->addWidget(removeParam);
+    buttonLayout->addStretch();
 
     titleLayout->addWidget(title);
-    //    titleLayout->addItem(spacer1);
-    //    titleLayout->addWidget(addRV);
-    //    titleLayout->addItem(spacer2);
-    //    titleLayout->addWidget(removeRV);
-    //    titleLayout->addItem(spacer3);
 
-    //    //titleLayout->addWidget(addCorrelation,0,Qt::AlignTop);
-    //    QString appName = QApplication::applicationName();
-    //    if (appName == "quoFEM") {
-    //        titleLayout->addWidget(addCorrelation);
-    //        titleLayout->addItem(spacer4);
-    //    }
-
-    //    titleLayout->addWidget(RVsToJson);
-    //    titleLayout->addItem(spacer5);
-    //    titleLayout->addWidget(RVsFromJson);
-    //    titleLayout->addStretch();
+    QGroupBox* instructionsGB = new QGroupBox("Instructions");
+    QHBoxLayout *instructionsLayout = new QHBoxLayout(instructionsGB);
+    auto instructionsLabel = new QLabel("For constants leave the RV label blank and/or set power to 0");
+    instructionsLayout->addWidget(instructionsLabel);
+    verticalLayout->addWidget(instructionsGB);
 
     verticalLayout->addLayout(titleLayout);
     theRVTableView = new RVTableView();
 
     verticalLayout->addWidget(theRVTableView);
+    verticalLayout->addLayout(buttonLayout);
+
+    QGroupBox* eqnGB = new QGroupBox("Generic Equation");
+
+    QVBoxLayout *eqnLayout = new QVBoxLayout(eqnGB);
+
+    eqnLabelLevel1 = new QLabel("");
+    eqnLabelLevel2 = new QLabel("");
+    eqnLabelLevel3 = new QLabel("");
+
+    QLabel* level1Label = new QLabel("Level 1:");
+    QLabel* level2Label = new QLabel("Level 2:");
+    QLabel* level3Label = new QLabel("Level 3:");
+
+    level1Label->setStyleSheet("font-weight: bold; color: black");
+    level2Label->setStyleSheet("font-weight: bold; color: black");
+    level3Label->setStyleSheet("font-weight: bold; color: black");
+
+    eqnLayout->addWidget(level1Label);
+    eqnLayout->addWidget(eqnLabelLevel1);
+
+    eqnLayout->addWidget(level2Label);
+    eqnLayout->addWidget(eqnLabelLevel2);
+
+    eqnLayout->addWidget(level3Label);
+    eqnLayout->addWidget(eqnLabelLevel3);
+
+    eqnLayout->addStretch();
+
+    QHBoxLayout *eqnTypeLayout = new QHBoxLayout();
+    QLabel* eqTypeLabel = new QLabel("Select the distribution for the model:");
+
+    eqTypeCombo = new QComboBox();
+    eqTypeCombo->addItems(QStringList({"lognormal","normal"}));
+
+    connect(eqTypeCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(handleTypeChanged(int)));
+
+    // Aleatory uncertainty
+    auto aleatLabel = new QLabel("Aleatory Uncertainty:");
+    aleatoryLE = new QLineEdit();
+
+    // Epistemic uncertainty
+    auto episLabel = new QLabel("Epistemic Uncertainty:");
+    episLE = new QLineEdit();
+
+    eqnTypeLayout->addWidget(eqTypeLabel);
+    eqnTypeLayout->addWidget(eqTypeCombo);
+
+    eqnTypeLayout->addWidget(aleatLabel);
+    eqnTypeLayout->addWidget(aleatoryLE);
+
+    eqnTypeLayout->addWidget(episLabel);
+    eqnTypeLayout->addWidget(episLE);
+
+    eqnTypeLayout->addStretch();
+
+    verticalLayout->addLayout(eqnTypeLayout);
+    verticalLayout->addWidget(eqnGB);
 
     RVTableModel* tableModel = theRVTableView->getTableModel();
     QStringList headers = {"Level","Coeff. Mean", "Coeff. Sigma","RV Label", "Apply Ln", "Power"};
     tableModel->setHeaderStringList(headers);
     theRVTableView->show();
 
-
     // Level
     levelComboDelegate = new ComboBoxDelegate(this);
     QStringList levelTypes = {"1","2","3"};
     levelComboDelegate->setItems(levelTypes);
     theRVTableView->setItemDelegateForColumn(0, levelComboDelegate);
+
+    connect(theRVTableView->getTableModel(),SIGNAL(handleCellChanged(int,int)),this,SLOT(handleCellChanged(int,int)));
 
     // Ln type
     applyLnComboDelegate = new ComboBoxDelegate(this);
@@ -158,20 +191,18 @@ void GenericModelWidget::makeRVWidget(void)
     powerComboDelegate->setItems(powerTypes);
     theRVTableView->setItemDelegateForColumn(5, powerComboDelegate);
 
-//    theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+    //    theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
-    // Test
-    QVector<QVector<QVariant>> data;
+    // Add five random levels
     for(int i = 0; i<5; ++i)
     {
-
         // "Level","Coeff. Mean", "Coeff. Sigma","RV Label", "Apply Ln", "Power"
         QVector<QVariant> row(6);
 
         row[0] = rand() % 3 + 1;
         row[1] = QVariant(rand() % 5 + 1);
         row[2] = QVariant(0.5);
-        row[3] = QVariant("RV"+QString::number(i));
+        row[3] = QVariant("RV_"+QString::number(i));
         row[4] = rand() % 10 < 5 ? true : false;
         row[5] = QVariant(rand() % 2);
 
@@ -179,16 +210,41 @@ void GenericModelWidget::makeRVWidget(void)
         data.push_back(row);
     }
 
+    this->sortData();
     tableModel->populateData(data);
+
+    this->generateEquation();
 
     verticalLayout->addStretch(1);
 }
 
 
+void GenericModelWidget::sortData(void)
+{
+
+    if(data.size()<2)
+        return;
+
+    // Sorting function to sort according to level
+    auto sortFxn = [](QVector<QVariant>& rowA, QVector<QVariant>& rowB) -> bool
+    {
+        auto a = rowA.front().toInt();
+        auto b = rowB.front().toInt();
+
+        return a < b ? true : false;
+    };
+
+    std::sort(data.begin(),data.end(),sortFxn);
+
+}
+
 void GenericModelWidget::clear(void) {
 
     theRVTableView->clear();
-
+    data.clear();
+    eqnLabelLevel1->clear();
+    eqnLabelLevel2->clear();
+    eqnLabelLevel3->clear();
 }
 
 
@@ -212,13 +268,61 @@ bool GenericModelWidget::outputToJSON(QJsonObject &rvObject) {
 }
 
 
+void GenericModelWidget::addParam(void)
+{
+    auto i = data.size();
+    QVector<QVariant> row(6);
+
+    int level = 1;
+
+    if(i>0)
+        level = data.back().at(0).toInt() + 1;
+
+    // maximum level is 3
+    if(level > 3)
+        level = 3;
+
+    row[0] = level;
+    row[1] = QVariant(rand() % 5 + 1);
+    row[2] = QVariant(0.5);
+    row[3] = QVariant("RV_"+QString::number(i));
+    row[4] = rand() % 10 < 5 ? true : false;
+    row[5] = QVariant(rand() % 2);
+
+    data.append(row);
+
+    this->sortData();
+    RVTableModel* tableModel = theRVTableView->getTableModel();
+    tableModel->populateData(data);
+}
 
 
+void GenericModelWidget::removeParam(void)
+{
+    QItemSelectionModel *select = theRVTableView->selectionModel();
+
+    //check if has selection
+    if(!select->hasSelection())
+        return;
+
+    auto selectedRows = select->selectedIndexes(); // return selected items(s)
+    //select->selectedColumns() // return selected column(s)
+
+    for(auto&& it: selectedRows)
+    {
+        auto rowNum = it.row();
+        data.remove(rowNum);
+    }
+
+    this->sortData();
+    RVTableModel* tableModel = theRVTableView->getTableModel();
+    tableModel->populateData(data);
+}
 
 
 void GenericModelWidget::copyFiles(QString fileDir)
 {
-
+    Q_UNUSED(fileDir);
 
 }
 
@@ -230,3 +334,114 @@ bool GenericModelWidget::inputFromJSON(QJsonObject &rvObject)
     return result;
 }
 
+
+void GenericModelWidget::generateEquation(void)
+{
+
+    auto numRows = data.size();
+
+    auto typeText = eqTypeCombo->currentText();
+
+    QString eqnBase;
+
+    if(typeText.compare("lognormal") == 0)
+        eqnBase = "ln(Y) = ";
+    else
+        eqnBase = "Y = ";
+
+    QString start = "<html><head/><body><p><span style=\" font-size:16pt;\ font-style:italic;\">"+eqnBase;
+
+    QString level1Str = start;
+    QString level2Str;
+    QString level3Str;
+
+    for(int i = 0; i<numRows; ++i)
+    {
+        auto rvName = data[i][3].toString();
+        auto applyLn = data[i][4].toBool();
+        auto pow = data[i][5].toInt();
+
+        QString str;
+
+        // The coefficient
+        if(i==0)
+            str += "c";
+        else
+            str += "+ c";
+
+        str += QString::number(i);
+
+        if(pow > 0 && !rvName.isEmpty())
+        {
+            if(pow>=1)
+                str += "*(";
+
+            // If apply LN
+            if(applyLn)
+            {
+                str += "ln("+rvName+")";
+            }
+            else
+                str += rvName;
+
+            if(pow>=1)
+            {
+                str += ")";
+                if(pow>1)
+                    str += "<sup>"+QString::number(pow)+"</sup>";
+            }
+        }
+
+        auto level = data[i][0].toInt();
+
+        if(level == 1)
+            level1Str += str;
+        else if(level == 2)
+            level2Str += str;
+        else if(level == 3)
+            level3Str += str;
+
+    }
+
+    auto end = "</span></p></body></html>";
+
+    level2Str.prepend(level1Str);
+    level3Str.prepend(level2Str);
+
+    level2Str +=  end;
+    level3Str +=  end;
+
+    eqnLabelLevel1->setText(level1Str);
+    eqnLabelLevel2->setText(level2Str);
+    eqnLabelLevel3->setText(level3Str);
+
+}
+
+
+void GenericModelWidget::handleCellChanged(int row, int col)
+{
+    // Check bounds and return if out
+    if(row > data.size()-1 || col > data[row].size()-1)
+        return;
+
+    RVTableModel* tableModel = theRVTableView->getTableModel();
+    QVariant item = tableModel->item(row,col);
+
+    data[row][col] = item;
+
+    if(col == 0)
+    {
+        this->sortData();
+        tableModel->populateData(data);
+    }
+
+    this->generateEquation();
+}
+
+
+void GenericModelWidget::handleTypeChanged(int type)
+{
+    Q_UNUSED(type);
+
+    this->generateEquation();
+}

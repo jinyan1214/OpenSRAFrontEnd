@@ -56,7 +56,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMetaEnum>
 #include <QStandardPaths>
 #include <QApplication>
-#include <QToolTip>
 
 GeneralInformationWidget::GeneralInformationWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
@@ -198,9 +197,7 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     QVBoxLayout* layout = new QVBoxLayout();
 
     ClickableLabel* helpLabel1 = new ClickableLabel("   ?");
-    helpLabel1->setStyleSheet("font: italic large; color: blue; QToolTip {font-size:12pt; color:white; padding:2px; border-width:2px; border-style:solid; border-radius:4px }");
     helpLabel1->setToolTip("Enter a unique analysis name.");
-    connect(helpLabel1,&ClickableLabel::clicked,this,&GeneralInformationWidget::showToolTip);
 
     QHBoxLayout* analysisNameLayout = new QHBoxLayout();
     analysisNameLayout->addWidget(analysisLabel);
@@ -209,9 +206,7 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     analysisNameLayout->addStretch();
 
     ClickableLabel* helpLabel2 = new ClickableLabel("   ?");
-    helpLabel2->setStyleSheet("font: italic large; color: blue; QToolTip {font-size:12pt; color:white; padding:2px; border-width:2px; border-style:solid; border-radius:4px }");
     helpLabel2->setToolTip("Enter or select the path to the working directory,  i.e.,  where OpenSRA will store the analysis inputs and results.");
-    connect(helpLabel2,&ClickableLabel::clicked,this,&GeneralInformationWidget::showToolTip);
 
     QHBoxLayout* workingDirLayout = new QHBoxLayout();
     workingDirLayout->addWidget(workingDirectoryLabel);
@@ -221,9 +216,7 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     workingDirLayout->addStretch();
 
     ClickableLabel* helpLabel3 = new ClickableLabel("  ?");
-    helpLabel3->setStyleSheet("font: italic large; color: blue; QToolTip {font-size:12pt; color:white; padding:2px; border-width:2px; border-style:solid; border-radius:4px }");
     helpLabel3->setToolTip("Select the analysis unit system.");
-    connect(helpLabel3,&ClickableLabel::clicked,this,&GeneralInformationWidget::showToolTip);
 
     QHBoxLayout* unitsLayout = new QHBoxLayout();
     unitsLayout->addWidget(unitSystemLabel);
@@ -273,16 +266,5 @@ void GeneralInformationWidget::chooseDirectoryDialog(void)
     return;
 }
 
-void GeneralInformationWidget::showToolTip(void)
-{
-    QWidget* obj = dynamic_cast<QWidget*>(sender());
-
-    if(obj == nullptr)
-        return;
-
-    auto toolTipStr = obj->toolTip();
-
-    QToolTip::showText(obj->mapToGlobal(QPoint(0,0)), toolTipStr, obj/*, QRect(), 200000*/);
-}
 
 

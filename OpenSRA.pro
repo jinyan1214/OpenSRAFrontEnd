@@ -71,6 +71,7 @@ SOURCES += main.cpp \
     JsonWidgets/JsonStackedWidget.cpp \
     JsonWidgets/SimCenterJsonWidget.cpp \
     ModelViewItems/ComboBoxDelegate.cpp \
+    ModelViewItems/ButtonDelegate.cpp \
     UIWidgets/ClickableLabel.cpp \
     UIWidgets/DVRepairRateWidget.cpp \
     UIWidgets/EDPLandslideWidget.cpp \
@@ -101,6 +102,9 @@ SOURCES += main.cpp \
     UIWidgets/GenericModelWidget.cpp \
     ModelViewItems/RVTableView.cpp \
     ModelViewItems/RVTableModel.cpp \
+    ModelViewItems/MixedDelegate.cpp \
+    ModelViewItems/LineEditDelegate.cpp \
+    ModelViewItems/LabelDelegate.cpp \
     RunWidget.cpp \
 
 HEADERS  += \
@@ -113,6 +117,7 @@ HEADERS  += \
     JsonWidgets/SimCenterJsonWidget.h \
     JsonWidgets/JsonGroupBoxWidget.h \
     ModelViewItems/ComboBoxDelegate.h \
+    ModelViewItems/ButtonDelegate.h \
     OpenSRAUserPass.h \
     UIWidgets/ClickableLabel.h \
     UIWidgets/DVRepairRateWidget.h \
@@ -145,6 +150,9 @@ HEADERS  += \
     UIWidgets/DamageMeasureWidget.h \
     ModelViewItems/RVTableView.h \
     ModelViewItems/RVTableModel.h \
+    ModelViewItems/MixedDelegate.h \
+    ModelViewItems/LineEditDelegate.h \
+    ModelViewItems/LabelDelegate.h \
 
 RESOURCES += \
     images.qrc \

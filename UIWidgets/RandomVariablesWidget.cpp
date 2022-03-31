@@ -35,16 +35,22 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 *************************************************************************** */
 
 #include "RandomVariablesWidget.h"
-
+#include "WorkflowAppOpenSRA.h"
+#include "PipelineNetworkWidget.h"
+#include "QGISGasPipelineInputWidget.h"
 #include "RandomVariable.h"
 #include "ConstantDistribution.h"
 #include "NormalDistribution.h"
 #include "UniformDistribution.h"
 #include "RVTableView.h"
 #include "RVTableModel.h"
-
+#include "MixedDelegate.h"
+#include "LineEditDelegate.h"
+#include "LabelDelegate.h"
 #include "ComboBoxDelegate.h"
+#include "ButtonDelegate.h"
 
+#include <QComboBox>
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QJsonArray>
@@ -53,11 +59,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLineEdit>
 #include <QFileDialog>
 
-RandomVariablesWidget::RandomVariablesWidget(QWidget *parent) : SimCenterWidget(parent) //, correlationDialog(NULL), correlationMatrix(NULL), checkbox(NULL)
+RandomVariablesWidget::RandomVariablesWidget(QWidget *parent) : SimCenterWidget(parent)
 {
     verticalLayout = new QVBoxLayout(this);
-    verticalLayout->setMargin(0);
-    verticalLayout->setSpacing(0);
+    verticalLayout->setMargin(2);
+    verticalLayout->setSpacing(2);
+
+    tableHeaders = QStringList({"Name","Source", "Mean", "Sigma","CoV","Distribution Type","Distribution Min", "Distribution Max", "Units","From Model"/*,"Plot Distribution"*/});
+
     this->makeRVWidget();
 }
 
@@ -210,114 +219,69 @@ void RandomVariablesWidget::makeRVWidget(void)
     SectionTitle *title=new SectionTitle();
     title->setText(tr("Random Variables"));
     title->setMinimumWidth(250);
-    //    QSpacerItem *spacer1 = new QSpacerItem(50,10);
-    //    QSpacerItem *spacer2 = new QSpacerItem(20,10);
-    //    QSpacerItem *spacer3 = new QSpacerItem(20,10);
-    //    QSpacerItem *spacer4 = new QSpacerItem(50,10);
-    //    QSpacerItem *spacer5 = new QSpacerItem(20,10);
-
-
-    //    QPushButton *addRV = new QPushButton();
-    //    addRV->setMinimumWidth(75);
-    //    addRV->setMaximumWidth(75);
-    //    addRV->setText(tr("Add"));
-    //    connect(addRV,SIGNAL(clicked()),this,SLOT(addRandomVariable()));
-
-
-    //    QPushButton *removeRV = new QPushButton();
-    //    removeRV->setMinimumWidth(75);
-    //    removeRV->setMaximumWidth(75);
-    //    removeRV->setText(tr("Remove"));
-    //    connect(removeRV,SIGNAL(clicked()),this,SLOT(removeRandomVariable()));
-
-
-    //    QPushButton *RVsFromJson = new QPushButton();
-    //    RVsFromJson->setMinimumWidth(75);
-    //    RVsFromJson->setMaximumWidth(75);
-    //    RVsFromJson->setText(tr("Import"));
-    //    RVsFromJson->setStyleSheet("background-color: dodgerblue;border-color:dodgerblue");
-    //    connect(RVsFromJson,SIGNAL(clicked()),this,SLOT(loadRVsFromJson()));
-
-
-    //    QPushButton *RVsToJson = new QPushButton();
-    //    RVsToJson->setMinimumWidth(75);
-    //    RVsToJson->setMaximumWidth(75);
-    //    RVsToJson->setText(tr("Export"));
-    //    RVsToJson->setStyleSheet("background-color: dodgerblue;border-color:dodgerblue");
-    //    connect(RVsToJson,SIGNAL(clicked()),this,SLOT(saveRVsToJson()));
-
-    //    // padhye, adding the button for correlation matrix, we need to add a condition here
-    //    // that whether the uqMehod selected is that of Dakota and sampling type? only then we need correlation matrix
-
-    //    /* FMK */
-    //    addCorrelation = new QPushButton(tr("Correlation Matrix"));
-    //    connect(addCorrelation,SIGNAL(clicked()),this,SLOT(addCorrelationMatrix()));
-
-    //    flag_for_correlationMatrix=1;
-
-    //    /********************* moving to sampling method input ***************************
-    //    QCheckBox *checkbox =new QCheckBox("Sobolev Index", this);
-    //    connect(checkbox,SIGNAL(clicked(bool)),this,SLOT(addSobolevIndices(bool)));
-    //    flag_for_sobolev_indices=0;
-    //    ******************************************************************************** */
 
     titleLayout->addWidget(title);
-    //    titleLayout->addItem(spacer1);
-    //    titleLayout->addWidget(addRV);
-    //    titleLayout->addItem(spacer2);
-    //    titleLayout->addWidget(removeRV);
-    //    titleLayout->addItem(spacer3);
-
-    //    //titleLayout->addWidget(addCorrelation,0,Qt::AlignTop);
-    //    QString appName = QApplication::applicationName();
-    //    if (appName == "quoFEM") {
-    //        titleLayout->addWidget(addCorrelation);
-    //        titleLayout->addItem(spacer4);
-    //    }
-
-    //    titleLayout->addWidget(RVsToJson);
-    //    titleLayout->addItem(spacer5);
-    //    titleLayout->addWidget(RVsFromJson);
-    //    titleLayout->addStretch();
 
     verticalLayout->addLayout(titleLayout);
     theRVTableView = new RVTableView();
 
+    theRVTableView->setWordWrap(true);
+    theRVTableView->setTextElideMode(Qt::ElideNone);
+
     verticalLayout->addWidget(theRVTableView);
 
     RVTableModel* tableModel = theRVTableView->getTableModel();
-    QStringList headers = {"Name","Source", "Mean", "Sigma","CoV", "Distribution Min", "Distribution Max","Distribution Type"};
-    tableModel->setHeaderStringList(headers);
-
-    // Distribution type
-    distTypeComboDelegate = new ComboBoxDelegate(this);
-    QStringList distTypes = {"Lognormal","Normal","N/A"};
-    distTypeComboDelegate->setItems(distTypes);
-    theRVTableView->setItemDelegateForColumn(7, distTypeComboDelegate);
+    tableModel->setHeaderStringList(tableHeaders);
 
     // Source type
     sourceComboDelegate = new ComboBoxDelegate(this);
-    QStringList sourceTypes = {"Preferred","User-defined","Distribution"};
+    QStringList sourceTypes = {"Preferred","User-defined"};
     sourceComboDelegate->setItems(sourceTypes);
     theRVTableView->setItemDelegateForColumn(1, sourceComboDelegate);
 
+    // Column selection/data type delegate
+    colDataComboDelegate = new MixedDelegate(this);
+    QStringList meanTypes = {"N/A"};
+    colDataComboDelegate->setItems(meanTypes);
+    colDataComboDelegate->setIsEditable(true);
+
+    ComponentInputWidget* pipelineWidget = WorkflowAppOpenSRA::getInstance()->getThePipelineNetworkWidget()->getTheComponentInputWidget();
+    connect(pipelineWidget, &ComponentInputWidget::headingValuesChanged, colDataComboDelegate, &MixedDelegate::updateComboBoxValues);
+
+    theRVTableView->setItemDelegateForColumn(2, colDataComboDelegate);
+    theRVTableView->setItemDelegateForColumn(3, colDataComboDelegate);
+    theRVTableView->setItemDelegateForColumn(4, colDataComboDelegate);
+
+    // Distribution type
+    distTypeComboDelegate = new MixedDelegate(this);
+    QStringList distTypes = {"","Lognormal","Normal"};
+    distTypeComboDelegate->setItems(distTypes);
+    distTypeComboDelegate->setIsEditable(false);
+    theRVTableView->setItemDelegateForColumn(5, distTypeComboDelegate);
+
+    // Min/max distribution
+    LineEditDelegate* LEDelegate = new LineEditDelegate(this);
+    theRVTableView->setItemDelegateForColumn(6, LEDelegate);
+    theRVTableView->setItemDelegateForColumn(7, LEDelegate);
+
+    connect(theRVTableView->getTableModel(),SIGNAL(handleCellChanged(int,int)),this,SLOT(handleCellChanged(int,int)));
+
+    // From model
+    LabelDelegate* labDelegate = new LabelDelegate(this);
+
+    theRVTableView->setItemDelegateForColumn(9, labDelegate);
+
+    // Plot button
+//    auto plotButtonDelegate = new ButtonDelegate("Plot",this);
+//    theRVTableView->setItemDelegateForColumn(10, plotButtonDelegate);
+
+//    connect(plotButtonDelegate,&ButtonDelegate::clicked,this,&RandomVariablesWidget::handleCellClicked);
+
+
+    theRVTableView->setEditTriggers(QAbstractItemView::AllEditTriggers);
+
     theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
-    //    QScrollArea *sa = new QScrollArea;
-    //    sa->setWidgetResizable(true);
-    //    sa->setLineWidth(0);
-    //    sa->setFrameShape(QFrame::NoFrame);
-
-    //    //rv = new QGroupBox(tr(""));
-    //    rv = new QWidget;
-
-    //    rvLayout = new QVBoxLayout;
-    //    rvLayout->addStretch();
-    //    rv->setLayout(rvLayout);
-
-    //   // this->addRandomVariable();
-    //     sa->setWidget(rv);
-    //     verticalLayout->addWidget(sa);
 
     verticalLayout->addStretch(1);
 }
@@ -346,8 +310,6 @@ void RandomVariablesWidget::removeRandomVariable(void)
         RandomVariable *theRV = theRandomVariables.at(i);
         if (theRV->isSelectedForRemoval()) {
             theRV->close();
-
-            //rvLayout->removeWidget(theRV);
 
             theRandomVariables.remove(i);
             randomVariableNames.removeAt(i);
@@ -448,7 +410,9 @@ void RandomVariablesWidget::clear(void) {
     theRandomVariables.clear();
     randomVariableNames.clear();
     theRVTableView->clear();
+    theRVTableView->hide();
 
+    theRVTableView->getTableModel()->setHeaderStringList(tableHeaders);
 }
 
 
@@ -492,6 +456,27 @@ void RandomVariablesWidget::copyFiles(QString fileDir)
 {
     for (int i = 0; i <theRandomVariables.size(); ++i) {
         theRandomVariables.at(i)->copyFiles(fileDir);
+    }
+}
+
+
+void RandomVariablesWidget::handleCellChanged(int row, int col)
+{
+    RVTableModel* tableModel = theRVTableView->getTableModel();
+
+    if(col == 3)
+    {
+        auto index = theRVTableView->getTableModel()->index(row,4);
+        tableModel->blockSignals(true);
+        tableModel->setData(index,QVariant(),Qt::EditRole);
+        tableModel->blockSignals(false);
+    }
+    else if(col == 4)
+    {
+        auto index = theRVTableView->getTableModel()->index(row,3);
+        tableModel->blockSignals(true);
+        tableModel->setData(index,QVariant(),Qt::EditRole);
+        tableModel->blockSignals(false);
     }
 }
 
@@ -558,22 +543,27 @@ bool RandomVariablesWidget::inputFromJSON(QJsonObject &rvObject)
 
     QVector<QVector<QVariant>> data;
 
+    auto numCols = tableHeaders.size();
+
     for(auto&& it : objKeys)
     {
         if(it == "MethodForKy")
             continue;
 
-        // "Name","Source", "Mean", "Sigma","cov", "dist. min", "dist. max","dist. type"
-        QVector<QVariant> row(8);
+        // "Name","Source", "Mean", "Sigma","CoV","Distribution Type","Distribution Min", "Distribution Max", "Units","From Model","Plot Distribution"
+        QVector<QVariant> row(numCols);
 
         row[0] = it;
         row[1] = QVariant("Preferred");
-        row[2] = QVariant(0.0);
-        row[3] = QVariant(0.0);
-        row[4] = QVariant(0.0);
-        row[5] = QVariant(0.0);
-        row[6] = QVariant(0.0);
-        row[7] = QVariant("Lognormal");
+        row[2] = QVariant();
+        row[3] = QVariant();
+        row[4] = QVariant();
+        row[5] = QVariant();
+        row[6] = QVariant();
+        row[7] = QVariant();
+        row[8] = QVariant();
+        row[9] = QVariant("EngineeringDemandParameter-Landslide-YieldAcceleration");
+//        row[10] = QVariant();
 
         // auto itObj = paramsObject.value(it).toObject();
         data.push_back(row);
@@ -582,5 +572,30 @@ bool RandomVariablesWidget::inputFromJSON(QJsonObject &rvObject)
     tableModel->populateData(data);
 
     return result;
+}
+
+
+void RandomVariablesWidget::handleCellClicked(const QModelIndex &index)
+{
+//    auto row = index.row();
+//    auto col = index.column();
+
+//    if(col != 10)
+//        return;
+
+//    auto distType = theRVTableView->item(row,5).toString();
+
+//    if(distType.isEmpty())
+//        return;
+
+//    if(distType.compare("Normal") == 0)
+//    {
+
+//    }
+//    else if(distType.compare("Lognormal") == 0)
+//    {
+
+//    }
+
 }
 

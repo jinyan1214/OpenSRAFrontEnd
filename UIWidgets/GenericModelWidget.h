@@ -44,8 +44,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class RVTableView;
 class ComboBoxDelegate;
 
+class QLabel;
 class QVBoxLayout;
 class QDialog;
+class QComboBox;
+class QLineEdit;
 
 class GenericModelWidget : public SimCenterAppWidget
 {
@@ -60,17 +63,36 @@ public:
     void copyFiles(QString fileName);
 
 public slots:
-   void clear(void);
+    void clear(void);
+    void addParam(void);
+    void removeParam(void);
+    void handleCellChanged(int row, int col);
+    void handleTypeChanged(int type);
 
 private:
+
+    void sortData(void);
+
+    void generateEquation(void);
+
+    QVector<QVector<QVariant>> data;
     void makeRVWidget(void);
     QVBoxLayout *verticalLayout;
+
+    QLabel* eqnLabelLevel1;
+    QLabel* eqnLabelLevel2;
+    QLabel* eqnLabelLevel3;
 
     ComboBoxDelegate* levelComboDelegate = nullptr;
     ComboBoxDelegate* applyLnComboDelegate = nullptr;
     ComboBoxDelegate* powerComboDelegate = nullptr;
 
+    QLineEdit* aleatoryLE = nullptr;
+    QLineEdit* episLE = nullptr;
+
     RVTableView* theRVTableView = nullptr;
+
+    QComboBox* eqTypeCombo = nullptr;
 };
 
 #endif // RANDOM_VARIABLES_CONTAINER_H

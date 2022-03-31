@@ -255,7 +255,6 @@ void WorkflowAppOpenSRA::initialize(void)
 
     connect(localApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
     connect(this,SIGNAL(setUpForApplicationRunDone(QString&, QString &)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString &)));
-    connect(localApp,SIGNAL(postprocessResults(QString,QString,QString)), this, SLOT(postprocessResults(QString, QString, QString)));
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
@@ -521,22 +520,22 @@ void WorkflowAppOpenSRA::onPreprocessButtonClicked()
         return;
     }
 
+    QString appDir = OpenSRAPreferences::getInstance()->getAppDir();
 
+    auto backEndFilePath = appDir + QDir::separator();
 
-    //auto backEndFilePath = appDir + QDir::separator() + "OpenSRABackend";
+    //Run GIS pre-processing
+    OpenSRAPreProcessor GISPreProcessor(backEndFilePath);
 
-    // Run GIS pre-processing
-    //    OpenSRAPreProcessor GISPreProcessor(backEndFilePath);
+    statusMessage("Starting GIS Preprocessing");
 
-    //    statusMessage("Starting GIS Preprocessing");
+    if(GISPreProcessor.run() != 0)
+    {
+        errorMessage("Failed in GIS Preprocessing step");
+        return;
+    }
 
-//    if(GISPreProcessor.run() != 0)
-//    {
-//        errorMessage("Failed in GIS PreProcessing step");
-//        return false;
-//    }
-
-//    statusMessage("GIS Preprocessing Finished");
+    statusMessage("GIS Preprocessing Finished");
 }
 
 

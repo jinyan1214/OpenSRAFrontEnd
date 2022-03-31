@@ -1,7 +1,5 @@
-#ifndef GENERALINFORMATIONWIDGET_H
-#define GENERALINFORMATIONWIDGET_H
 /* *****************************************************************************
-Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -19,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,37 +36,70 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
-#include "SimCenterAppWidget.h"
+#include "ButtonDelegate.h"
 
-class QComboBox;
-class QVBoxLayout;
-class QLineEdit;
+#include <QPushButton>
+#include <QPainter>
+#include <QApplication>
 
-class GeneralInformationWidget : public SimCenterAppWidget
+ButtonDelegate::ButtonDelegate(QString text, QObject *parent) : QItemDelegate(parent), buttonText(text)
 {
-    Q_OBJECT
 
-public:
-
-    explicit GeneralInformationWidget(QWidget *parent = 0);
-    ~GeneralInformationWidget();
-    bool outputToJSON(QJsonObject &rvObject);
-    bool inputFromJSON(QJsonObject &rvObject);
-
-    void clear(void);
-
-private slots:
-    void chooseDirectoryDialog(void);
-
-private:
-
-    QVBoxLayout* getInfoLayout(void);
-
-    QLineEdit* analysisLineEdit;
-    QLineEdit* workingDirectoryLineEdit;
-
-    QComboBox* unitsCombo;
-};
+}
 
 
-#endif // GENERALINFORMATIONWIDGET_H
+QWidget *ButtonDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &/* option */, const QModelIndex &index) const
+{
+    QPushButton *editor = new QPushButton(buttonText, parent);
+    editor->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    editor->setVisible(true);
+
+    return editor;
+}
+
+
+bool ButtonDelegate::editorEvent(QEvent* event, QAbstractItemModel */*model*/, const QStyleOptionViewItem &/*option*/, const QModelIndex &index)
+{
+    if(event->type() == QEvent::MouseButtonRelease)
+        emit clicked(index);
+
+        return false;
+}
+
+
+void ButtonDelegate::drawFocus(QPainter *painter, const QStyleOptionViewItem &option, const QRect &rect) const
+{
+    QPushButton button(buttonText);
+    button.setGeometry(option.rect);
+    painter->save();
+    painter->translate(option.rect.topLeft());
+    button.render(painter);
+    painter->restore();
+
+    QItemDelegate::drawFocus(painter, option, rect);
+}
+
+void ButtonDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+
+    QPushButton button(buttonText);
+    button.setGeometry(option.rect);
+    painter->save();
+    painter->translate(option.rect.topLeft());
+    button.render(painter);
+    painter->restore();
+
+    QItemDelegate::paint(painter, option, index);
+}
+
+
+
+void ButtonDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &/* index */) const
+{
+    editor->setGeometry(option.rect);
+}
+
+
+
+
+

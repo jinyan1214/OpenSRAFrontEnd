@@ -1,7 +1,7 @@
-#ifndef GENERALINFORMATIONWIDGET_H
-#define GENERALINFORMATIONWIDGET_H
+#ifndef MixedDelegate_H
+#define MixedDelegate_H
 /* *****************************************************************************
-Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -19,7 +19,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,37 +38,45 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
-#include "SimCenterAppWidget.h"
+#include <QItemDelegate>
 
-class QComboBox;
-class QVBoxLayout;
-class QLineEdit;
+class QWidget;
 
-class GeneralInformationWidget : public SimCenterAppWidget
+class MixedDelegate : public QItemDelegate
 {
     Q_OBJECT
 
 public:
+    MixedDelegate(QObject *parent = nullptr);
 
-    explicit GeneralInformationWidget(QWidget *parent = 0);
-    ~GeneralInformationWidget();
-    bool outputToJSON(QJsonObject &rvObject);
-    bool inputFromJSON(QJsonObject &rvObject);
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
-    void clear(void);
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
-private slots:
-    void chooseDirectoryDialog(void);
+    void setEditorData(QWidget *editor, const QModelIndex &index) const;
+
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
+
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+
+    void setItems(const QStringList &newItems);
+
+    void setIsComboBoxEditable(bool newIsEditable);
+
+    void setIsEditable(bool newIsEditable);
+
+public slots:
+    void updateComboBoxValues(const QStringList& vals);
 
 private:
 
-    QVBoxLayout* getInfoLayout(void);
+    bool isPreferred(const QModelIndex &index) const;
 
-    QLineEdit* analysisLineEdit;
-    QLineEdit* workingDirectoryLineEdit;
+    int col = 1;
 
-    QComboBox* unitsCombo;
+    QStringList items;
+
+    bool isEditable = false;
 };
 
-
-#endif // GENERALINFORMATIONWIDGET_H
+#endif // MixedDelegate_H

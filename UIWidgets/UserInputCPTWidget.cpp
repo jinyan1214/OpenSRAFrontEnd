@@ -45,6 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "ComponentTableView.h"
 #include "ComponentTableModel.h"
 #include "AssetInputDelegate.h"
+#include "ClickableLabel.h"
 #include "ComponentDatabaseManager.h"
 
 #include <QApplication>
@@ -88,11 +89,11 @@ UserInputCPTWidget::UserInputCPTWidget(VisualizationWidget* visWidget, QWidget *
     layout->addStretch();
 
     // Test Start
-    eventFile = "/Users/steve/Desktop/SimCenter/Examples/CPTs/CPTSites.csv";
-    cptDataDir = "/Users/steve/Desktop/SimCenter/Examples/CPTs/CPTs";
-    CPTSitesFileLineEdit->setText(eventFile);
-    CPTDirLineEdit->setText(cptDataDir);
-    this->loadUserCPTData();
+//    eventFile = "/Users/steve/Desktop/SimCenter/Examples/CPTs/CPTSites.csv";
+//    cptDataDir = "/Users/steve/Desktop/SimCenter/Examples/CPTs/CPTs";
+//    CPTSitesFileLineEdit->setText(eventFile);
+//    CPTDirLineEdit->setText(cptDataDir);
+//    this->loadUserCPTData();
     // Test end
 }
 
@@ -242,11 +243,36 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
 
     connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseMotionDirDialog()));
     
-    QGroupBox* unitsWidget = new QGroupBox("Units");
-    QVBoxLayout* vbox = new QVBoxLayout(unitsWidget);
+    QGroupBox* unitsWidget = new QGroupBox("Parameters");
+    QGridLayout* vboxLayout = new QGridLayout(unitsWidget);
 
-    QLabel* unitsLabel = new QLabel("Z [placeholder]        qt [placeholder]       fs [placeholder]        u2 [placeholder]");
-    vbox->addWidget(unitsLabel);
+    QLabel* zLabel = new QLabel("Z [placeholder]");
+    ClickableLabel* helpLabelz = new ClickableLabel("?");
+    helpLabelz->setToolTip("Description of z, units, etc.");
+
+    QLabel* qtLabel = new QLabel("qt [placeholder]");
+    ClickableLabel* helpLabelqt = new ClickableLabel("?");
+    helpLabelqt->setToolTip("Description of qt, units, etc.");
+
+    QLabel* fsLabel = new QLabel("fs [placeholder]");
+    ClickableLabel* helpLabelfs = new ClickableLabel("?");
+    helpLabelfs->setToolTip("Description of fs, units, etc.");
+
+    QLabel* u2Label = new QLabel("u2 [placeholder]");
+    ClickableLabel* helpLabelu2 = new ClickableLabel("?");
+    helpLabelu2->setToolTip("Description of u2, units, etc.");
+
+    vboxLayout->addWidget(zLabel,0,0,Qt::AlignRight);
+    vboxLayout->addWidget(helpLabelz,0,1,Qt::AlignLeft);
+
+    vboxLayout->addWidget(qtLabel,0,2,Qt::AlignRight);
+    vboxLayout->addWidget(helpLabelqt,0,3,Qt::AlignLeft);
+
+    vboxLayout->addWidget(fsLabel,1,0,Qt::AlignRight);
+    vboxLayout->addWidget(helpLabelfs,1,1,Qt::AlignLeft);
+
+    vboxLayout->addWidget(u2Label,1,2,Qt::AlignRight);
+    vboxLayout->addWidget(helpLabelu2,1,3,Qt::AlignLeft);
 
     fileLayout->addWidget(selectFolderText,   1,0);
     fileLayout->addWidget(CPTDirLineEdit, 1,1);
@@ -301,8 +327,12 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
     tableSplitter->addWidget(siteListTableWidget);
     tableSplitter->addWidget(siteDataTableWidget);
 
-    fileLayout->addWidget(tableSplitter,4,0,1,3);
-    fileLayout->setRowStretch(5,1);
+    QLabel* tableHeader = new QLabel("CPT Site List. Click on a row in the table to view the CPT values at that site.");
+
+    fileLayout->addWidget(tableHeader,5,0,1,3, Qt::AlignCenter);
+
+    fileLayout->addWidget(tableSplitter,6,0,1,3);
+    fileLayout->setRowStretch(7,1);
 
     //
     // progress bar
