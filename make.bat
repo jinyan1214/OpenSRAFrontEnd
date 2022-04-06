@@ -32,44 +32,59 @@ cd %BATCHPATH%
 
 git clone https://github.com/bzheng10/OpenSRA_dev.git
 git clone https://github.com/NHERI-SimCenter/SimCenterCommon.git
+git clone https://github.com/NHERI-SimCenter/R2DTool.git
 git clone https://github.com/sgavrilovic/OpenSRAFrontEnd
 git clone https://github.com/sgavrilovic/QGISPlugin.git
+
+
+cd QGISPlugin
+git pull
+cd ..
+
+cd R2DTool
+git pull
+cd ..
+
+cd SimCenterCommon
+git pull
+cd ..
+
+
+cd OpenSRAFrontEnd
+git pull
+cd ..
+
+
+cd OpenSRA_dev
+git pull
+cd ..
+
+
 dir
 
-:: Build the backend
-
-cd SimCenterBackendApplications
-mkdir build
-cd build
-cmake .. -G "Visual Studio 16 2019"
-cmake --build . --config Release
-cmake --install .
-cd ..
-cd ..
 
 :: Build OpenSRA
 
-cd OpenSRA_dev
+
 mkdir build
 cd build
-qmake ..\OpenSRA.pro
+qmake ..\OpenSRAFrontEnd\OpenSRA.pro
 set CL=/MP
 nmake
 cd ..
 
-cd ..
 
 :: Run windeployqt to copy over the qt dlls
 
-%QT%\windeployqt.exe %BATCHPATH%OpenSRA_dev\build
+%QT%\windeployqt.exe %BATCHPATH%build
 
 :: Copy over the QGIS files
 
-xcopy /s /y %BATCHPATH%\QGISPlugin\win\DLLs %BATCHPATH%OpenSRA_dev\build\
+xcopy /s /y %BATCHPATH%\QGISPlugin\win\DLLs %BATCHPATH%build\
  
 :: Copy over the QGIS plugins 
 
-xcopy /s /y %BATCHPATH%QGISPlugin\mac\Install\share\qgis %BATCHPATH%OpenSRA_dev\build\
+xcopy /s /y %BATCHPATH%QGISPlugin\mac\Install\share\qgis %BATCHPATH%build\
 
 :: Copy over the example file
 
@@ -79,10 +94,10 @@ xcopy /s /y %BATCHPATH%QGISPlugin\mac\Install\share\qgis %BATCHPATH%OpenSRA_dev\
 
 :: Copy over the backend folder
 
-mkdir %BATCHPATH%OpenSRA_dev\build\OpenSRABackEnd
+mkdir %BATCHPATH%build\OpenSRABackEnd
 
-xcopy /s /y %BATCHPATH%OpenSRABackEnd %BATCHPATH%OpenSRA_dev\build\OpenSRABackEnd\
+xcopy /s /y %BATCHPATH%OpenSRA_dev %BATCHPATH%build\OpenSRABackEnd\
 
 ECHO "Done Building OpenSRA for Windows"
 
-ECHO "You can find OpenSRA.exe in "%BATCHPATH%OpenSRA_dev\build
+ECHO "You can find OpenSRA.exe in "%BATCHPATH%build

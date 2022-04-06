@@ -44,7 +44,7 @@ win32 {
 
 # GIS plugin
 DEFINES +=  Q_GIS
-PATH_TO_QGIS_PLUGIN=../../qgisplugin
+PATH_TO_QGIS_PLUGIN=../qgisplugin
 include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 
 #DEFINES += ARC_GIS
@@ -52,9 +52,9 @@ include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 #include($$PWD/arcgisruntime.pri)
 
 # Specify the path to R2D and common
-PATH_TO_R2D=../../R2DTool/R2DTool
-PATH_TO_COMMON=../../SimCenterCommon
-PATH_TO_BACKEND=../../OpenSRABackEnd
+PATH_TO_R2D=../R2DTool
+PATH_TO_COMMON=../SimCenterCommon
+PATH_TO_BACKEND=../OpenSRA_dev
 
 # To avoid code copying, include the common SimCenter code
 include(OpenSRACommon.pri)
