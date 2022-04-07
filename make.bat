@@ -69,8 +69,9 @@ dir
 mkdir build
 cd build
 qmake ..\OpenSRAFrontEnd\OpenSRA.pro
-set CL=/MP
-nmake
+:: set CL=/MP
+:: nmake
+C:\Qt\Tools\QtCreator\bin\jom\jom.exe
 cd ..
 
 
@@ -80,23 +81,16 @@ cd ..
 
 :: Copy over the QGIS files
 
-xcopy /s /y %BATCHPATH%\QGISPlugin\win\DLLs %BATCHPATH%build\
+>NUL xcopy /s /y %BATCHPATH%\QGISPlugin\win\DLLs %BATCHPATH%build\
  
 :: Copy over the QGIS plugins 
 
-xcopy /s /y %BATCHPATH%QGISPlugin\mac\Install\share\qgis %BATCHPATH%build\
+>NUL xcopy /s /y %BATCHPATH%QGISPlugin\mac\Install\share\qgis %BATCHPATH%build\
 
-:: Copy over the example file
-
-:: mkdir %BATCHPATH%OpenSRA_dev\build\examples
-
-:: copy %BATCHPATH%OpenSRABackEnd\examples\Examples.json %CD%\OpenSRA_dev\build\examples\
-
-:: Copy over the backend folder
 
 mkdir %BATCHPATH%build\OpenSRABackEnd
 
-xcopy /s /y %BATCHPATH%OpenSRA_dev %BATCHPATH%build\OpenSRABackEnd\
+>NUL xcopy /s /y %BATCHPATH%OpenSRA_dev %BATCHPATH%build\OpenSRABackEnd\
 
 ECHO "Done Building OpenSRA for Windows"
 
