@@ -1,6 +1,6 @@
 
 
-QT += core gui charts concurrent network sql webenginewidgets webengine webchannel 3dcore 3drender 3dextras charts xml
+QT += core gui charts concurrent network sql 3dcore 3drender 3dextras charts xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
 
@@ -10,7 +10,7 @@ VERSION=0.4.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\" OpenSRA
 
 # C++17 support
-CONFIG += c++17
+CONFIG += c++17 no_batch
 
 # Full optimization on release
 QMAKE_CXXFLAGS_RELEASE += -O3
@@ -168,8 +168,8 @@ INCLUDEPATH += $$PWD/Utils \
 # Copies over the examples folder into the build directory
 win32 {
 DESTDIR = $$shell_path($$OUT_PWD)
-Release:DESTDIR = $$DESTDIR/release
-Debug:DESTDIR = $$DESTDIR/debug
+#Release:DESTDIR = $$DESTDIR/release
+#Debug:DESTDIR = $$DESTDIR/debug
 
 message($$DESTDIR)
 
