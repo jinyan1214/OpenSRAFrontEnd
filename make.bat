@@ -4,7 +4,7 @@
 :: 1. Create a folder where you want to build OpenSRA
 :: 2. Copy this batch file into the folder. 
 :: 3. Check the paths below to ensure they match the locations of Qt, Python, MSVC, etc., on your system
-:: 4. Run the batch file. The OpenSRA executable will be in the release folder. 
+:: 4. Run the batch file. The OpenSRA executable will be in the build folder. 
 
 ECHO "Starting Build of OpenSRA for Windows"
 
