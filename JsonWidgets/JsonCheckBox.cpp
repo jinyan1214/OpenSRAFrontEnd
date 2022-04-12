@@ -12,7 +12,7 @@ JsonCheckBox::JsonCheckBox(QWidget* parent) : QCheckBox(parent)
 
 bool JsonCheckBox::outputToJSON(QJsonObject &jsonObject)
 {
-    auto key = this->objectName();
+    // auto key = this->objectName();
 
 //    QJsonObject outputObj;
 //    if(subWidget != nullptr)

@@ -184,7 +184,6 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
 #endif
 
     QString javaOutput;
-    QString javaLocation;
 
     {
         QProcess javaProcess;

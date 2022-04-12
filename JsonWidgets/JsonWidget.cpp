@@ -13,7 +13,7 @@ bool JsonWidget::outputToJSON(QJsonObject &jsonObject)
     for(auto&& child : childWidgetList)
         childList<<child->objectName();
 
-    auto thisObj = this->objectName();
+    // auto thisObj = this->objectName();
 
     // qDebug()<<thisObj;
 
@@ -73,7 +73,7 @@ bool JsonWidget::inputFromJSON(QJsonObject &jsonObject)
         childList<<child->objectName();
 
 
-    auto name = this->objectName();
+    //auto name = this->objectName();
 
     auto keys = jsonObject.keys();
 

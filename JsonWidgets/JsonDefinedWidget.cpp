@@ -19,7 +19,7 @@ JsonDefinedWidget::JsonDefinedWidget(QWidget* parent, const QJsonObject& obj, co
     for(auto&& varnt : displayOrderVarList)
         displayOrder.append(varnt.toString());
 
-    auto layout = theWidgetFactory->getLayout(params, parentKey, parent, displayOrder);
+    layout = theWidgetFactory->getLayout(params, parentKey, parent, displayOrder);
 
     this->setLayout(layout);
 }

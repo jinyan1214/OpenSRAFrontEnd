@@ -334,6 +334,7 @@ void RandomVariablesWidget::loadRVsFromJson(void)
     QFile file(RVsFileDir);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         QString message = QString("Error: could not open file") + RVsFileDir;
+        this->errorMessage(message);
     }
     QString val;
     val=file.readAll();
@@ -370,7 +371,7 @@ void RandomVariablesWidget::addRandomVariable(RandomVariable *theRV) {
         //
         // if exists, get index and increment refCount of current RV, deletig new
         //
-        auto aa =theRV->variableName->text();
+        // auto aa =theRV->variableName->text();
         int index = randomVariableNames.indexOf(theRV->variableName->text());
         RandomVariable *theCurrentRV = theRandomVariables.at(index);
         theCurrentRV->refCount = theCurrentRV->refCount+1;

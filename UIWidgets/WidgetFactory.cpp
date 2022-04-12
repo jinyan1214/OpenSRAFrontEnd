@@ -10,6 +10,7 @@
 #include "QGISGasPipelineInputWidget.h"
 #include "WorkflowAppOpenSRA.h"
 #include "PipelineNetworkWidget.h"
+#include "GenericModelWidget.h"
 
 #include <QGroupBox>
 #include <QCheckBox>
@@ -119,10 +120,19 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
             }
             else
             {
-                auto emptyWidget = new QWidget(mainWidget);
-                emptyWidget->setContentsMargins(0,0,0,0);
-                emptyWidget->setObjectName("NULL");
-                comboStackedWidget->addWidget(emptyWidget);
+                // Check for the special case if this is a user-defined model
+                if(key.compare("UserdefinedModel") == 0)
+                {
+                    auto genericModelWidget = new GenericModelWidget();
+                    comboStackedWidget->addWidget(genericModelWidget);
+                }
+                else
+                {
+                    auto emptyWidget = new QWidget();
+                    emptyWidget->setContentsMargins(0,0,0,0);
+                    emptyWidget->setObjectName("NULL");
+                    comboStackedWidget->addWidget(emptyWidget);
+                }
             }
 
             comboWidget->addItem(itemText, key);
@@ -295,7 +305,7 @@ bool WidgetFactory::addWidgetToLayout(const QJsonObject& paramObj, const QString
     if(isNestedComboBoxWidget(paramObj))
     {
         QLabel* widgetLabel = new QLabel(widgetLabelText,this->parentWidget());
-        mainLayout->addWidget(widgetLabel);
+        mainLayout->addWidget(widgetLabel,Qt::AlignTop);
         mainLayout->addWidget(widget);
     }
     else if(widgetType.compare("QWidget") == 0 || widgetType.compare("QCheckBox") == 0)
@@ -309,7 +319,7 @@ bool WidgetFactory::addWidgetToLayout(const QJsonObject& paramObj, const QString
         newHLayout->setMargin(0);
         newHLayout->setSpacing(4);
 
-        newHLayout->addWidget(widgetLabel,0,0);
+        newHLayout->addWidget(widgetLabel,0,0,Qt::AlignTop);
         newHLayout->addWidget(widget,0,1);
 
         mainLayout->addLayout(newHLayout);

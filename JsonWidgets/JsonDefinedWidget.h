@@ -11,6 +11,8 @@ public:
 
 
 private:
+
+    QLayout* layout = nullptr;
 };
 
 #endif // JSONDEFINEDWIDGET_H

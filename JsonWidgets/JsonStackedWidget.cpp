@@ -12,7 +12,7 @@ bool JsonStackedWidget::outputToJSON(QJsonObject &jsonObject)
 
     if(currWidget)
     {
-        auto currWIdgetName = this->currentWidget()->objectName();
+        // auto currWIdgetName = this->currentWidget()->objectName();
 
         currWidget->outputToJSON(jsonObject);
     }

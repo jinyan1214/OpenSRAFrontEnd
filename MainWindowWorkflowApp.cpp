@@ -210,7 +210,7 @@ bool MainWindowWorkflowApp::saveAs()
 
     dialog.exec();
 
-    auto fileToSave = dialog.selectedFiles().first();
+    auto fileToSave = dialog.selectedFiles().constFirst();
 
     // and save the file
     return saveFile(fileToSave);
