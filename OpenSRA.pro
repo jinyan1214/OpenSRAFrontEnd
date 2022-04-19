@@ -10,7 +10,8 @@ VERSION=0.4.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\" OpenSRA
 
 # C++17 support
-CONFIG += c++17 no_batch
+CONFIG += c++17
+# CONFIG += no_batch
 
 # Full optimization on release
 QMAKE_CXXFLAGS_RELEASE += -O3
@@ -166,35 +167,35 @@ INCLUDEPATH += $$PWD/Utils \
 
 
 # Copies over the examples folder into the build directory
-win32 {
-DESTDIR = $$shell_path($$OUT_PWD)
-#Release:DESTDIR = $$DESTDIR/release
-#Debug:DESTDIR = $$DESTDIR/debug
+#win32 {
+#DESTDIR = $$shell_path($$OUT_PWD)
+##Release:DESTDIR = $$DESTDIR/release
+##Debug:DESTDIR = $$DESTDIR/debug
 
-message($$DESTDIR)
+#message($$DESTDIR)
 
-EXAMPLE_FOLDER=$$DESTDIR/Examples
+#EXAMPLE_FOLDER=$$DESTDIR/Examples
 
-BACKEND_FOLDER=$$DESTDIR/OpenSRABackEnd
+#BACKEND_FOLDER=$$DESTDIR/OpenSRABackEnd
 
-} else {
-    mac {
-    EXAMPLE_FOLDER=$$OUT_PWD/OpenSRA.app/Contents/MacOS
-    BACKEND_FOLDER=$$OUT_PWD/OpenSRA.app/Contents/MacOS
+#} else {
+#    mac {
+#    EXAMPLE_FOLDER=$$OUT_PWD/OpenSRA.app/Contents/MacOS
+#    BACKEND_FOLDER=$$OUT_PWD/OpenSRA.app/Contents/MacOS
 
-#    mkpath($$EXAMPLE_FOLDER)
-#    mkpath($$BACKEND_FOLDER)
-    }
-}
+##    mkpath($$EXAMPLE_FOLDER)
+##    mkpath($$BACKEND_FOLDER)
+#    }
+#}
 
-copyExamples.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_BACKEND/examples)) $$shell_quote($$shell_path($$EXAMPLE_FOLDER))
-first.depends = $(first) copyExamples
+#copyExamples.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_BACKEND/examples)) $$shell_quote($$shell_path($$EXAMPLE_FOLDER))
+#first.depends = $(first) copyExamples
 
-copyBackEnd.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_BACKEND)) $$shell_quote($$shell_path($$BACKEND_FOLDER))
-first.depends += $(first) copyBackEnd
+#copyBackEnd.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_BACKEND)) $$shell_quote($$shell_path($$BACKEND_FOLDER))
+#first.depends += $(first) copyBackEnd
 
-export(first.depends)
-export(copyExamples.commands)
-export(copyBackEnd.commands)
+#export(first.depends)
+#export(copyExamples.commands)
+#export(copyBackEnd.commands)
 
-QMAKE_EXTRA_TARGETS += first copyExamples copyBackEnd
+#QMAKE_EXTRA_TARGETS += first copyExamples copyBackEnd

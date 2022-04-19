@@ -733,7 +733,7 @@ void UserInputCPTWidget::loadUserCPTData(void)
     dProvider->addFeatures(featureList);
     mainLayer->updateExtents();
 
-    qgisVizWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Circle,Qt::red,3.0,mainLayer);
+    qgisVizWidget->createSymbolRenderer(Qgis::MarkerShape::Circle,Qt::red,3.0,mainLayer);
 
     listHeadings.prepend("ID");
 
@@ -763,7 +763,7 @@ void UserInputCPTWidget::loadUserCPTData(void)
         return;
     }
 
-    qgisVizWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Circle,Qt::darkBlue,3.0,selectedFeaturesLayer);
+    qgisVizWidget->createSymbolRenderer(Qgis::MarkerShape::Circle,Qt::darkBlue,3.0,selectedFeaturesLayer);
 
     auto pr2 = selectedFeaturesLayer->dataProvider();
 

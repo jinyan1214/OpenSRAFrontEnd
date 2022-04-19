@@ -38,6 +38,7 @@ git clone https://github.com/sgavrilovic/QGISPlugin.git
 
 
 cd QGISPlugin
+git checkout QGISUpdate
 git pull
 cd ..
 
