@@ -37,6 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
 #include "RVTableModel.h"
+#include "RV.h"
 
 #include <QDataStream>
 #include <QDebug>
@@ -58,14 +59,11 @@ RVTableModel::~RVTableModel()
 
 
 // Create a method to populate the model with data:
-void RVTableModel::populateData(const QVector<QVector<QVariant>>& data)
+void RVTableModel::populateData(const QVector<RV>& data)
 {
     tableData = data;
 
-    numRows = rowCount();
-    numCols = columnCount();
-
-    emit layoutChanged();
+    this->update();
 
     return;
 }
@@ -80,6 +78,15 @@ void RVTableModel::clear(void)
     headerStringList.clear();
 }
 
+
+void RVTableModel::update()
+{
+    numRows = rowCount();
+    numCols = columnCount();
+
+    emit layoutChanged();
+
+}
 
 Qt::ItemFlags RVTableModel::flags(const QModelIndex &index) const
 {
@@ -127,6 +134,8 @@ bool RVTableModel::setData(const QModelIndex &index, const QVariant &value, int 
     if (!index.isValid() || role != Qt::EditRole || value == "")
         return false;
 
+
+
     auto col = index.column();
     auto row = index.row();
 
@@ -161,7 +170,54 @@ QVariant RVTableModel::item(const int row, const int col) const
 }
 
 
-QVector<QVector<QVariant>>& RVTableModel::getTableData()
+void RVTableModel::addRandomVariable(const RV& newRV)
+{
+    tableData.push_back(newRV);
+
+    this->update();
+}
+
+
+int RVTableModel::getNumRVs()
+{
+    return tableData.size();
+}
+
+
+bool RVTableModel::removeRandomVariable(const RV& RVRemove)
+{
+    auto rvName = RVRemove.getName();
+
+    return this->removeRandomVariable(rvName);
+}
+
+
+bool RVTableModel::removeRandomVariable(const QString& rvName)
+{
+    if(tableData.isEmpty())
+        return false;
+
+    auto removeIdx = -1;
+
+    for(int i = 0; i<tableData.size(); ++i)
+    {
+        if(tableData.at(i).getName().compare(rvName) == 0)
+        {
+            removeIdx = i;
+            break;
+        }
+    }
+
+    if(removeIdx == -1)
+        return false;
+
+    tableData.remove(removeIdx);
+
+    return true;
+}
+
+
+QVector<RV>& RVTableModel::getRandomVariables()
 {
     return tableData;
 }

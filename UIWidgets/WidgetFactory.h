@@ -6,6 +6,7 @@
 #include <QJsonObject>
 
 class ComponentInputWidget;
+class RandomVariablesWidget;
 
 class QFormLayout;
 class QBoxLayout;
@@ -33,6 +34,8 @@ private:
     bool isNestedComboBoxWidget(const QJsonObject& obj);
 
     ComponentInputWidget* parentInputWidget;
+
+    RandomVariablesWidget* theRVWidget = nullptr;
 };
 
 #endif // WIDGETFACTORY_H

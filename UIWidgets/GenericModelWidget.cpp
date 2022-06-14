@@ -49,11 +49,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QJsonArray>
+#include <QJsonObject>
 #include <QJsonDocument>
 #include <QLineEdit>
 #include <QFileDialog>
 
-GenericModelWidget::GenericModelWidget(QWidget *parent) : SimCenterAppWidget(parent)
+GenericModelWidget::GenericModelWidget(QString parName, QWidget *parent) : SimCenterAppWidget(parent), parentName(parName)
 {
     verticalLayout = new QVBoxLayout(this);
     verticalLayout->setMargin(2);
@@ -105,6 +106,7 @@ void GenericModelWidget::makeRVWidget(void)
 
     verticalLayout->addLayout(titleLayout);
     theRVTableView = new RVTableView();
+    theRVTableView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     verticalLayout->addWidget(theRVTableView);
     verticalLayout->addLayout(buttonLayout);
@@ -167,7 +169,7 @@ void GenericModelWidget::makeRVWidget(void)
     verticalLayout->addWidget(eqnGB);
 
     RVTableModel* tableModel = theRVTableView->getTableModel();
-    QStringList headers = {"Level","Coeff. Mean", "Coeff. Sigma","RV Label", "Apply Ln", "Power"};
+    QStringList headers = {"RV Name","Level","Coeff. Mean", "Coeff. Sigma", "Apply Ln", "Power"};
     tableModel->setHeaderStringList(headers);
     theRVTableView->show();
 
@@ -175,7 +177,7 @@ void GenericModelWidget::makeRVWidget(void)
     levelComboDelegate = new ComboBoxDelegate(this);
     QStringList levelTypes = {"1","2","3"};
     levelComboDelegate->setItems(levelTypes);
-    theRVTableView->setItemDelegateForColumn(0, levelComboDelegate);
+    theRVTableView->setItemDelegateForColumn(1, levelComboDelegate);
 
     connect(theRVTableView->getTableModel(),SIGNAL(handleCellChanged(int,int)),this,SLOT(handleCellChanged(int,int)));
 
@@ -195,27 +197,11 @@ void GenericModelWidget::makeRVWidget(void)
 
     // Add five random levels
     for(int i = 0; i<5; ++i)
-    {
-        // "Level","Coeff. Mean", "Coeff. Sigma","RV Label", "Apply Ln", "Power"
-        QVector<QVariant> row(6);
-
-        row[0] = rand() % 3 + 1;
-        row[1] = QVariant(rand() % 5 + 1);
-        row[2] = QVariant(0.5);
-        row[3] = QVariant("RV_"+QString::number(i));
-        row[4] = rand() % 10 < 5 ? true : false;
-        row[5] = QVariant(rand() % 2);
-
-        // auto itObj = paramsObject.value(it).toObject();
-        data.push_back(row);
-    }
-
-    this->sortData();
-    tableModel->populateData(data);
+        this->addParam();
 
     this->generateEquation();
 
-    verticalLayout->addStretch(1);
+//    verticalLayout->addStretch(1);
 }
 
 
@@ -226,10 +212,10 @@ void GenericModelWidget::sortData(void)
         return;
 
     // Sorting function to sort according to level
-    auto sortFxn = [](QVector<QVariant>& rowA, QVector<QVariant>& rowB) -> bool
+    auto sortFxn = [](RV& rowA, RV& rowB) -> bool
     {
-        auto a = rowA.front().toInt();
-        auto b = rowB.front().toInt();
+        auto a = rowA[1].toInt();
+        auto b = rowB[1].toInt();
 
         return a < b ? true : false;
     };
@@ -251,18 +237,31 @@ void GenericModelWidget::clear(void) {
 bool GenericModelWidget::outputToJSON(QJsonObject &rvObject) {
 
     bool result = true;
-    //    QJsonArray rvArray;
-    //    for (int i = 0; i <theRandomVariables.size(); ++i) {
-    //        QJsonObject rv;
-    //        if (theRandomVariables.at(i)->outputToJSON(rv)) {
-    //            rvArray.append(rv);
-    //        } else {
-    //            qDebug() << "OUTPUT FAILED" << theRandomVariables.at(i)->variableName->text();
-    //            result = false;
-    //        }
-    //    }
 
-    //    rvObject["randomVariables"]=rvArray;
+    QJsonArray rvArray;
+
+    auto tableModel = theRVTableView->getTableModel();
+
+    auto tableHeaders = tableModel->getHeaderStringList();
+
+    for (int i = 0; i <theRVTableView->rowCount(); ++i)
+    {
+
+        QJsonObject rv;
+
+        for (int j = 0; j <tableHeaders.size(); ++j)
+        {
+            auto headerStr = tableHeaders.at(j);
+
+            QString val = tableModel->item(i,j).toString();
+
+            rv.insert(headerStr,val);
+        }
+
+        rvArray.append(rv);
+    }
+
+    rvObject["randomVariables"]=rvArray;
 
     return result;
 }
@@ -271,7 +270,7 @@ bool GenericModelWidget::outputToJSON(QJsonObject &rvObject) {
 void GenericModelWidget::addParam(void)
 {
     auto i = data.size();
-    QVector<QVariant> row(6);
+    RV newRV(6);
 
     int level = 1;
 
@@ -282,18 +281,24 @@ void GenericModelWidget::addParam(void)
     if(level > 3)
         level = 3;
 
-    row[0] = level;
-    row[1] = QVariant(rand() % 5 + 1);
-    row[2] = QVariant(0.5);
-    row[3] = QVariant("RV_"+QString::number(i));
-    row[4] = rand() % 10 < 5 ? true : false;
-    row[5] = QVariant(rand() % 2);
+    newRV[0] = QVariant("RV_"+QString::number(i)+"-"+parentName);
+    newRV[1] = level;
+    newRV[2] = QVariant(rand() % 5 + 1);
+    newRV[3] = QVariant(0.5);
+    newRV[4] = rand() % 10 < 5 ? true : false;
+    newRV[5] = QVariant(rand() % 2);
 
-    data.append(row);
+    newRV.setName(newRV[0].toString());
+
+    data.append(newRV);
 
     this->sortData();
     RVTableModel* tableModel = theRVTableView->getTableModel();
     tableModel->populateData(data);
+
+    this->generateEquation();
+
+    emit RVadded(newRV,parentName);
 }
 
 
@@ -310,8 +315,13 @@ void GenericModelWidget::removeParam(void)
 
     for(auto&& it: selectedRows)
     {
+        if(!it.isValid())
+            continue;
+
         auto rowNum = it.row();
-        data.remove(rowNum);
+
+        if(rowNum<=data.size()-1)
+            data.remove(rowNum);
     }
 
     this->sortData();
@@ -320,15 +330,10 @@ void GenericModelWidget::removeParam(void)
 }
 
 
-void GenericModelWidget::copyFiles(QString fileDir)
-{
-    Q_UNUSED(fileDir);
-
-}
-
-
 bool GenericModelWidget::inputFromJSON(QJsonObject &rvObject)
 {
+    Q_UNUSED(rvObject);
+
     bool result = true;
 
     return result;
@@ -357,7 +362,7 @@ void GenericModelWidget::generateEquation(void)
 
     for(int i = 0; i<numRows; ++i)
     {
-        auto rvName = data[i][3].toString();
+        auto rvName = data[i][0].toString();
         auto applyLn = data[i][4].toBool();
         auto pow = data[i][5].toInt();
 
@@ -392,7 +397,7 @@ void GenericModelWidget::generateEquation(void)
             }
         }
 
-        auto level = data[i][0].toInt();
+        auto level = data[i][1].toInt();
 
         if(level == 1)
             level1Str += str;

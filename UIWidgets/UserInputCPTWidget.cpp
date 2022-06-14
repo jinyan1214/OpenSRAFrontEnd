@@ -327,7 +327,8 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
     tableSplitter->addWidget(siteListTableWidget);
     tableSplitter->addWidget(siteDataTableWidget);
 
-    QLabel* tableHeader = new QLabel("CPT Site List. Click on a row in the table to view the CPT values at that site.");
+    tableHeader = new QLabel("CPT Site List. Click on a row in the table to view the CPT values at that site.");
+    tableHeader->hide();
 
     fileLayout->addWidget(tableHeader,5,0,1,3, Qt::AlignCenter);
 
@@ -512,6 +513,7 @@ void UserInputCPTWidget::clear(void)
 
     siteListTableWidget->hide();
     siteDataTableWidget->hide();
+    tableHeader->hide();
 
     CPTSitesFileLineEdit->clear();
     CPTDirLineEdit->clear();
@@ -733,7 +735,7 @@ void UserInputCPTWidget::loadUserCPTData(void)
     dProvider->addFeatures(featureList);
     mainLayer->updateExtents();
 
-    qgisVizWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Circle,Qt::red,3.0,mainLayer);
+    qgisVizWidget->createSymbolRenderer(Qgis::MarkerShape::Circle,Qt::red,3.0,mainLayer);
 
     listHeadings.prepend("ID");
 
@@ -763,7 +765,7 @@ void UserInputCPTWidget::loadUserCPTData(void)
         return;
     }
 
-    qgisVizWidget->createSymbolRenderer(QgsSimpleMarkerSymbolLayerBase::Circle,Qt::darkBlue,3.0,selectedFeaturesLayer);
+    qgisVizWidget->createSymbolRenderer(Qgis::MarkerShape::Circle,Qt::darkBlue,3.0,selectedFeaturesLayer);
 
     auto pr2 = selectedFeaturesLayer->dataProvider();
 
@@ -835,7 +837,10 @@ void UserInputCPTWidget::hideProgressBar(void)
 void UserInputCPTWidget::handleRowSelect(const QModelIndex &index)
 {
     if(siteDataTableWidget->isHidden())
+    {
+        tableHeader->show();
         siteDataTableWidget->show();
+    }
 
     auto row = index.row();
 

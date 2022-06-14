@@ -45,9 +45,6 @@ GeospatialDataWidget::GeospatialDataWidget(QWidget *parent, VisualizationWidget*
 {
     cptInputWidget = new UserInputCPTWidget(visualizationWidget, this);
     this->addComponent("CPT Borehole Input", "CPTs", cptInputWidget);
-
-    genericModelWidget = new GenericModelWidget();
-    this->addComponent("Test Generic Model Widget", "GM", genericModelWidget);
 }
 
 

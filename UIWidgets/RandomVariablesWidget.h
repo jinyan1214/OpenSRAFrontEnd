@@ -37,9 +37,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
+#include "RV.h"
+
 #include <SimCenterWidget.h>
 
-class RandomVariable;
 class RVTableView;
 class ComboBoxDelegate;
 class MixedDelegate;
@@ -55,38 +56,27 @@ public:
     explicit RandomVariablesWidget(QWidget *parent = 0);
     ~RandomVariablesWidget();
 
-    void addRandomVariable(RandomVariable *theRV);
     bool inputFromJSON(QJsonObject &rvObject);
     bool outputToJSON(QJsonObject &rvObject);
 
     //void setInitialConstantRVs(QStringList &varNamesAndValues);
 
-    void addRandomVariable(QString &rvName);
-    void addRVs(QStringList &varNames);
-    void addRVsWithValues(QStringList &varNames);  
-    void addConstantRVs(QStringList &varNamesAndValues);
-    void addUniformRVs(QStringList &varNamesAndValues);
-    void addNormalRVs(QStringList &varNamesAndValues);
-
-    void removeRandomVariable(QString &varName);
-    void removeRandomVariables(QStringList &varNames);
+    void addRVs(QVector<RV>& RVs);
 
     QStringList getRandomVariableNames(void);
-    int getNumRandomVariables(void);
-    QVector<RandomVariable *> getRVdists(void);
-    void copyRVs(RandomVariablesWidget *oldRVcontainers);
-    void copyFiles(QString fileName);
 
 public slots:
-   void addRandomVariable(void);
-   void removeRandomVariable(void);
-   void handleCellChanged(int row, int col);
-   void handleCellClicked(const QModelIndex &index);
 
-   void loadRVsFromJson(void);
-   void saveRVsToJson(void);
+    bool addRandomVariable(const RV& newRV, QString fromModel);
+    void removeRandomVariable(QString &varName);
 
-   void clear(void);
+    void handleCellChanged(int row, int col);
+    void handleCellClicked(const QModelIndex &index);
+
+    void loadRVsFromJson(void);
+    void saveRVsToJson(void);
+
+    void clear(void);
 
 private:
     int addRVsType;
@@ -99,11 +89,15 @@ private:
 
     RVTableView* theRVTableView = nullptr;
 
-    QVector<RandomVariable *>theRandomVariables;
     QCheckBox *checkbox;
 
     QStringList tableHeaders;
     QStringList randomVariableNames;
+
+    // Function to check if an RV exists
+    bool checkIfRVexists(const QString& name);
+
+    RV createNewRV(QString name, QString fromModel);
 };
 
 #endif // RANDOM_VARIABLES_CONTAINER_H

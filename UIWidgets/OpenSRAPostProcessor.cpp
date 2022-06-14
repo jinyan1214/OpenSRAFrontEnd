@@ -405,7 +405,7 @@ void OpenSRAPostProcessor::importResults(const QString& pathToResults)
 
 
     // Get the pipelines database
-    thePipelineDb = ComponentDatabaseManager::getInstance()->getPipelineComponentDb();
+    thePipelineDb = ComponentDatabaseManager::getInstance()->getGasPipelineComponentDb();
 
     if(thePipelineDb == nullptr)
     {
@@ -515,7 +515,7 @@ int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
     }
 
     // Get the pipelines database
-    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getPipelineComponentDb();
+    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getGasPipelineComponentDb();
 
     if(thePipelineDB == nullptr)
     {
@@ -1022,7 +1022,7 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
     }
 
     // Get the pipelines database
-    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getPipelineComponentDb();
+    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getGasPipelineComponentDb();
 
     if(thePipelineDB == nullptr)
     {
@@ -1101,7 +1101,7 @@ void OpenSRAPostProcessor::clearAll(void)
 {
 
     // Get the pipelines database
-    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getPipelineComponentDb();
+    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getGasPipelineComponentDb();
 
     if(thePipelineDB == nullptr)
     {

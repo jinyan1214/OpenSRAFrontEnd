@@ -40,6 +40,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QAbstractTableModel>
 
+class RV;
+
 class RVTableModel : public QAbstractTableModel
 {
     Q_OBJECT
@@ -55,7 +57,7 @@ public:
 
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole)  Q_DECL_OVERRIDE;
 
-    void populateData(const QVector<QVector<QVariant>>& data);
+    void populateData(const QVector<RV>& data);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
     int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
@@ -64,11 +66,18 @@ public:
 
     QVariant item(const int row, const int col) const;
 
-    QVector<QVector<QVariant>>& getTableData();
+    void addRandomVariable(const RV& newRV);
+
+    bool removeRandomVariable(const RV& RVRemove);
+    bool removeRandomVariable(const QString& rvName);
+
+    QVector<RV>& getRandomVariables();
 
     QStringList getHeaderStringList() const;
 
     void setHeaderStringList(const QStringList &newHeaderStringList);
+
+    int getNumRVs();
 
 signals:
 
@@ -76,7 +85,9 @@ signals:
 
 private:
 
-    QVector<QVector<QVariant>> tableData;
+    void update();
+
+    QVector<RV> tableData;
     QStringList headerStringList;
 
     int numRows;

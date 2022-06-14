@@ -18,7 +18,7 @@ class EDPLandslideWidget : public SimCenterAppWidget
 public:
     EDPLandslideWidget(QWidget* parent = nullptr);
 
-    QGroupBox* getWidgetBox(void);
+    QWidget* getWidgetBox(void);
 
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);

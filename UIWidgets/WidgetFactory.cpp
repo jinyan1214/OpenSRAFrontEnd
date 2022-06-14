@@ -1,4 +1,5 @@
 ﻿#include "WidgetFactory.h"
+
 #include "JsonDefinedWidget.h"
 #include "JsonStackedWidget.h"
 #include "JsonCheckBox.h"
@@ -9,8 +10,9 @@
 #include "ComponentInputWidget.h"
 #include "QGISGasPipelineInputWidget.h"
 #include "WorkflowAppOpenSRA.h"
-#include "PipelineNetworkWidget.h"
 #include "GenericModelWidget.h"
+#include "PipelineNetworkWidget.h"
+#include "RandomVariablesWidget.h"
 
 #include <QGroupBox>
 #include <QCheckBox>
@@ -24,6 +26,7 @@
 WidgetFactory::WidgetFactory(ComponentInputWidget *parent) : SimCenterWidget(parent), parentInputWidget(parent)
 {
     this->setObjectName("NULL");
+
 }
 
 
@@ -64,6 +67,9 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
 
     if(comboItems.empty() == true || obj["ToDisplay"].toBool() == false)
         return nullptr;
+
+    if(theRVWidget == nullptr)
+        theRVWidget = WorkflowAppOpenSRA::getInstance()->getTheRandomVariableWidget();
 
     JsonWidget* mainWidget = new JsonWidget(parent);
     mainWidget->setContentsMargins(0,0,0,0);
@@ -123,8 +129,12 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
                 // Check for the special case if this is a user-defined model
                 if(key.compare("UserdefinedModel") == 0)
                 {
-                    auto genericModelWidget = new GenericModelWidget();
-                    comboStackedWidget->addWidget(genericModelWidget);
+                    auto parentName = parent->objectName();
+
+                    auto genModelWidget = new GenericModelWidget(parentName);
+                    comboStackedWidget->addWidget(genModelWidget);
+
+                    connect(genModelWidget, &GenericModelWidget::RVadded, theRVWidget, &RandomVariablesWidget::addRandomVariable);
                 }
                 else
                 {

@@ -234,6 +234,7 @@ void WorkflowAppOpenSRA::initialize(void)
 
     // Create the various widgets
     thePipelineNetworkWidget = new PipelineNetworkWidget(this,theVisualizationWidget);
+    theRandomVariableWidget = new RandomVariablesWidget(this);
     theGenInfoWidget = new GeneralInformationWidget(this);
     theUQWidget = new UncertaintyQuantificationWidget(this);
     theIntensityMeasureWidget = new IntensityMeasureWidget(theVisualizationWidget, this);
@@ -241,7 +242,6 @@ void WorkflowAppOpenSRA::initialize(void)
     theEDPWidget = new EngDemandParamWidget(this);
     theCustomVisualizationWidget = new CustomVisualizationWidget(this,theVisualizationWidget);
     theDecisionVariableWidget = new DecisionVariableWidget(this);
-    theRandomVariableWidget = new RandomVariablesWidget(this);
     theResultsWidget = new ResultsWidget(this,theVisualizationWidget);
     theGISDataWidget = new GeospatialDataWidget(this,theVisualizationWidget);
 
@@ -269,7 +269,7 @@ void WorkflowAppOpenSRA::initialize(void)
 
     theComponentSelection->addComponent(QString("Visualization"), theCustomVisualizationWidget);
     theComponentSelection->addComponent(QString("General\nInformation"), theGenInfoWidget);
-    theComponentSelection->addComponent(QString("GIS\nData"), theGISDataWidget);
+    theComponentSelection->addComponent(QString("GIS Data"), theGISDataWidget);
     theComponentSelection->addComponent(QString("Sampling\nMethod"), theUQWidget);
     theComponentSelection->addComponent(QString("Infrastructure"), thePipelineNetworkWidget);
     theComponentSelection->addComponent(QString("Intensity\nMeasure"), theIntensityMeasureWidget);
@@ -699,6 +699,12 @@ void WorkflowAppOpenSRA::errorMessage(QString message)
 void WorkflowAppOpenSRA::fatalMessage(QString message)
 {
     progressDialog->appendErrorMessage(message);
+}
+
+
+RandomVariablesWidget *WorkflowAppOpenSRA::getTheRandomVariableWidget() const
+{
+    return theRandomVariableWidget;
 }
 
 

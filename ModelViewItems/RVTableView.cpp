@@ -64,6 +64,19 @@ RVTableView::RVTableView(QWidget *parent) : QTableView(parent)
 }
 
 
+void RVTableView::adjustTableSize()
+{
+    this->resizeColumnToContents(0);
+    this->resizeColumnToContents(1);
+    this->resizeColumnToContents(2);
+
+    QRect rect = this->geometry();
+    rect.setWidth(2 + this->verticalHeader()->width() +
+            this->columnWidth(0) + this->columnWidth(1) + this->columnWidth(2));
+    this->setGeometry(rect);
+}
+
+
 void RVTableView::clear(void)
 {
     tableModel->clear();

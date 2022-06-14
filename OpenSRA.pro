@@ -72,6 +72,7 @@ SOURCES += main.cpp \
     JsonWidgets/SimCenterJsonWidget.cpp \
     ModelViewItems/ComboBoxDelegate.cpp \
     ModelViewItems/ButtonDelegate.cpp \
+    ModelViewItems/RV.cpp \
     UIWidgets/ClickableLabel.cpp \
     UIWidgets/DVRepairRateWidget.cpp \
     UIWidgets/EDPLandslideWidget.cpp \
@@ -118,6 +119,7 @@ HEADERS  += \
     JsonWidgets/JsonGroupBoxWidget.h \
     ModelViewItems/ComboBoxDelegate.h \
     ModelViewItems/ButtonDelegate.h \
+    ModelViewItems/RV.h \
     OpenSRAUserPass.h \
     UIWidgets/ClickableLabel.h \
     UIWidgets/DVRepairRateWidget.h \
@@ -187,14 +189,14 @@ BACKEND_FOLDER=$$DESTDIR/OpenSRABackEnd
     }
 }
 
-copyExamples.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_BACKEND/examples)) $$shell_quote($$shell_path($$EXAMPLE_FOLDER))
-first.depends = $(first) copyExamples
+#copyExamples.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_BACKEND/examples)) $$shell_quote($$shell_path($$EXAMPLE_FOLDER))
+#first.depends = $(first) copyExamples
 
-copyBackEnd.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_BACKEND)) $$shell_quote($$shell_path($$BACKEND_FOLDER))
-first.depends += $(first) copyBackEnd
+#copyBackEnd.commands = $(COPY_DIR) $$shell_quote($$shell_path($$PATH_TO_BACKEND)) $$shell_quote($$shell_path($$BACKEND_FOLDER))
+#first.depends += $(first) copyBackEnd
 
-export(first.depends)
-export(copyExamples.commands)
-export(copyBackEnd.commands)
+#export(first.depends)
+#export(copyExamples.commands)
+#export(copyBackEnd.commands)
 
 QMAKE_EXTRA_TARGETS += first copyExamples copyBackEnd

@@ -3,6 +3,7 @@
 
 #include <QJsonArray>
 #include <QVariantList>
+#include <QScrollArea>
 
 JsonDefinedWidget::JsonDefinedWidget(QWidget* parent, const QJsonObject& obj, const QString parentKey) : JsonWidget(parent)
 {

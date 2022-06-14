@@ -17,6 +17,7 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QScrollArea>
 
 
 EDPLandslideWidget::EDPLandslideWidget(QWidget* parent) : SimCenterAppWidget(parent)
@@ -32,32 +33,15 @@ EDPLandslideWidget::EDPLandslideWidget(QWidget* parent) : SimCenterAppWidget(par
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
 
-    auto mainWidget = this->getWidgetBox();
+    QWidget* mainWidget = new QWidget();
+    QVBoxLayout* inputLayout = new QVBoxLayout(mainWidget);
 
-    if(mainWidget)
-        splitter->addWidget(mainWidget);
+    auto boxWidget = this->getWidgetBox();
+    boxWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    splitter->addWidget(listWidget);
+    inputLayout->addWidget(boxWidget);
 
-    mainLayout->addWidget(splitter);
-}
-
-
-QGroupBox* EDPLandslideWidget::getWidgetBox(void)
-{
-    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
-
-    QJsonObject thisObj = methodsAndParams["EngineeringDemandParameter"].toObject()[this->objectName()].toObject();
-
-    if(thisObj.isEmpty())
-    {
-        this->errorMessage("Json object is empty in EDPLandslideWidget");
-        return nullptr;
-    }
-
-    QGroupBox* groupBox = new QGroupBox(this->objectName());
-    groupBox->setContentsMargins(0,0,0,0);
-    groupBox->setFlat(true);
+    // Add the weight and add to run list button at the bottom
 
     auto smallVSpacer = new QSpacerItem(0,20);
 
@@ -76,15 +60,43 @@ QGroupBox* EDPLandslideWidget::getWidgetBox(void)
 
     connect(addRunListButton,&QPushButton::clicked, this, &EDPLandslideWidget::handleAddButtonPressed);
 
-    // Add a vertical spacer at the bottom to push everything up
-    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
-
     QHBoxLayout* weightLayout = new QHBoxLayout();
     weightLayout->setMargin(0);
     weightLayout->addWidget(weightLabel,Qt::AlignLeft);
     weightLayout->addWidget(weightLineEdit);
     weightLayout->setStretch(0,0);
     weightLayout->setStretch(1,1);
+
+    inputLayout->addItem(smallVSpacer);
+
+    inputLayout->addLayout(weightLayout);
+
+    inputLayout->addWidget(addRunListButton,Qt::AlignCenter);
+
+    if(mainWidget)
+        splitter->addWidget(mainWidget);
+
+    splitter->addWidget(listWidget);
+
+    mainLayout->addWidget(splitter);
+}
+
+
+QWidget* EDPLandslideWidget::getWidgetBox(void)
+{    
+    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
+
+    QJsonObject thisObj = methodsAndParams["EngineeringDemandParameter"].toObject()[this->objectName()].toObject();
+
+    if(thisObj.isEmpty())
+    {
+        this->errorMessage("Json object is empty in EDPLandslideWidget");
+        return nullptr;
+    }
+
+    QGroupBox* groupBox = new QGroupBox(this->objectName());
+    groupBox->setContentsMargins(0,0,0,0);
+    groupBox->setFlat(true);
 
     // Remove the yield acceleration widget before creating the main widget, this will be treated as a special case
     auto paramObj = thisObj.value("Params").toObject();
@@ -95,13 +107,23 @@ QGroupBox* EDPLandslideWidget::getWidgetBox(void)
 
     methodWidget = new JsonDefinedWidget(this, thisObj, this->objectName());
     methodWidget->setObjectName("MethodWidget");
+
+    QScrollArea *sa = new QScrollArea;
+    sa->setWidgetResizable(true);
+    sa->setLineWidth(0);
+    sa->setFrameShape(QFrame::NoFrame);
+    sa->setWidget(groupBox);
+    sa->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
     yieldAccMethodWidget = this->getYieldMethodWidget();
     yieldAccParametersWidget = this->getYieldAccWidget();
     yieldAccParametersWidget->setObjectName("YieldAccWidget");
 
     QVBoxLayout* mainLayout = new QVBoxLayout(groupBox);
 
-    QHBoxLayout* yieldAccLayout = new QHBoxLayout();
+    QWidget* yieldAccWidget = new QWidget();
+
+    QHBoxLayout* yieldAccLayout = new QHBoxLayout(yieldAccWidget);
     yieldAccLayout->setMargin(0);
     yieldAccLayout->addWidget(yieldAccMethodWidget);
     yieldAccLayout->addWidget(yieldAccParametersWidget);
@@ -111,21 +133,14 @@ QGroupBox* EDPLandslideWidget::getWidgetBox(void)
     QVBoxLayout* inputLayout = new QVBoxLayout();
     inputLayout->setMargin(0);
     inputLayout->addWidget(methodWidget);
-    inputLayout->addLayout(yieldAccLayout);
-    inputLayout->addStretch();
+    inputLayout->addWidget(yieldAccWidget);
+//    inputLayout->setStretch(0,1);
+//    inputLayout->setStretch(1,1);
 
     mainLayout->addLayout(inputLayout);
 
-    mainLayout->addStretch(1);
 
-    mainLayout->addItem(smallVSpacer);
-
-    mainLayout->addLayout(weightLayout);
-
-    mainLayout->addWidget(addRunListButton,Qt::AlignCenter);
-    mainLayout->addItem(vspacer);
-
-    return groupBox;
+    return sa;
 }
 
 

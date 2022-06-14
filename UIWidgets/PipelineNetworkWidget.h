@@ -38,13 +38,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
-#include <SimCenterAppWidget.h>
+#include <MultiComponentR2D.h>
 
 class QGroupBox;
 class QGISGasPipelineInputWidget;
+class QGISWellsCaprocksInputWidget;
+class QGISAboveGroundGasNetworkInputWidget;
 class VisualizationWidget;
 
-class PipelineNetworkWidget : public  SimCenterAppWidget
+class PipelineNetworkWidget : public  MultiComponentR2D
 {
     Q_OBJECT
 
@@ -66,7 +68,9 @@ public slots:
 
 private:
 
-    QGISGasPipelineInputWidget* theComponentInputWidget;
+    QGISGasPipelineInputWidget* theComponentInputWidget = nullptr;
+    QGISWellsCaprocksInputWidget* theWellsCaprocksWidget = nullptr;
+    QGISAboveGroundGasNetworkInputWidget* theAboveGroundInfWidget = nullptr;
 
     VisualizationWidget* theVisualizationWidget;
 };

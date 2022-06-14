@@ -107,6 +107,7 @@ private:
     QStackedWidget* theStackedWidget = nullptr;
     ComponentDatabase*  theComponentDb = nullptr;
 
+    QLabel* tableHeader = nullptr;
     ComponentTableView* siteListTableWidget = nullptr;
     ComponentTableView* siteDataTableWidget = nullptr;
 

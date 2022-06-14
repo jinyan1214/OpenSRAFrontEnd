@@ -63,6 +63,8 @@ public:
 
     QVariant item(int row, int col);
 
+    void adjustTableSize();
+
 private:
     RVTableModel* tableModel = nullptr;
 };

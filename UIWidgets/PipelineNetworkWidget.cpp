@@ -41,6 +41,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterComponentSelection.h"
 #include "ComponentTableView.h"
 #include "QGISGasPipelineInputWidget.h"
+#include "QGISWellsCaprocksInputWidget.h"
+#include "QGISAboveGroundGasNetworkInputWidget.h"
+
 #include "VisualizationWidget.h"
 
 #include <QHBoxLayout>
@@ -59,7 +62,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 
 PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidget* visWidget)
-    : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
+    : MultiComponentR2D(parent), theVisualizationWidget(visWidget)
 {
     this->setContentsMargins(0,0,0,0);
 
@@ -87,13 +90,18 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     theComponentInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
     theComponentInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
 
-    mainLayout->addWidget(theComponentInputWidget);
+    theWellsCaprocksWidget = new QGISWellsCaprocksInputWidget(this, theVisualizationWidget, "Wells and Caprocks","Wells and Caprocks");
 
-    mainLayout->addStretch();
+    theAboveGroundInfWidget = new QGISAboveGroundGasNetworkInputWidget(this, theVisualizationWidget, "Above Ground Gas Infrastructures","Above ground infrastructure");
+
+    this->addComponent("Pipelines", theComponentInputWidget);
+    this->addComponent("Wells and Caprocks", theWellsCaprocksWidget);
+    this->addComponent("Above Ground \nGas Infrastructure", theAboveGroundInfWidget);
+
 
     // Test to remove start
-//    theComponentInputWidget->loadFileFromPath("/Users/steve/Downloads/10000_random_sites_in_ca.csv");
-//    theComponentInputWidget->selectAllComponents();
+    //    theComponentInputWidget->loadFileFromPath("/Users/steve/Downloads/10000_random_sites_in_ca.csv");
+    //    theComponentInputWidget->selectAllComponents();
     // Test to remove end
 
 }

@@ -1,6 +1,5 @@
-#ifndef RANDOM_VARIABLES_CONTAINER_H
-#define RANDOM_VARIABLES_CONTAINER_H
-
+#ifndef GenericModelWidget_H
+#define GenericModelWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -40,6 +39,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Created by: Dr. Stevan Gavrilovic, UC Berkeley
 
 #include <SimCenterAppWidget.h>
+#include <RV.h>
+
+#include <QVariant>
 
 class RVTableView;
 class ComboBoxDelegate;
@@ -54,13 +56,11 @@ class GenericModelWidget : public SimCenterAppWidget
 {
     Q_OBJECT
 public:
-    explicit GenericModelWidget(QWidget *parent = 0);
+    explicit GenericModelWidget(QString parName, QWidget *parent = 0);
     ~GenericModelWidget();
 
     bool inputFromJSON(QJsonObject &rvObject);
     bool outputToJSON(QJsonObject &rvObject);
-
-    void copyFiles(QString fileName);
 
 public slots:
     void clear(void);
@@ -69,13 +69,16 @@ public slots:
     void handleCellChanged(int row, int col);
     void handleTypeChanged(int type);
 
+signals:
+    void RVadded(RV newRV, QString fromModel);
+
 private:
 
     void sortData(void);
 
     void generateEquation(void);
 
-    QVector<QVector<QVariant>> data;
+    QVector<RV> data;
     void makeRVWidget(void);
     QVBoxLayout *verticalLayout;
 
@@ -93,6 +96,8 @@ private:
     RVTableView* theRVTableView = nullptr;
 
     QComboBox* eqTypeCombo = nullptr;
+
+    QString parentName;
 };
 
-#endif // RANDOM_VARIABLES_CONTAINER_H
+#endif // GenericModelWidget_H

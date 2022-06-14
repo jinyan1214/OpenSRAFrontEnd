@@ -42,7 +42,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class UserInputCPTWidget;
 class VisualizationWidget;
-class GenericModelWidget;
 
 class GeospatialDataWidget : public  SimCenterAppSelection
 {
@@ -58,7 +57,6 @@ private:
 
     UserInputCPTWidget* cptInputWidget = nullptr;
     VisualizationWidget* visualizationWidget = nullptr;
-    GenericModelWidget* genericModelWidget = nullptr;
 };
 
 #endif // GeospatialDataWidget_H

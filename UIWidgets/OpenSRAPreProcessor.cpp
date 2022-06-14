@@ -74,7 +74,7 @@ int OpenSRAPreProcessor::run()
 
     // Get the pipeline network widget
     // Get the pipelines database
-    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getPipelineComponentDb();
+    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getGasPipelineComponentDb();
 
     if(thePipelineDB == nullptr)
     {        
