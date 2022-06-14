@@ -64,7 +64,7 @@ RandomVariablesWidget::RandomVariablesWidget(QWidget *parent) : SimCenterWidget(
 
     tableHeaders = QStringList({"Name","Source", "Mean", "Sigma","CoV","Distribution Type","Distribution Min", "Distribution Max", "Units","From Model"/*,"Plot Distribution"*/});
 
-    this->makeRVWidget();
+   // this->makeRVWidget();
 }
 
 
@@ -159,7 +159,7 @@ void RandomVariablesWidget::makeRVWidget(void)
     theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
 
-    verticalLayout->addStretch(1);
+    //verticalLayout->addStretch(1);
 }
 
 

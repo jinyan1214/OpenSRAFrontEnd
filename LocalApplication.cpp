@@ -204,6 +204,8 @@ LocalApplication::setupDoneRunApplication(QString &/*tmpDirectory*/, QString &in
         statusMessage(javaOutput);
     }
 
+    QString javaLocation;
+
 #ifdef Q_OS_WIN
     {
         QProcess javaInstallation;

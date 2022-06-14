@@ -69,7 +69,9 @@ int main(int argc, char *argv[])
 
     // Set up the application
     // Start the Application
+
     QgsApplication a( argc, argv, true );
+
 
     auto prefs = OpenSRAPreferences::getInstance();
 
