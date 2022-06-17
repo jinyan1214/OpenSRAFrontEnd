@@ -1,3 +1,41 @@
+/* *****************************************************************************
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of the FreeBSD Project.
+
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+*************************************************************************** */
+
+// Written by: Stevan Gavrilovic
+
 #include "EDPLandslideWidget.h"
 #include "CustomListWidget.h"
 #include "TreeItem.h"
@@ -5,6 +43,7 @@
 #include "JsonDefinedWidget.h"
 #include "JsonWidget.h"
 #include "WidgetFactory.h"
+#include "AddToRunListWidget.h"
 
 #include <QCheckBox>
 #include <QSplitter>
@@ -20,11 +59,12 @@
 #include <QScrollArea>
 
 
-EDPLandslideWidget::EDPLandslideWidget(QWidget* parent) : SimCenterAppWidget(parent)
+EDPLandslideWidget::EDPLandslideWidget(QJsonObject obj, QWidget* parent) : SimCenterAppWidget(parent)
 {
     this->setObjectName("Landslide");
 
     QSplitter *splitter = new QSplitter(this);
+    splitter->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     listWidget = new CustomListWidget("List of Cases to Run", this);
 
@@ -32,46 +72,38 @@ EDPLandslideWidget::EDPLandslideWidget(QWidget* parent) : SimCenterAppWidget(par
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0,0,0,0);
 
     QWidget* mainWidget = new QWidget();
-    QVBoxLayout* inputLayout = new QVBoxLayout(mainWidget);
+    mainWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    auto boxWidget = this->getWidgetBox();
+    QVBoxLayout* inputLayout = new QVBoxLayout(mainWidget);
+    inputLayout->setMargin(0);
+    inputLayout->setContentsMargins(5,0,0,0);
+
+    auto boxWidget = this->getWidgetBox(obj);
+
+    if(boxWidget == nullptr)
+    {
+        this->errorMessage("Failed to create the main widget in EDPLandslideWidget");
+        return;
+    }
+
     boxWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     inputLayout->addWidget(boxWidget);
 
     // Add the weight and add to run list button at the bottom
+    addRunListWidget = new AddToRunListWidget();
 
-    auto smallVSpacer = new QSpacerItem(0,20);
+//    // Add a vertical spacer at the bottom to push everything up
+//    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
+//    inputLayout->addItem(vspacer);
 
-    QDoubleValidator* validator = new QDoubleValidator(this);
-    validator->setRange(0.0,1.0,5);
-
-    auto weightLabel = new QLabel("Model Weight:");
-    weightLineEdit = new QLineEdit(this);
-    weightLineEdit->setText("1.0");
-    weightLineEdit->setValidator(validator);
-    weightLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-
-    QPushButton *addRunListButton = new QPushButton(this);
-    addRunListButton->setText(tr("Add run to list"));
-    addRunListButton->setMinimumWidth(250);
-
-    connect(addRunListButton,&QPushButton::clicked, this, &EDPLandslideWidget::handleAddButtonPressed);
-
-    QHBoxLayout* weightLayout = new QHBoxLayout();
-    weightLayout->setMargin(0);
-    weightLayout->addWidget(weightLabel,Qt::AlignLeft);
-    weightLayout->addWidget(weightLineEdit);
-    weightLayout->setStretch(0,0);
-    weightLayout->setStretch(1,1);
-
-    inputLayout->addItem(smallVSpacer);
-
-    inputLayout->addLayout(weightLayout);
-
-    inputLayout->addWidget(addRunListButton,Qt::AlignCenter);
+    connect(addRunListWidget,&AddToRunListWidget::addToRunListButtonPressed, this, &EDPLandslideWidget::handleAddButtonPressed);
+    inputLayout->addWidget(addRunListWidget,Qt::AlignBottom);
+    inputLayout->setStretch(0,1);
+    inputLayout->setStretch(1,0);
 
     if(mainWidget)
         splitter->addWidget(mainWidget);
@@ -82,13 +114,9 @@ EDPLandslideWidget::EDPLandslideWidget(QWidget* parent) : SimCenterAppWidget(par
 }
 
 
-QWidget* EDPLandslideWidget::getWidgetBox(void)
+QWidget* EDPLandslideWidget::getWidgetBox(QJsonObject& obj)
 {    
-    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
-
-    QJsonObject thisObj = methodsAndParams["EngineeringDemandParameter"].toObject()[this->objectName()].toObject();
-
-    if(thisObj.isEmpty())
+    if(obj.isEmpty())
     {
         this->errorMessage("Json object is empty in EDPLandslideWidget");
         return nullptr;
@@ -98,14 +126,17 @@ QWidget* EDPLandslideWidget::getWidgetBox(void)
     groupBox->setContentsMargins(0,0,0,0);
     groupBox->setFlat(true);
 
+    // Create a backup of the original object
+    auto origObj = obj;
+
     // Remove the yield acceleration widget before creating the main widget, this will be treated as a special case
-    auto paramObj = thisObj.value("Params").toObject();
+    auto paramObj = obj.value("Params").toObject();
 
     paramObj.remove("YieldAcceleration");
 
-    thisObj["Params"] = paramObj;
+    obj["Params"] = paramObj;
 
-    methodWidget = new JsonDefinedWidget(this, thisObj, this->objectName());
+    methodWidget = new JsonDefinedWidget(this, obj, this->objectName());
     methodWidget->setObjectName("MethodWidget");
 
     QScrollArea *sa = new QScrollArea;
@@ -115,8 +146,8 @@ QWidget* EDPLandslideWidget::getWidgetBox(void)
     sa->setWidget(groupBox);
     sa->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    yieldAccMethodWidget = this->getYieldMethodWidget();
-    yieldAccParametersWidget = this->getYieldAccWidget();
+    yieldAccMethodWidget = this->getYieldMethodWidget(origObj);
+    yieldAccParametersWidget = this->getYieldAccWidget(origObj);
     yieldAccParametersWidget->setObjectName("YieldAccWidget");
 
     QVBoxLayout* mainLayout = new QVBoxLayout(groupBox);
@@ -138,7 +169,6 @@ QWidget* EDPLandslideWidget::getWidgetBox(void)
 //    inputLayout->setStretch(1,1);
 
     mainLayout->addLayout(inputLayout);
-
 
     return sa;
 }
@@ -169,9 +199,10 @@ void EDPLandslideWidget::handleAddButtonPressed(void)
 
     methodObj = methodObj.value(key).toObject();
 
-    // Add the model weight
-    double weight = weightLineEdit->text().toDouble();
-    methodObj["ModelWeight"] = weight;
+    // Add the model weight, epistemic uncertainty, aleatory variability to json obj
+    addRunListWidget->outputToJSON(methodObj);
+
+    // Add the epistemic variabli
 
     // Add the yield acceleration method
     yieldAccMethodWidget->outputToJSON(methodObj);
@@ -192,7 +223,8 @@ void EDPLandslideWidget::handleAddButtonPressed(void)
 
     finalObj["Key"] = key;
     finalObj["ModelName"] = name;
-    finalObj["ModelWeight"] = weight;
+
+    addRunListWidget->outputToJSON(finalObj);
 
     // qDebug()<<finalObj;
 
@@ -262,16 +294,17 @@ bool EDPLandslideWidget::inputFromJSON(QJsonObject &jsonObject)
 
 void EDPLandslideWidget::clear()
 {
+    methodWidget->reset();
+    yieldAccParametersWidget->reset();
+    yieldAccMethodWidget->reset();
     listWidget->clear();
-    weightLineEdit->clear();
+    addRunListWidget->clear();
 }
 
 
-JsonWidget* EDPLandslideWidget::getYieldMethodWidget()
+JsonWidget* EDPLandslideWidget::getYieldMethodWidget(const QJsonObject& obj)
 {
-    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
-
-    QJsonObject thisObj = methodsAndParams["EngineeringDemandParameter"].toObject()[this->objectName()].toObject()["Params"].toObject()["YieldAcceleration"].toObject();
+    QJsonObject thisObj = obj.value("Params").toObject()["YieldAcceleration"].toObject();
 
     if(thisObj.isEmpty())
     {
@@ -318,12 +351,10 @@ JsonWidget* EDPLandslideWidget::getYieldMethodWidget()
 }
 
 
-JsonWidget* EDPLandslideWidget::getYieldAccWidget()
+JsonWidget* EDPLandslideWidget::getYieldAccWidget(const QJsonObject& obj)
 {
 
-    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
-
-    QJsonObject thisObj = methodsAndParams["EngineeringDemandParameter"].toObject()[this->objectName()].toObject()["Params"].toObject()["YieldAcceleration"].toObject();
+    QJsonObject thisObj = obj.value("Params").toObject()["YieldAcceleration"].toObject();
 
     if(thisObj.isEmpty())
     {
@@ -387,9 +418,9 @@ void EDPLandslideWidget::handleListItemSelected(const QModelIndex& index)
 
     methodObj[itemKey] = itemObj[itemKey];
 
-    auto modelWeight = methodObj.value(itemKey).toObject().value("ModelWeight").toDouble();
+    auto modelListObj = methodObj.value(itemKey).toObject();
 
-    weightLineEdit->setText(QString::number(modelWeight));
+    addRunListWidget->inputFromJSON(modelListObj);
 
     QJsonObject landslideObj;
     landslideObj["Method"] = methodObj;

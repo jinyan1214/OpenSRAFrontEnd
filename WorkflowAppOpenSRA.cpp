@@ -37,10 +37,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "CustomizedItemModel.h"
-#include "DamageMeasureWidget.h"
 #include "GeospatialDataWidget.h"
-#include "DecisionVariableWidget.h"
-#include "EngDemandParamWidget.h"
+#include "MultiComponentEDPWidget.h"
+#include "MultiComponentDVWidget.h"
+#include "MultiComponentDMWidget.h"
 #include "RandomVariablesWidget.h"
 #include "UIWidgets/GeneralInformationWidget.h"
 #include "UIWidgets/IntensityMeasureWidget.h"
@@ -120,61 +120,32 @@ WorkflowAppOpenSRA::~WorkflowAppOpenSRA()
 void WorkflowAppOpenSRA::initialize(void)
 {
 
-    // Load the methods and params json file
-    QString fileName = QCoreApplication::applicationDirPath() + QDir::separator() + "OpenSRABackEnd" + QDir::separator() + "MethodsAndParams.json";
+    // Load the common methods and params json file
+    QString commonPath = QCoreApplication::applicationDirPath() + QDir::separator() + "OpenSRABackEnd" + QDir::separator() + "methods_params_doc" + QDir::separator() + "common.json";
 
-    QFileInfo fileInfo(fileName);
-    if (!fileInfo.exists()){
-        this->errorMessage(QString("The methods and params file does not exist! ") + fileName);
-    }
+    methodsAndParamsObj = getMethodAndParamsObj(commonPath);
 
-    QString dirPath = fileInfo.absoluteDir().absolutePath();
-    QDir::setCurrent(dirPath);
 
-    QFile file(fileName);
-    if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        this->errorMessage(QString("Could Not Open File: ") + fileName);
-    }
+    // Load the below ground methods and params json file
+    QString belowGroundPath = QCoreApplication::applicationDirPath() + QDir::separator() + "OpenSRABackEnd" + QDir::separator() + "methods_params_doc" + QDir::separator() + "below_ground.json";
 
-    //
-    // place contents of file into json object
-    //
+    auto belowGroundObj = getMethodAndParamsObj(belowGroundPath);
 
-    QString val;
-    val=file.readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(val.toUtf8());
-    methodsAndParamsObj = doc.object();
+    methodsAndParamsObj.insert("BelowGround",belowGroundObj);
 
-    // close file
-    file.close();
+    // Load the above ground methods and params
+    QString aboveGroundPath = QCoreApplication::applicationDirPath() + QDir::separator() + "OpenSRABackEnd" + QDir::separator() + "methods_params_doc" + QDir::separator() + "above_ground.json";
 
-    if(methodsAndParamsObj.isEmpty())
-    {
-        this->errorMessage("The methods and parameters file is empty");
-        return;
-    }
+    auto aboveGroundObj = getMethodAndParamsObj(aboveGroundPath);
 
-    // Get the human read-able names of the json objects
-    std::function<void(const QJsonObject&)> recursiveObj = [&](const QJsonObject& objects){
+    methodsAndParamsObj.insert("AboveGround",aboveGroundObj);
 
-        QJsonObject::const_iterator objIt;
-        for (objIt = objects.begin(); objIt != objects.end(); ++objIt)
-        {
-            auto obj = objIt.value().toObject();
+    // Load the wells and caprocks methods and params
+    QString wellsAndCaprocksPath = QCoreApplication::applicationDirPath() + QDir::separator() + "OpenSRABackEnd" + QDir::separator() + "methods_params_doc" + QDir::separator() + "wells_caprocks.json";
 
-            auto name = obj["NameToDisplay"].toString();
-            if(!name.isEmpty())
-            {
-                auto key = objIt.key();
-                methodsParamsMap.insert(key,name);
-            }
+    auto wellsCaprocksObj = getMethodAndParamsObj(wellsAndCaprocksPath);
 
-            if(!obj.isEmpty())
-                recursiveObj(objIt.value().toObject());
-        }
-    };
-
-    recursiveObj(methodsAndParamsObj);
+    methodsAndParamsObj.insert("WellsCaprocks",wellsCaprocksObj);
 
     // Create the edit menu with the clear action
     QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
@@ -238,10 +209,10 @@ void WorkflowAppOpenSRA::initialize(void)
     theGenInfoWidget = new GeneralInformationWidget(this);
     theUQWidget = new UncertaintyQuantificationWidget(this);
     theIntensityMeasureWidget = new IntensityMeasureWidget(theVisualizationWidget, this);
-    theDamageMeasureWidget = new DamageMeasureWidget(this);
-    theEDPWidget = new EngDemandParamWidget(this);
+    theDamageMeasureWidget = new MultiComponentDMWidget(this);
+    theEDPWidget = new MultiComponentEDPWidget(this);
     theCustomVisualizationWidget = new CustomVisualizationWidget(this,theVisualizationWidget);
-    theDecisionVariableWidget = new DecisionVariableWidget(this);
+    theDecisionVariableWidget = new MultiComponentDVWidget(this);
     theResultsWidget = new ResultsWidget(this,theVisualizationWidget);
     theGISDataWidget = new GeospatialDataWidget(this,theVisualizationWidget);
 
@@ -250,6 +221,9 @@ void WorkflowAppOpenSRA::initialize(void)
     localApp = new LocalApplication("OpenSRA.py",theMainWindow);
     theRunWidget = new RunWidget(localApp, theWidgets, 0);
 
+    connect(thePipelineNetworkWidget,&MultiComponentR2D::selectionChangedSignal,theEDPWidget,&MultiComponentEDPWidget::handleWidgetSelected);
+    connect(thePipelineNetworkWidget,&MultiComponentR2D::selectionChangedSignal,theDamageMeasureWidget,&MultiComponentDMWidget::handleWidgetSelected);
+    connect(thePipelineNetworkWidget,&MultiComponentR2D::selectionChangedSignal,theDecisionVariableWidget,&MultiComponentDVWidget::handleWidgetSelected);
 
     connect(this,SIGNAL(sendInfoMessage(QString)),this,SLOT(infoMessage(QString)));
 
@@ -270,13 +244,13 @@ void WorkflowAppOpenSRA::initialize(void)
     theComponentSelection->addComponent(QString("Visualization"), theCustomVisualizationWidget);
     theComponentSelection->addComponent(QString("General\nInformation"), theGenInfoWidget);
     theComponentSelection->addComponent(QString("GIS Data"), theGISDataWidget);
-    theComponentSelection->addComponent(QString("Sampling\nMethod"), theUQWidget);
+//    theComponentSelection->addComponent(QString("Sampling\nMethod"), theUQWidget);
     theComponentSelection->addComponent(QString("Infrastructure"), thePipelineNetworkWidget);
-    theComponentSelection->addComponent(QString("Intensity\nMeasure"), theIntensityMeasureWidget);
-    theComponentSelection->addComponent(QString("Engineering\nDemand\nParameter"), theEDPWidget);
-    theComponentSelection->addComponent(QString("Damage\nMeasure"), theDamageMeasureWidget);
     theComponentSelection->addComponent(QString("Decision\nVariable"), theDecisionVariableWidget);
-    theComponentSelection->addComponent(QString("Random\nVariables"), theRandomVariableWidget);
+    theComponentSelection->addComponent(QString("Damage\nMeasure"), theDamageMeasureWidget);
+    theComponentSelection->addComponent(QString("Engineering\nDemand\nParameter"), theEDPWidget);
+    theComponentSelection->addComponent(QString("Intensity\nMeasure"), theIntensityMeasureWidget);
+    theComponentSelection->addComponent(QString("Input\nVariables"), theRandomVariableWidget);
     theComponentSelection->addComponent(QString("Results"), theResultsWidget);
     theComponentSelection->setWidth(120);
     theComponentSelection->setItemWidthHeight(120,70);
@@ -291,6 +265,75 @@ void WorkflowAppOpenSRA::initialize(void)
 //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex6_UserInputModelParams/Input/SetupConfig.json");
 
 //    theResultsWidget->processResults("/Users/steve/Desktop/ResToDelete/");
+}
+
+
+QJsonObject WorkflowAppOpenSRA::getMethodAndParamsObj(const QString& path)
+{
+    QFileInfo fileInfo(path);
+    if (!fileInfo.exists()){
+        this->errorMessage(QString("The methods and params file does not exist! ") + path);
+    }
+
+    QString dirPath = fileInfo.absoluteDir().absolutePath();
+    QDir::setCurrent(dirPath);
+
+    QFile file(path);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        this->errorMessage(QString("Could Not Open File: ") + path);
+    }
+
+    //
+    // place contents of file into json object
+    //
+
+    QString val;
+    val=file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(val.toUtf8());
+    auto thisMethodsAndParamsObj = doc.object();
+
+    // close file
+    file.close();
+
+    if(thisMethodsAndParamsObj.isEmpty())
+    {
+        this->errorMessage("The methods and parameters file is empty");
+        return QJsonObject();
+    }
+
+    // Get the human read-able names of the json objects
+    std::function<void(const QJsonObject&)> recursiveObj = [&](const QJsonObject& objects){
+
+        QJsonObject::const_iterator objIt;
+        for (objIt = objects.begin(); objIt != objects.end(); ++objIt)
+        {
+            auto obj = objIt.value().toObject();
+
+            auto name = obj["NameToDisplay"].toString();
+            if(!name.isEmpty())
+            {
+                auto key = objIt.key();
+
+                if(methodsParamsMap.contains(key))
+                {
+//                    this->errorMessage("Error, the methods and params map already contains the key "+key);
+//                    auto oldVal = methodsParamsMap.value(key);
+//                    auto newVal = name;
+//                    this->errorMessage("Old Val "+oldVal+" new val "+newVal);
+                    continue;
+                }
+
+                methodsParamsMap.insert(key,name);
+            }
+
+            if(!obj.isEmpty())
+                recursiveObj(objIt.value().toObject());
+        }
+    };
+
+    recursiveObj(thisMethodsAndParamsObj);
+
+    return thisMethodsAndParamsObj;
 }
 
 

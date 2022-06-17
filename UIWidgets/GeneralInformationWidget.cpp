@@ -103,7 +103,7 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     directoryObj.insert("Working",workDir.absolutePath());
 
     outputObj.insert("AnalysisID",analysisLineEdit->text());
-    outputObj.insert("UnitSystem",unitsCombo->currentText());
+//    outputObj.insert("UnitSystem",unitsCombo->currentText());
     outputObj.insert("Directory", directoryObj);
     outputObj.insert("OutputFileType", "csv");
 
@@ -135,8 +135,8 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject)
     auto analysisID = jsonObject["AnalysisID"].toString();
     analysisLineEdit->setText(analysisID);
 
-    auto unitsSystem = jsonObject["UnitSystem"].toString();
-    unitsCombo->setCurrentText(unitsSystem);
+//    auto unitsSystem = jsonObject["UnitSystem"].toString();
+//    unitsCombo->setCurrentText(unitsSystem);
 
     return true;
 }
@@ -160,13 +160,13 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     analysisLineEdit->setText("Analysis_ID");
     analysisLineEdit->setMaximumWidth(500);
 
-    auto unitSystemLabel = new QLabel("Unit System:", this);
-    unitsCombo = new QComboBox();
-    unitsCombo->addItem("SI (km)");
-    unitsCombo->setCurrentIndex(0);
-    unitsCombo->setMaximumWidth(500);
-    unitsCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
-    unitsCombo->setToolTip("This is an example tool tip. It can be long or short. I dont know what else to write here -Steve");
+//    auto unitSystemLabel = new QLabel("Unit System:", this);
+//    unitsCombo = new QComboBox();
+//    unitsCombo->addItem("SI (km)");
+//    unitsCombo->setCurrentIndex(0);
+//    unitsCombo->setMaximumWidth(500);
+//    unitsCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+//    unitsCombo->setToolTip("This is an example tool tip. It can be long or short. I dont know what else to write here -Steve");
 
     QPushButton *loadFileButton = new QPushButton(this);
     loadFileButton->setText(tr("Browse"));
@@ -215,18 +215,18 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     workingDirLayout->addWidget(helpLabel2);
     workingDirLayout->addStretch();
 
-    ClickableLabel* helpLabel3 = new ClickableLabel("  ?");
-    helpLabel3->setToolTip("Select the analysis unit system.");
+//    ClickableLabel* helpLabel3 = new ClickableLabel("  ?");
+//    helpLabel3->setToolTip("Select the analysis unit system.");
 
-    QHBoxLayout* unitsLayout = new QHBoxLayout();
-    unitsLayout->addWidget(unitSystemLabel);
-    unitsLayout->addWidget(unitsCombo);
-    unitsLayout->addWidget(helpLabel3);
-    unitsLayout->addStretch();
+//    QHBoxLayout* unitsLayout = new QHBoxLayout();
+//    unitsLayout->addWidget(unitSystemLabel);
+//    unitsLayout->addWidget(unitsCombo);
+//    unitsLayout->addWidget(helpLabel3);
+//    unitsLayout->addStretch();
 
     layout->addLayout(analysisNameLayout);
     layout->addLayout(workingDirLayout);
-    layout->addLayout(unitsLayout);
+//    layout->addLayout(unitsLayout);
 
     layout->addWidget(assessmentSetupLabel);
 

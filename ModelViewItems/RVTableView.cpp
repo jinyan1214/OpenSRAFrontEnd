@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "VisualizationWidget.h"
 
 #include <QDebug>
+#include <QScrollBar>
 #include <QMenu>
 #include <QVariant>
 #include <QHeaderView>
@@ -49,32 +50,39 @@ RVTableView::RVTableView(QWidget *parent) : QTableView(parent)
 {
     tableModel = new RVTableModel();
     this->setModel(tableModel);
-    this->hide();
     this->setToolTip("Specify the random variables");
     this->verticalHeader()->setVisible(false);
     this->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    //this->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
     this->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
-    this->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
 
     this->setEditTriggers(EditTrigger::DoubleClicked);
     this->setSelectionMode(SelectionMode::SingleSelection);
 }
 
 
-void RVTableView::adjustTableSize()
+void RVTableView::resizeEvent(QResizeEvent *event)
 {
-    this->resizeColumnToContents(0);
-    this->resizeColumnToContents(1);
-    this->resizeColumnToContents(2);
+    Q_UNUSED(event);
 
-    QRect rect = this->geometry();
-    rect.setWidth(2 + this->verticalHeader()->width() +
-            this->columnWidth(0) + this->columnWidth(1) + this->columnWidth(2));
-    this->setGeometry(rect);
+//    auto height = this->horizontalHeader()->height();
+
+//    for(int i = 0; i<this->rowCount(); ++i)
+//    {
+//        height += this->rowHeight(i);
+//    }
+
+//    if (this->horizontalScrollBar()->isVisible())
+//        height += this->horizontalScrollBar()->height();
+
+//    this->setMinimumHeight(height + 2);
 }
+
 
 
 void RVTableView::clear(void)

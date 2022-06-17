@@ -62,9 +62,10 @@ RandomVariablesWidget::RandomVariablesWidget(QWidget *parent) : SimCenterWidget(
     verticalLayout->setMargin(2);
     verticalLayout->setSpacing(2);
 
-    tableHeaders = QStringList({"Name","Source", "Mean", "Sigma","CoV","Distribution Type","Distribution Min", "Distribution Max", "Units","From Model"/*,"Plot Distribution"*/});
+    RVTableHeaders = QStringList({"Name","Source", "Mean", "Sigma","CoV","Distribution Type","Distribution Min", "Distribution Max", "Units","From Model"/*,"Plot Distribution"*/});
+    constantTableHeaders = QStringList({"Name","Source", "Value", "Units", "From Model"});
 
-   // this->makeRVWidget();
+    this->makeRVWidget();
 }
 
 
@@ -93,21 +94,26 @@ void RandomVariablesWidget::makeRVWidget(void)
     //titleLayout->setMargin(10);
 
     SectionTitle *title=new SectionTitle();
-    title->setText(tr("Random Variables"));
+    title->setText(tr("Input Variables"));
     title->setMinimumWidth(250);
 
     titleLayout->addWidget(title);
 
     verticalLayout->addLayout(titleLayout);
+
+    QLabel* rvLabel = new QLabel("Random Variables");
+    rvLabel->setStyleSheet("font-weight: bold; color: black");
+    verticalLayout->addWidget(rvLabel,0,Qt::AlignHCenter);
+
     theRVTableView = new RVTableView();
 
     theRVTableView->setWordWrap(true);
     theRVTableView->setTextElideMode(Qt::ElideNone);
 
-    verticalLayout->addWidget(theRVTableView);
-
     RVTableModel* tableModel = theRVTableView->getTableModel();
-    tableModel->setHeaderStringList(tableHeaders);
+    tableModel->setHeaderStringList(RVTableHeaders);
+
+    verticalLayout->addWidget(theRVTableView);
 
     // Source type
     sourceComboDelegate = new ComboBoxDelegate(this);
@@ -147,19 +153,29 @@ void RandomVariablesWidget::makeRVWidget(void)
 
     theRVTableView->setItemDelegateForColumn(9, labDelegate);
 
-    // Plot button
-    //    auto plotButtonDelegate = new ButtonDelegate("Plot",this);
-    //    theRVTableView->setItemDelegateForColumn(10, plotButtonDelegate);
-
-    //    connect(plotButtonDelegate,&ButtonDelegate::clicked,this,&RandomVariablesWidget::handleCellClicked);
-
-
     theRVTableView->setEditTriggers(QAbstractItemView::AllEditTriggers);
 
     theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
 
-    //verticalLayout->addStretch(1);
+    // The constant table
+    QLabel* constLabel = new QLabel("Constant Variables");
+    constLabel->setStyleSheet("font-weight: bold; color: black");
+    verticalLayout->addWidget(constLabel,0,Qt::AlignHCenter);
+
+    theConstantTableView = new RVTableView();
+
+    theConstantTableView->setWordWrap(true);
+    theConstantTableView->setTextElideMode(Qt::ElideNone);
+
+    RVTableModel* constTableModel = theConstantTableView->getTableModel();
+    constTableModel->setHeaderStringList(constantTableHeaders);
+
+    verticalLayout->addWidget(theConstantTableView);
+
+
+
+    verticalLayout->addStretch(1);
 }
 
 
@@ -231,7 +247,7 @@ void RandomVariablesWidget::clear(void)
     theRVTableView->clear();
     //theRVTableView->hide();
 
-    theRVTableView->getTableModel()->setHeaderStringList(tableHeaders);
+    theRVTableView->getTableModel()->setHeaderStringList(RVTableHeaders);
 }
 
 
@@ -341,7 +357,7 @@ bool RandomVariablesWidget::checkIfRVexists(const QString& name)
 
 RV RandomVariablesWidget::createNewRV(QString name, QString fromModel)
 {
-    auto numCols = tableHeaders.size();
+    auto numCols = RVTableHeaders.size();
 
     RV newRV(numCols);
 

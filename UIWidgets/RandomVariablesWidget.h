@@ -88,10 +88,12 @@ private:
     MixedDelegate* colDataComboDelegate = nullptr;
 
     RVTableView* theRVTableView = nullptr;
+    RVTableView* theConstantTableView = nullptr;
 
     QCheckBox *checkbox;
 
-    QStringList tableHeaders;
+    QStringList constantTableHeaders;
+    QStringList RVTableHeaders;
     QStringList randomVariableNames;
 
     // Function to check if an RV exists

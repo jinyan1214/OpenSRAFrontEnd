@@ -70,7 +70,7 @@ IntensityMeasureWidget::IntensityMeasureWidget(VisualizationWidget* visWidget, Q
     this->setContentsMargins(0,0,0,0);
 
     IMSelectCombo = new QComboBox(this);
-    IMSelectCombo->addItem("OpenSHA (Preferred)","OpenSHA");
+    IMSelectCombo->addItem("UCERF3 (Preferred)","OpenSHA");
     IMSelectCombo->addItem("ShakeMap","ShakeMap");
     //    IMSelectCombo->addItem("User-defined");
     IMSelectCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
@@ -95,9 +95,9 @@ IntensityMeasureWidget::IntensityMeasureWidget(VisualizationWidget* visWidget, Q
     theHeaderLayout->addItem(spacer);
     theHeaderLayout->addWidget(IMSelectCombo);
 
-    auto IMBox = this->getIMBox();
+//    auto IMBox = this->getIMBox();
 
-    auto corrBox = this->getCorrelationWidget();
+//    auto corrBox = this->getCorrelationWidget();
 
     openSHA = new OpenSHAWidget(this);
     shakeMap = new ShakeMapWidget(visWidget);
@@ -114,8 +114,8 @@ IntensityMeasureWidget::IntensityMeasureWidget(VisualizationWidget* visWidget, Q
 
     mainLayout->addLayout(theHeaderLayout);
     mainLayout->addWidget(mainPanel);
-    mainLayout->addWidget(IMBox);
-    mainLayout->addWidget(corrBox);
+//    mainLayout->addWidget(IMBox);
+//    mainLayout->addWidget(corrBox);
     mainLayout->addStretch(1);
 
 }
@@ -170,37 +170,37 @@ bool IntensityMeasureWidget::outputToJSON(QJsonObject &jsonObject)
 
     IMobj["SourceForIM"] = sourceIM;
 
-    QJsonObject typeObject;
-    res = typeWidget->outputToJSON(typeObject);
+//    QJsonObject typeObject;
+//    res = typeWidget->outputToJSON(typeObject);
 
-    if(!res)
-    {
-        this->errorMessage("Error in the json output of intensity measure type");
-        return false;
-    }
+//    if(!res)
+//    {
+//        this->errorMessage("Error in the json output of intensity measure type");
+//        return false;
+//    }
 
-    QJsonObject::const_iterator typeObj;
-    for (typeObj = typeObject.begin(); typeObj != typeObject.end(); ++typeObj)
-    {
-        auto key = typeObj.key();
-        IMobj[key] = typeObj.value().toObject();
-    }
+//    QJsonObject::const_iterator typeObj;
+//    for (typeObj = typeObject.begin(); typeObj != typeObject.end(); ++typeObj)
+//    {
+//        auto key = typeObj.key();
+//        IMobj[key] = typeObj.value().toObject();
+//    }
 
-    QJsonObject corrObject;
-    res = corrWidget->outputToJSON(corrObject);
+//    QJsonObject corrObject;
+//    res = corrWidget->outputToJSON(corrObject);
 
-    if(!res)
-    {
-        this->errorMessage("Error in the json output of intensity measure correlation");
-        return false;
-    }
+//    if(!res)
+//    {
+//        this->errorMessage("Error in the json output of intensity measure correlation");
+//        return false;
+//    }
 
-    QJsonObject::const_iterator corrObj;
-    for (corrObj = corrObject.begin(); corrObj != corrObject.end(); ++corrObj)
-    {
-        auto key = corrObj.key();
-        IMobj[key] = corrObj.value().toObject();
-    }
+//    QJsonObject::const_iterator corrObj;
+//    for (corrObj = corrObject.begin(); corrObj != corrObject.end(); ++corrObj)
+//    {
+//        auto key = corrObj.key();
+//        IMobj[key] = corrObj.value().toObject();
+//    }
 
     jsonObject["IntensityMeasure"] = IMobj;
 
@@ -215,8 +215,8 @@ void IntensityMeasureWidget::clear()
     openSHA->clear();
     shakeMap->clear();
 
-    typeWidget->reset();
-    corrWidget->reset();
+//    typeWidget->reset();
+//    corrWidget->reset();
 }
 
 
@@ -260,13 +260,13 @@ bool IntensityMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
-    auto res = typeWidget->inputFromJSON(jsonObject);
-    if(res == false)
-        return false;
+//    auto res = typeWidget->inputFromJSON(jsonObject);
+//    if(res == false)
+//        return false;
 
-    auto res2 = corrWidget->inputFromJSON(jsonObject);
-    if(res2 == false)
-        return false;
+//    auto res2 = corrWidget->inputFromJSON(jsonObject);
+//    if(res2 == false)
+//        return false;
 
     return true;
 }

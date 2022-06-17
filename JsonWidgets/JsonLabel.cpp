@@ -36,46 +36,97 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
-#include "JsonStackedWidget.h"
+#include "JsonLabel.h"
 
-JsonStackedWidget::JsonStackedWidget(QWidget *parent) : QStackedWidget(parent)
+#include <QRegExpValidator>
+#include <sstream>
+
+JsonLabel::JsonLabel(QWidget* parent) : QLabel(parent)
 {
 
 }
 
 
-bool JsonStackedWidget::outputToJSON(QJsonObject &jsonObject)
+bool JsonLabel::outputToJSON(QJsonObject &jsonObject)
 {
-    auto currWidget = dynamic_cast<JsonSerializable *>(this->currentWidget());
+    auto key = this->objectName();
+    auto data = this->text();
 
-    if(currWidget)
+    if(data.isEmpty())
     {
-        // auto currWIdgetName = this->currentWidget()->objectName();
+        jsonObject[key] = QJsonValue::Null;
+        return true;
+    }
 
-        currWidget->outputToJSON(jsonObject);
+    if(dataType == QJsonValue::Type::Double)
+        jsonObject[key] = data.toDouble();
+    else if(dataType == QJsonValue::Type::String)
+        jsonObject[key] = data;
+    else if(dataType == QJsonValue::Type::Null)
+        jsonObject[key] = QJsonValue::Null; // "null"
+    else
+    {
+        this->errorMessage("Error, type not supported in " + this->objectName());
+        return false;
+    }
+
+
+    return true;
+}
+
+
+bool JsonLabel::inputFromJSON(QJsonObject &jsonObject)
+{
+
+    QString name = this->objectName();
+
+    auto obj = jsonObject.value(name);
+
+    QString data = this->getStringValueJson(obj);
+
+    this->setText(data);
+
+    return true;
+}
+
+
+void JsonLabel::setDefaultValue(const QJsonValue& obj)
+{
+    auto defValueStr = this->getStringValueJson(obj);
+    this->setText(defValueStr);
+
+    defaultValue = defValueStr;
+}
+
+
+void JsonLabel::reset(void)
+{
+    this->setText(defaultValue);
+}
+
+
+QString JsonLabel::getStringValueJson(const QJsonValue& obj)
+{
+    QString val;
+
+    dataType = obj.type();
+
+    if(dataType == QJsonValue::Type::Double)
+    {
+        val = QString::number(obj.toDouble());
+    }
+    else if(dataType == QJsonValue::Type::String)
+    {
+        val = obj.toString();
+    }
+    else if(dataType == QJsonValue::Type::Null)
+    {
+        val = "";
     }
     else
-        return false;
-
-    return true;
-}
-
-
-bool JsonStackedWidget::inputFromJSON(QJsonObject &jsonObject)
-{
-    return true;
-}
-
-
-void JsonStackedWidget::reset(void)
-{
-    auto numWidgets = this->count();
-    for(int i = 0; i<numWidgets; ++i)
     {
-        auto child = this->widget(i);
-
-        auto asJson = dynamic_cast<JsonSerializable*>(child);
-        if(asJson != nullptr)
-            asJson->reset();
+        this->errorMessage("Error, type not supported in " + this->objectName());
     }
+
+    return val;
 }

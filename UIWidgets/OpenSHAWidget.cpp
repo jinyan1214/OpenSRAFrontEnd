@@ -7,13 +7,17 @@
 
 OpenSHAWidget::OpenSHAWidget(QWidget* parent) : SimCenterAppWidget(parent)
 {   
-    this->setObjectName("OpenSHA");
+    this->setObjectName("UCERF");
 
     auto layout = new QVBoxLayout(this);
     layout->setSpacing(0);
     layout->setMargin(0);
 
     auto mWidget = this->getMainWidget();
+
+    if(mWidget == nullptr)
+        return;
+
     mWidget->setContentsMargins(0,0,0,0);
 
     layout->addWidget(mWidget);

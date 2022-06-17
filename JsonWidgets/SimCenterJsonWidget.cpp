@@ -1,10 +1,49 @@
+/* *****************************************************************************
+Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of the FreeBSD Project.
+
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+*************************************************************************** */
+
+// Written by: Dr. Stevan Gavrilovic, UC Berkeley
+
 #include "SimCenterJsonWidget.h"
 #include "CustomListWidget.h"
 #include "TreeItem.h"
-#include "WorkflowAppOpenSRA.h"
 #include "JsonDefinedWidget.h"
 #include "JsonWidget.h"
 #include "WidgetFactory.h"
+#include "AddToRunListWidget.h"
+#include "WorkflowAppOpenSRA.h"
 
 #include <QCheckBox>
 #include <QSplitter>
@@ -18,7 +57,7 @@
 #include <QVBoxLayout>
 
 
-SimCenterJsonWidget::SimCenterJsonWidget(QString methodName, QString type, QWidget* parent) : SimCenterAppWidget(parent)
+SimCenterJsonWidget::SimCenterJsonWidget(QString methodName, QJsonObject jsonObj, QWidget* parent) : SimCenterAppWidget(parent)
 {
     this->setObjectName(methodName);
 
@@ -31,9 +70,10 @@ SimCenterJsonWidget::SimCenterJsonWidget(QString methodName, QString type, QWidg
     connect(listWidget,&QAbstractItemView::clicked,this,&SimCenterJsonWidget::handleListItemSelected);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(0,0,0,0);
     mainLayout->setMargin(0);
 
-    auto mainWidget = this->getWidgetBox(type);
+    auto mainWidget = this->getWidgetBox(jsonObj);
 
     if(mainWidget)
         splitter->addWidget(mainWidget);
@@ -44,13 +84,9 @@ SimCenterJsonWidget::SimCenterJsonWidget(QString methodName, QString type, QWidg
 }
 
 
-QGroupBox* SimCenterJsonWidget::getWidgetBox(const QString& type)
+QGroupBox* SimCenterJsonWidget::getWidgetBox(const QJsonObject jsonObj)
 {
-    auto methodsAndParams = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
-
-    QJsonObject thisObj = methodsAndParams.value(type).toObject().value(this->objectName()).toObject();
-
-    if(thisObj.isEmpty())
+    if(jsonObj.isEmpty())
     {
         this->errorMessage("Json object is empty in SimCenterJsonWidget");
         return nullptr;
@@ -60,58 +96,38 @@ QGroupBox* SimCenterJsonWidget::getWidgetBox(const QString& type)
     groupBox->setContentsMargins(0,0,0,0);
     groupBox->setFlat(true);
 
-    auto smallVSpacer = new QSpacerItem(0,20);
-
-    QDoubleValidator* validator = new QDoubleValidator(this);
-    validator->setRange(0.0,1.0,5);
-
-    auto weightLabel = new QLabel("Model Weight:");
-    weightLineEdit = new QLineEdit(this);
-    weightLineEdit->setText("1.0");
-    weightLineEdit->setValidator(validator);
-    weightLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-
-    QPushButton *addRunListButton = new QPushButton(this);
-    addRunListButton->setText(tr("Add run to list"));
-    addRunListButton->setMinimumWidth(250);
-
-    connect(addRunListButton,&QPushButton::clicked, this, &SimCenterJsonWidget::handleAddButtonPressed);
-
-    // Add a vertical spacer at the bottom to push everything up
-    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
-
-    QHBoxLayout* weightLayout = new QHBoxLayout();
-    weightLayout->setMargin(0);
-    weightLayout->addWidget(weightLabel,Qt::AlignLeft);
-    weightLayout->addWidget(weightLineEdit);
-    weightLayout->setStretch(0,0);
-    weightLayout->setStretch(1,1);
-
-    methodWidget = new JsonDefinedWidget(this, thisObj, this->objectName());
+    methodWidget = new JsonDefinedWidget(this, jsonObj, this->objectName());
     methodWidget->setObjectName("MethodWidget");
 
     QVBoxLayout* mainLayout = new QVBoxLayout(groupBox);
+    mainLayout->setContentsMargins(3,10,0,0);
 
     QVBoxLayout* methodLayout = new QVBoxLayout();
     methodLayout->setMargin(0);
     methodLayout->addWidget(methodWidget);
     methodLayout->addStretch();
 
+    // Add the weight and add to run list button at the bottom
+    addRunListWidget = new AddToRunListWidget();
+
+    connect(addRunListWidget,&AddToRunListWidget::addToRunListButtonPressed, this, &SimCenterJsonWidget::handleAddButtonPressed);
+
     QHBoxLayout* inputLayout = new QHBoxLayout();
     inputLayout->setMargin(0);
+    inputLayout->setContentsMargins(0,0,0,0);
     inputLayout->addLayout(methodLayout);
-    inputLayout->setStretch(0,1);
 
     mainLayout->addLayout(inputLayout);
 
-    mainLayout->addStretch(1);
+    mainLayout->addWidget(addRunListWidget,Qt::AlignCenter);
 
-    mainLayout->addItem(smallVSpacer);
+    mainLayout->setStretch(0,1);
+    mainLayout->setStretch(1,0);
 
-    mainLayout->addLayout(weightLayout);
+    // Add a vertical spacer at the bottom to push everything up
+//    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
+//    mainLayout->addItem(vspacer);
 
-    mainLayout->addWidget(addRunListButton,Qt::AlignCenter);
-    mainLayout->addItem(vspacer);
 
     return groupBox;
 }
@@ -121,6 +137,8 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
 {
     QJsonObject methodObj;
     methodWidget->outputToJSON(methodObj);
+
+    auto passedObj = methodWidget->getJsonObj();
 
     auto isObj = methodObj.value("Method").toObject();
 
@@ -147,9 +165,8 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
 
     methodObj = methodObj.value(key).toObject();
 
-    // Add the model weight
-    double weight = weightLineEdit->text().toDouble();
-    methodObj["ModelWeight"] = weight;
+    // Add the model weight, epistemic uncertainty, aleatory variability to json obj
+    addRunListWidget->outputToJSON(methodObj);
 
     // Get the human readable text or name to display
     auto methodsAndParamsMap = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsMap();
@@ -163,8 +180,9 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
     finalObj[key] = methodObj;
 
     finalObj["Key"] = key;
-    finalObj["ModelWeight"] = weight;
     finalObj["ModelName"] = name;
+
+    addRunListWidget->outputToJSON(finalObj);
 
     // qDebug()<<finalObj;
 
@@ -236,7 +254,7 @@ void SimCenterJsonWidget::clear()
 {
     methodWidget->reset();
     listWidget->clear();
-    weightLineEdit->clear();
+    addRunListWidget->clear();
 }
 
 
@@ -257,9 +275,9 @@ void SimCenterJsonWidget::handleListItemSelected(const QModelIndex& index)
 
     methodObj[itemKey] = itemObj[itemKey];
 
-    auto modelWeight = methodObj.value(itemKey).toObject().value("ModelWeight").toDouble();
+    auto modelListObj = methodObj.value(itemKey).toObject();
 
-    weightLineEdit->setText(QString::number(modelWeight));
+    addRunListWidget->inputFromJSON(modelListObj);
 
     QJsonObject finalObj;
     finalObj["Method"] = methodObj;

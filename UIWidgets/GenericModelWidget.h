@@ -71,6 +71,7 @@ public slots:
 
 signals:
     void RVadded(RV newRV, QString fromModel);
+    void RVremoved(RV oldRV, QString fromModel);
 
 private:
 
@@ -89,9 +90,6 @@ private:
     ComboBoxDelegate* levelComboDelegate = nullptr;
     ComboBoxDelegate* applyLnComboDelegate = nullptr;
     ComboBoxDelegate* powerComboDelegate = nullptr;
-
-    QLineEdit* aleatoryLE = nullptr;
-    QLineEdit* episLE = nullptr;
 
     RVTableView* theRVTableView = nullptr;
 

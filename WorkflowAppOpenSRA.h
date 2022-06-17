@@ -49,14 +49,14 @@ class SimCenterComponentSelection;
 class InputWidgetBIM;
 class InputWidgetUQ;
 class PipelineNetworkWidget;
-class DecisionVariableWidget;
+class MultiComponentDVWidget;
 class GeospatialDataWidget;
 class RandomVariablesWidget;
-class DamageMeasureWidget;
+class MultiComponentDMWidget;
 class UQOptions;
 class ResultsWidget;
 class CustomVisualizationWidget;
-class EngDemandParamWidget;
+class MultiComponentEDPWidget;
 class GeneralInformationWidget;
 class IntensityMeasureWidget;
 class LoadResultsDialog;
@@ -137,6 +137,8 @@ public slots:
 
 private:
 
+    QJsonObject getMethodAndParamsObj(const QString& path);
+
     std::unique_ptr<WidgetFactory> theWidgetFactory;
 
     // sidebar container selection
@@ -148,10 +150,10 @@ private:
     UncertaintyQuantificationWidget* theUQWidget = nullptr;
     PipelineNetworkWidget* thePipelineNetworkWidget = nullptr;
     IntensityMeasureWidget* theIntensityMeasureWidget = nullptr;
-    DecisionVariableWidget* theDecisionVariableWidget = nullptr;
+    MultiComponentDVWidget* theDecisionVariableWidget = nullptr;
     RandomVariablesWidget* theRandomVariableWidget = nullptr;
-    DamageMeasureWidget* theDamageMeasureWidget = nullptr;
-    EngDemandParamWidget* theEDPWidget = nullptr;
+    MultiComponentDMWidget* theDamageMeasureWidget = nullptr;
+    MultiComponentEDPWidget* theEDPWidget = nullptr;
     CustomVisualizationWidget* theCustomVisualizationWidget = nullptr;
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
     ResultsWidget* theResultsWidget = nullptr;

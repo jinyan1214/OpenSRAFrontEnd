@@ -63,7 +63,7 @@ public:
 
     QVariant item(int row, int col);
 
-    void adjustTableSize();
+    void resizeEvent(QResizeEvent *event);
 
 private:
     RVTableModel* tableModel = nullptr;

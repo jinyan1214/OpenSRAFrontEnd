@@ -146,22 +146,8 @@ void GenericModelWidget::makeRVWidget(void)
 
     connect(eqTypeCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(handleTypeChanged(int)));
 
-    // Aleatory uncertainty
-    auto aleatLabel = new QLabel("Aleatory Uncertainty:");
-    aleatoryLE = new QLineEdit();
-
-    // Epistemic uncertainty
-    auto episLabel = new QLabel("Epistemic Uncertainty:");
-    episLE = new QLineEdit();
-
     eqnTypeLayout->addWidget(eqTypeLabel);
     eqnTypeLayout->addWidget(eqTypeCombo);
-
-    eqnTypeLayout->addWidget(aleatLabel);
-    eqnTypeLayout->addWidget(aleatoryLE);
-
-    eqnTypeLayout->addWidget(episLabel);
-    eqnTypeLayout->addWidget(episLE);
 
     eqnTypeLayout->addStretch();
 
@@ -299,6 +285,8 @@ void GenericModelWidget::addParam(void)
     this->generateEquation();
 
     emit RVadded(newRV,parentName);
+
+    theRVTableView->resizeEvent(nullptr);
 }
 
 
@@ -321,12 +309,20 @@ void GenericModelWidget::removeParam(void)
         auto rowNum = it.row();
 
         if(rowNum<=data.size()-1)
+        {
+            auto oldRV = data.at(rowNum);
+
+            emit RVremoved(oldRV,parentName);
+
             data.remove(rowNum);
+        }
     }
 
     this->sortData();
     RVTableModel* tableModel = theRVTableView->getTableModel();
     tableModel->populateData(data);
+
+    theRVTableView->resizeEvent(nullptr);
 }
 
 

@@ -1,5 +1,5 @@
-#ifndef EDP_EARTHQUAKE_SELECTION_H
-#define EDP_EARTHQUAKE_SELECTION_H
+#ifndef MultiComponentDVWidget_H
+#define MultiComponentDVWidget_H
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
 All rights reserved.
@@ -32,19 +32,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, SimCenter @ UC Berkeley
 
-#include <SimCenterAppWidget.h>
+#include <MultiComponentR2D.h>
 
-class SimCenterJsonWidget;
-class EDPLandslideWidget;
+class DecisionVariableWidget;
 
 class QGroupBox;
 
-class EngDemandParamWidget : public  SimCenterAppWidget
+class MultiComponentDVWidget : public  MultiComponentR2D
 {
     Q_OBJECT
 public:
-    explicit EngDemandParamWidget(QJsonObject mainObj, QWidget *parent = nullptr);
-    ~EngDemandParamWidget();
+    explicit MultiComponentDVWidget(QWidget *parent = 0);
+    ~MultiComponentDVWidget();
 
     bool outputToJSON(QJsonObject &jsonObject) override;
     bool inputFromJSON(QJsonObject &jsonObject) override;
@@ -57,15 +56,14 @@ signals:
 
 public slots:
 
+    void handleWidgetSelected(const QString& name);
+
 private:
 
-    EDPLandslideWidget* EDPLandslide = nullptr;
-    SimCenterJsonWidget* EDPLiquefaction = nullptr;
-    SimCenterJsonWidget* EDPLatSpread = nullptr;
-    SimCenterJsonWidget* EDPGroundSettlement = nullptr;
-    SimCenterJsonWidget* EDPGroundStrain = nullptr;
-    SimCenterJsonWidget* EDPSurfFaultRup = nullptr;
-    SimCenterJsonWidget* EDPSubSurfFaultRup = nullptr;
+    DecisionVariableWidget* belowGround     = nullptr;
+    DecisionVariableWidget* aboveGround     = nullptr;
+    DecisionVariableWidget* wellAndCaprocks = nullptr;
+
 };
 
-#endif // EDP_EARTHQUAKE_SELECTION_H
+#endif // MultiComponentDVWidget_H

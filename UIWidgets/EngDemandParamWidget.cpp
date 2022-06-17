@@ -51,7 +51,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileDialog>
 #include <QPushButton>
 
-EngDemandParamWidget::EngDemandParamWidget(QWidget *parent) : SimCenterAppWidget(parent)
+EngDemandParamWidget::EngDemandParamWidget(QJsonObject mainObj, QWidget *parent) : SimCenterAppWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
@@ -71,28 +71,65 @@ EngDemandParamWidget::EngDemandParamWidget(QWidget *parent) : SimCenterAppWidget
 
     auto theComponentSelection = new SimCenterComponentSelection();
 
-    EDPLandslide = new EDPLandslideWidget(this);
-    EDPLiquefaction = new SimCenterJsonWidget("Liquefaction","EngineeringDemandParameter", this);
-    EDPLatSpread = new SimCenterJsonWidget("LateralSpread","EngineeringDemandParameter",this);
-    EDPGroundSettlement = new SimCenterJsonWidget("GroundSettlement","EngineeringDemandParameter",this);
-    EDPGroundStrain = new SimCenterJsonWidget("TransientGroundStrain","EngineeringDemandParameter",this);
-    EDPSurfFaultRup = new SimCenterJsonWidget("SurfaceFaultRupture","EngineeringDemandParameter",this);
-    EDPSubSurfFaultRup = new SimCenterJsonWidget("SubsurfaceFaultRupture","EngineeringDemandParameter",this);
+    auto obj = mainObj.value("EngineeringDemandParameter").toObject();
+
+    auto landslideObj = obj.value("Landslide").toObject();
+
+    if(!landslideObj.isEmpty() && landslideObj.value("ToDisplay").toBool(false) == true)
+        EDPLandslide = new EDPLandslideWidget(landslideObj,this);
+
+    auto liqObj = obj.value("Liquefaction").toObject();
+
+    if(!liqObj.isEmpty() && liqObj.value("ToDisplay").toBool(false) == true)
+        EDPLiquefaction = new SimCenterJsonWidget("Liquefaction",liqObj, this);
+
+    auto latSpreadObj = obj.value("LateralSpread").toObject();
+
+    if(!latSpreadObj.isEmpty() && latSpreadObj.value("ToDisplay").toBool(false) == true)
+        EDPLatSpread = new SimCenterJsonWidget("LateralSpread",latSpreadObj,this);
+
+    auto groundSettlementObj = obj.value("GroundSettlement").toObject();
+
+    if(!groundSettlementObj.isEmpty() && groundSettlementObj.value("ToDisplay").toBool(false) == true)
+        EDPGroundSettlement = new SimCenterJsonWidget("GroundSettlement",groundSettlementObj,this);
+
+    auto surfFaultObj = obj.value("SurfaceFaultRupture").toObject();
+
+    if(!surfFaultObj.isEmpty() && surfFaultObj.value("ToDisplay").toBool(false) == true)
+        EDPSurfFaultRup = new SimCenterJsonWidget("SurfaceFaultRupture",surfFaultObj,this);
+
+    auto groundStrainObj = obj.value("TransientGroundStrain").toObject();
+
+    if(!groundStrainObj.isEmpty() && groundStrainObj.value("ToDisplay").toBool(false) == true)
+        EDPGroundStrain = new SimCenterJsonWidget("TransientGroundStrain",groundStrainObj,this);
+
+    auto ssFaultRupObj = obj.value("SubsurfaceFaultRupture").toObject();
+
+    if(!ssFaultRupObj.isEmpty() && ssFaultRupObj.value("ToDisplay").toBool(false) == true)
+        EDPSubSurfFaultRup = new SimCenterJsonWidget("SubsurfaceFaultRupture",ssFaultRupObj,this);
 
     theComponentSelection->setWidth(120);
     theComponentSelection->setItemWidthHeight(120,70);
 
     theComponentSelection->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    theComponentSelection->addComponent("Liquefaction",EDPLiquefaction);
-    theComponentSelection->addComponent("Lateral\nSpreading",EDPLatSpread);
-    theComponentSelection->addComponent("Ground\nSettlement",EDPGroundSettlement);
-    theComponentSelection->addComponent("Landslide",EDPLandslide);
-    theComponentSelection->addComponent("Surface\nFault Rupture",EDPSurfFaultRup);
-    theComponentSelection->addComponent("Subsurface\nFault Rupture",EDPSubSurfFaultRup);
-    theComponentSelection->addComponent("Transient\nGround\nStrain",EDPGroundStrain);
+    if(EDPLiquefaction)
+        theComponentSelection->addComponent("Liquefaction",EDPLiquefaction);
+    if(EDPLatSpread)
+        theComponentSelection->addComponent("Lateral\nSpreading",EDPLatSpread);
+    if(EDPGroundSettlement)
+        theComponentSelection->addComponent("Ground\nSettlement",EDPGroundSettlement);
+    if(EDPLandslide)
+        theComponentSelection->addComponent("Landslide",EDPLandslide);
+    if(EDPSurfFaultRup)
+        theComponentSelection->addComponent("Surface\nFault Rupture",EDPSurfFaultRup);
+    if(EDPSubSurfFaultRup)
+        theComponentSelection->addComponent("Subsurface\nFault Rupture",EDPSubSurfFaultRup);
+    if(EDPGroundStrain)
+        theComponentSelection->addComponent("Transient\nGround\nStrain",EDPGroundStrain);
 
-    theComponentSelection->displayComponent("Liquefaction");
+    if(EDPLiquefaction)
+        theComponentSelection->displayComponent("Liquefaction");
 
     mainLayout->addWidget(theComponentSelection);
 }

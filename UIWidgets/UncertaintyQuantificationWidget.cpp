@@ -69,6 +69,12 @@ UncertaintyQuantificationWidget::UncertaintyQuantificationWidget(QWidget *parent
 
     auto uncertaintyWidget = this->getMainWidget();
 
+    if(uncertaintyWidget == nullptr)
+    {
+        this->errorMessage("Failed to create uncertainty widget");
+        return;
+    }
+
     uncertaintyWidget->setContentsMargins(5,0,0,0);
 
     layout->addWidget(uncertaintyWidget);

@@ -52,6 +52,8 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
 
     this->addDockWidget(Qt::BottomDockWidgetArea, statusDockWidget);
 
+    resizeDocks({statusDockWidget}, {30}, Qt::Vertical);
+
     connect(statusWidget,&PythonProgressDialog::showDialog,statusDockWidget,&QDockWidget::setVisible);
 
     //

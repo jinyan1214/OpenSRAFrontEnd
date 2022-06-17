@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic, SimCenter @ UC Berkeley
 
-#include "DamageMeasureWidget.h"
+#include "EngineeringDemandParameterWidget.h"
 #include "SimCenterJsonWidget.h"
 #include "sectiontitle.h"
 #include "SimCenterComponentSelection.h"
@@ -57,7 +57,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileDialog>
 #include <QPushButton>
 
-DamageMeasureWidget::DamageMeasureWidget(QJsonObject mainObj, QWidget *parent): SimCenterAppWidget(parent)
+EngineeringDemandParameterWidget::EngineeringDemandParameterWidget(QJsonObject mainObj, QWidget *parent): SimCenterAppWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
@@ -66,7 +66,7 @@ DamageMeasureWidget::DamageMeasureWidget(QJsonObject mainObj, QWidget *parent): 
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
-    label->setText(QString("Damage Measure (DM)"));
+    label->setText(QString("Engineering Demand Parameters (EDP)"));
     label->setMinimumWidth(150);
 
     theHeaderLayout->addWidget(label);
@@ -78,9 +78,9 @@ DamageMeasureWidget::DamageMeasureWidget(QJsonObject mainObj, QWidget *parent): 
 
     theComponentSelection = new SimCenterComponentSelection(this);
 
-    auto thisObj = mainObj.value("DamageMeasure").toObject();
+    auto dvObj = mainObj.value("EngineeringDemandParameter").toObject();
 
-    foreach(const QJsonValue &value, thisObj)
+    foreach(const QJsonValue &value, dvObj)
     {
         auto currObj = value.toObject();
 
@@ -109,13 +109,13 @@ DamageMeasureWidget::DamageMeasureWidget(QJsonObject mainObj, QWidget *parent): 
 }
 
 
-DamageMeasureWidget::~DamageMeasureWidget()
+EngineeringDemandParameterWidget::~EngineeringDemandParameterWidget()
 {
 
 }
 
 
-bool DamageMeasureWidget::outputToJSON(QJsonObject &jsonObject)
+bool EngineeringDemandParameterWidget::outputToJSON(QJsonObject &jsonObject)
 {
     QJsonObject outputObj;
 
@@ -135,13 +135,13 @@ bool DamageMeasureWidget::outputToJSON(QJsonObject &jsonObject)
 
     outputObj.insert("Type",typeObj);
 
-    jsonObject.insert("DamageMeasure",outputObj);
+    jsonObject.insert("EngineeringDemandParameter",outputObj);
 
     return true;
 }
 
 
-bool DamageMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
+bool EngineeringDemandParameterWidget::inputFromJSON(QJsonObject &jsonObject)
 {
     auto typeObj = jsonObject.value("Type").toString();
 
@@ -170,7 +170,7 @@ bool DamageMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
     return true;
 }
 
-SimCenterAppWidget* DamageMeasureWidget::getComponentFromName(const QString& name)
+SimCenterAppWidget* EngineeringDemandParameterWidget::getComponentFromName(const QString& name)
 {
     for(auto&& it : vecWidgets)
     {
@@ -181,14 +181,14 @@ SimCenterAppWidget* DamageMeasureWidget::getComponentFromName(const QString& nam
 }
 
 
-bool DamageMeasureWidget::copyFiles(QString &destDir)
+bool EngineeringDemandParameterWidget::copyFiles(QString &destDir)
 {
     Q_UNUSED(destDir);
     return true;
 }
 
 
-void DamageMeasureWidget::clear(void)
+void EngineeringDemandParameterWidget::clear(void)
 {
     for(auto&& it : vecWidgets)
         it->clear();

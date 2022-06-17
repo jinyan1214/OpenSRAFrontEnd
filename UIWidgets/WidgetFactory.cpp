@@ -1,10 +1,49 @@
-﻿#include "WidgetFactory.h"
+﻿/* *****************************************************************************
+Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of the FreeBSD Project.
+
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+*************************************************************************** */
+
+// Written by: Dr. Stevan Gavrilovic, UC Berkeley
+
+#include "WidgetFactory.h"
 
 #include "JsonDefinedWidget.h"
 #include "JsonStackedWidget.h"
 #include "JsonCheckBox.h"
 #include "JsonComboBox.h"
 #include "JsonLineEdit.h"
+#include "JsonLabel.h"
 #include "JsonWidget.h"
 #include "JsonGroupBoxWidget.h"
 #include "ComponentInputWidget.h"
@@ -42,7 +81,7 @@ QWidget* WidgetFactory::getWidget(const QJsonObject& obj, const QString& parentK
 
     if(widgetType.isNull())
     {
-        this->errorMessage("No support for widget type "+ widgetType);
+        this->errorMessage("No support for null widget type for "+ parentKey);
         return nullptr;
     }
 
@@ -52,6 +91,8 @@ QWidget* WidgetFactory::getWidget(const QJsonObject& obj, const QString& parentK
         return getLineEditWidget(obj,parentKey,parent);
     else if(widgetType.compare("QCheckBox") == 0)
         return getCheckBoxWidget(obj,parentKey,parent);
+    else if(widgetType.compare("QLabel") == 0)
+        return getLabelWidget(obj,parentKey,parent);
     else if(widgetType.compare("QWidget") == 0)
         return getBoxWidget(obj,parentKey,parent);
     else
@@ -122,6 +163,7 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
             {
                 JsonDefinedWidget* newWidget = new JsonDefinedWidget(mainWidget, itemObj, key);
                 newWidget->setObjectName(key);
+                newWidget->setJsonObj(itemObj);
                 comboStackedWidget->addWidget(newWidget);
             }
             else
@@ -157,7 +199,7 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
 
     auto defValue = obj["DefaultValue"].toString();
 
-    if(!obj["DefaultValue"].isNull())
+    if(!obj["DefaultValue"].isNull() && !defValue.isEmpty())
     {
         int index = comboWidget->findData(defValue);
         if (index != -1)
@@ -169,6 +211,12 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
         {
             this->errorMessage("Error, could not find the item " + defValue + " in " + comboWidget->objectName());
         }
+
+        //        for(int i = 0; i < comboWidget->count(); ++i)
+        //        {
+        //            auto itemStr = comboWidget->itemData(i).toString();
+        //            qDebug()<<itemStr;
+        //        }
     }
 
     return mainWidget;
@@ -185,10 +233,27 @@ QWidget* WidgetFactory::getLineEditWidget(const QJsonObject& obj, const QString&
 
     JsonLineEdit* lineEditWidget = new JsonLineEdit(parent);
     lineEditWidget->setObjectName(parentKey);
-
+    lineEditWidget->setJsonObj(obj);
     lineEditWidget->setDefaultValue(defVal);
 
     return lineEditWidget;
+}
+
+
+QWidget* WidgetFactory::getLabelWidget(const QJsonObject& obj, const QString& parentKey, QWidget* parent)
+{
+
+    if(obj.value("ToDisplay").toBool() == false)
+        return nullptr;
+
+    auto defVal = obj.value("DescToDisplay");
+
+    JsonLabel* labelWidget = new JsonLabel(parent);
+    labelWidget->setObjectName(parentKey);
+    labelWidget->setJsonObj(obj);
+    labelWidget->setDefaultValue(defVal);
+
+    return labelWidget;
 }
 
 
@@ -205,6 +270,7 @@ QWidget* WidgetFactory::getCheckBoxWidget(const QJsonObject& obj, const QString&
     JsonCheckBox* checkBoxWidget = new JsonCheckBox(parent);
     checkBoxWidget->setMainWidget(mainWidget);
     checkBoxWidget->setObjectName(parentKey);
+    checkBoxWidget->setJsonObj(obj);
 
     QHBoxLayout* mainLayout = new QHBoxLayout(mainWidget);
     mainLayout->setMargin(0);
@@ -276,6 +342,9 @@ QLayout* WidgetFactory::getLayoutFromParams(const QJsonObject& params, const QSt
             auto key = param.key();
 
             auto paramObj = param.value().toObject();
+
+            if(paramObj["ToDisplay"].toBool() == false)
+                continue;
 
             auto res = addWidgetToLayout(paramObj,key,parent,mainLayout);
 
@@ -364,6 +433,7 @@ QWidget* WidgetFactory::getBoxWidget(const QJsonObject& obj, const QString& pare
 {
     JsonGroupBoxWidget* newWidget = new JsonGroupBoxWidget(parent, obj, parentKey);
     newWidget->setObjectName(parentKey);
+    newWidget->setJsonObj(obj);
 
     auto text = obj.value("NameToDisplay").toString();
 

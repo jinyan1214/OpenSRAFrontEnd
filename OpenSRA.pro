@@ -45,7 +45,7 @@ win32 {
 
 # GIS plugin
 DEFINES +=  Q_GIS
-PATH_TO_QGIS_PLUGIN=../qgisplugin
+PATH_TO_QGIS_PLUGIN=../../qgisplugin
 include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 
 #DEFINES += ARC_GIS
@@ -53,9 +53,9 @@ include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 #include($$PWD/arcgisruntime.pri)
 
 # Specify the path to R2D and common
-PATH_TO_R2D=../R2DTool
-PATH_TO_COMMON=../SimCenterCommon
-PATH_TO_BACKEND=../OpenSRA_dev
+PATH_TO_R2D=../../R2DTool/R2DTool
+PATH_TO_COMMON=../../SimCenterCommon
+PATH_TO_BACKEND=../../OpenSRA_dev
 
 # To avoid code copying, include the common SimCenter code
 include(OpenSRACommon.pri)
@@ -67,6 +67,7 @@ SOURCES += main.cpp \
     JsonWidgets/JsonGroupBoxWidget.cpp \
     JsonWidgets/JsonComboBox.cpp \
     JsonWidgets/JsonLineEdit.cpp \
+    JsonWidgets/JsonLabel.cpp \
     JsonWidgets/JsonCheckBox.cpp \
     JsonWidgets/JsonWidget.cpp \
     JsonWidgets/JsonStackedWidget.cpp \
@@ -74,8 +75,8 @@ SOURCES += main.cpp \
     ModelViewItems/ComboBoxDelegate.cpp \
     ModelViewItems/ButtonDelegate.cpp \
     ModelViewItems/RV.cpp \
+    UIWidgets/AddToRunListWidget.cpp \
     UIWidgets/ClickableLabel.cpp \
-    UIWidgets/DVRepairRateWidget.cpp \
     UIWidgets/EDPLandslideWidget.cpp \
     UIWidgets/MonteCarloSamplingWidget.cpp \
     UIWidgets/FixedResidualsSamplingWidget.cpp \
@@ -95,6 +96,10 @@ SOURCES += main.cpp \
     UIWidgets/CustomVisualizationWidget.cpp \
     UIWidgets/PipelineNetworkWidget.cpp \
     UIWidgets/EngDemandParamWidget.cpp \
+    UIWidgets/EngineeringDemandParameterWidget.cpp \
+    UIWidgets/MultiComponentEDPWidget.cpp \
+    UIWidgets/MultiComponentDMWidget.cpp \
+    UIWidgets/MultiComponentDVWidget.cpp \
     UIWidgets/GeneralInformationWidget.cpp \
     UIWidgets/IntensityMeasureWidget.cpp \
     UIWidgets/DamageMeasureWidget.cpp \
@@ -113,6 +118,7 @@ HEADERS  += \
     JsonWidgets/JsonDefinedWidget.h \
     JsonWidgets/JsonComboBox.h \
     JsonWidgets/JsonLineEdit.h \
+    JsonWidgets/JsonLabel.h \
     JsonWidgets/JsonCheckBox.h \
     JsonWidgets/JsonWidget.h \
     JsonWidgets/JsonStackedWidget.h \
@@ -122,8 +128,8 @@ HEADERS  += \
     ModelViewItems/ButtonDelegate.h \
     ModelViewItems/RV.h \
     OpenSRAUserPass.h \
+    UIWidgets/AddToRunListWidget.h \
     UIWidgets/ClickableLabel.h \
-    UIWidgets/DVRepairRateWidget.h \
     UIWidgets/EDPLandslideWidget.h \
     UIWidgets/MonteCarloSamplingWidget.h \
     UIWidgets/FixedResidualsSamplingWidget.h \
@@ -148,6 +154,10 @@ HEADERS  += \
     UIWidgets/CustomVisualizationWidget.h \
     UIWidgets/PipelineNetworkWidget.h \
     UIWidgets/EngDemandParamWidget.h \
+    UIWidgets/EngineeringDemandParameterWidget.h \
+    UIWidgets/MultiComponentEDPWidget.h \
+    UIWidgets/MultiComponentDMWidget.h \
+    UIWidgets/MultiComponentDVWidget.h \
     UIWidgets/GeneralInformationWidget.h \
     UIWidgets/IntensityMeasureWidget.h \
     UIWidgets/DamageMeasureWidget.h \
