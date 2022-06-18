@@ -45,6 +45,7 @@ class CustomListWidget;
 class JsonDefinedWidget;
 class JsonWidget;
 class AddToRunListWidget;
+class RandomVariablesWidget;
 
 class QGroupBox;
 class QLineEdit;
@@ -65,15 +66,20 @@ public slots:
 
     void handleAddButtonPressed(void);
 
+    void handleItemRemoved(QJsonObject removedObj);
+
     void handleListItemSelected(const QModelIndex &index);
 
 private:
 
     QString methodKey;
 
+    RandomVariablesWidget* theInputParamsWidget = nullptr;
     JsonDefinedWidget* methodWidget = nullptr;
     CustomListWidget* listWidget = nullptr;
     AddToRunListWidget* addRunListWidget = nullptr;
+
+    int getVarTypes(const QJsonObject& vars, const QJsonObject& origObj, const QString& key, QJsonObject& varTypes);
 };
 
 #endif // SimCenterJsonWidget_H

@@ -256,7 +256,13 @@ bool GenericModelWidget::outputToJSON(QJsonObject &rvObject) {
 void GenericModelWidget::addParam(void)
 {
     auto i = data.size();
-    RV newRV(6);
+
+    // Create a unique id to identify the specific instance of these parameters
+    auto uid = QUuid::createUuid().toString();
+
+    // From model
+    auto fromModel = parentName;
+    RV newRV(6,uid,fromModel);
 
     int level = 1;
 
@@ -284,7 +290,7 @@ void GenericModelWidget::addParam(void)
 
     this->generateEquation();
 
-    emit RVadded(newRV,parentName);
+    emit RVadded(newRV);
 
     theRVTableView->resizeEvent(nullptr);
 }
@@ -312,7 +318,7 @@ void GenericModelWidget::removeParam(void)
         {
             auto oldRV = data.at(rowNum);
 
-            emit RVremoved(oldRV,parentName);
+            emit RVremoved(oldRV);
 
             data.remove(rowNum);
         }

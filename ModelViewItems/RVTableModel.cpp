@@ -186,13 +186,13 @@ int RVTableModel::getNumRVs()
 
 bool RVTableModel::removeRandomVariable(const RV& RVRemove)
 {
-    auto rvName = RVRemove.getName();
+    auto rvName = RVRemove.getUuid();
 
     return this->removeRandomVariable(rvName);
 }
 
 
-bool RVTableModel::removeRandomVariable(const QString& rvName)
+bool RVTableModel::removeRandomVariable(const QString& rvuuid)
 {
     if(tableData.isEmpty())
         return false;
@@ -201,7 +201,7 @@ bool RVTableModel::removeRandomVariable(const QString& rvName)
 
     for(int i = 0; i<tableData.size(); ++i)
     {
-        if(tableData.at(i).getName().compare(rvName) == 0)
+        if(tableData.at(i).getUuid().compare(rvuuid) == 0)
         {
             removeIdx = i;
             break;

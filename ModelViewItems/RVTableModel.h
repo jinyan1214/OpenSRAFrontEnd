@@ -69,7 +69,7 @@ public:
     void addRandomVariable(const RV& newRV);
 
     bool removeRandomVariable(const RV& RVRemove);
-    bool removeRandomVariable(const QString& rvName);
+    bool removeRandomVariable(const QString& rvuuid);
 
     QVector<RV>& getRandomVariables();
 

@@ -47,7 +47,7 @@ class RV
 {
 
 public:
-    RV(int numParams);
+    RV(int numParams, QString id, QString modelName);
     ~RV();
 
     int size() const;
@@ -66,12 +66,18 @@ public:
 
     QVariant getValue(const QString paramTag);
 
+    const QString &getUuid() const;
+
+    const QString &getFromModel() const;
+
 private:
 
     QStringList parameterNames;
     QVector<QVariant> data;
 
     QString name;
+    QString uuid;
+    QString fromModel;
 };
 
 #endif // RV_H

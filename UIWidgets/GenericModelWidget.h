@@ -70,8 +70,8 @@ public slots:
     void handleTypeChanged(int type);
 
 signals:
-    void RVadded(RV newRV, QString fromModel);
-    void RVremoved(RV oldRV, QString fromModel);
+    void RVadded(const RV& newRV);
+    void RVremoved(RV oldRV);
 
 private:
 

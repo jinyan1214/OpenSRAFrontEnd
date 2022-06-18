@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <qdebug.h>
 
-RV::RV(int numParams)
+RV::RV(int numParams, QString id, QString modelName) : uuid(id), fromModel(modelName)
 {
     data.resize(numParams);
 }
@@ -76,10 +76,22 @@ QVariant RV::getValue(const QString paramName)
 }
 
 
+const QString &RV::getUuid() const
+{
+    return uuid;
+}
+
+const QString &RV::getFromModel() const
+{
+    return fromModel;
+}
+
+
 int RV::size() const
 {
     return data.size();
 }
+
 
 QVariant& RV::operator[](const int index)
 {

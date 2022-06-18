@@ -106,7 +106,6 @@ public:
 
     void setTheWidgetFactory(WidgetFactory* value);
 
-
     RandomVariablesWidget *getTheRandomVariableWidget() const;
 
 signals:

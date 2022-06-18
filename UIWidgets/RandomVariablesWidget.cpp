@@ -75,15 +75,25 @@ RandomVariablesWidget::~RandomVariablesWidget()
 }
 
 
-void RandomVariablesWidget::removeRandomVariable(QString &varName)
+bool RandomVariablesWidget::removeRandomVariable(const QString &uuid)
 {
-
-    auto res = theRVTableView->getTableModel()->removeRandomVariable(varName);
+    auto res = theRVTableView->getTableModel()->removeRandomVariable(uuid);
 
     if(res == false)
-    {
-        this->errorMessage("Failed to remove random variable "+varName);
-    }
+        this->errorMessage("Failed to remove random variable "+uuid);
+
+    return res;
+}
+
+
+bool RandomVariablesWidget::removeConstant(const QString &uuid)
+{
+    auto res = theConstantTableView->getTableModel()->removeRandomVariable(uuid);
+
+    if(res == false)
+        this->errorMessage("Failed to remove the constant "+uuid);
+
+    return res;
 }
 
 
@@ -151,6 +161,7 @@ void RandomVariablesWidget::makeRVWidget(void)
     // From model
     LabelDelegate* labDelegate = new LabelDelegate(this);
 
+    theRVTableView->setItemDelegateForColumn(0, labDelegate);
     theRVTableView->setItemDelegateForColumn(9, labDelegate);
 
     theRVTableView->setEditTriggers(QAbstractItemView::AllEditTriggers);
@@ -216,36 +227,74 @@ void RandomVariablesWidget::saveRVsToJson(void)
 }
 
 
-bool RandomVariablesWidget::addRandomVariable(const RV& newRV, QString fromModel)
+bool RandomVariablesWidget::addRandomVariable(const RV& newRV)
 {
 
     auto rvName = newRV.getName();
 
-    if(this->checkIfRVexists(rvName))
+    if(this->checkIfRVExists(rvName))
     {
         this->errorMessage("Warning, the RV "+rvName+ " already exists!");
         return false;
     }
+
 
     auto tableModel = theRVTableView->getTableModel();
 
     if(tableModel == nullptr)
         return false;
 
-    // Copy the RV in this format
-    RV RVcopy = this->createNewRV(rvName,fromModel);
-
-    tableModel->addRandomVariable(RVcopy);
+    tableModel->addRandomVariable(newRV);
 
     return true;
 }
 
 
+bool RandomVariablesWidget::addConstant(const RV& newConstant)
+{
+
+    auto paramName = newConstant.getName();
+
+    if(this->checkIfConstantExists(paramName))
+    {
+        this->errorMessage("Warning, the constant "+paramName+ " already exists!");
+        return false;
+    }
+
+
+    auto tableModel = theConstantTableView->getTableModel();
+
+    if(tableModel == nullptr)
+        return false;
+
+    tableModel->addRandomVariable(newConstant);
+
+    return true;
+}
+
+
+
+bool RandomVariablesWidget::addRandomVariable(const QString& name, const QString& fromModel, const QString& uuid)
+{
+    RV newRV = this->createNewRV(name,fromModel,uuid);
+
+    return this->addRandomVariable(newRV);
+}
+
+
+bool RandomVariablesWidget::addConstant(const QString& name, const QString& fromModel, const QString& uuid)
+{
+    RV newRV = this->createNewConstant(name,fromModel,uuid);
+
+    return this->addConstant(newRV);
+}
+
+
+
 void RandomVariablesWidget::clear(void)
 {
-    randomVariableNames.clear();
+    theConstantTableView->clear();
     theRVTableView->clear();
-    //theRVTableView->hide();
 
     theRVTableView->getTableModel()->setHeaderStringList(RVTableHeaders);
 }
@@ -309,37 +358,40 @@ void RandomVariablesWidget::handleCellChanged(int row, int col)
 
 bool RandomVariablesWidget::inputFromJSON(QJsonObject &rvObject)
 {
+
+    Q_UNUSED(rvObject);
+
     bool result = true;
 
-    theRVTableView->show();
+    //    theRVTableView->show();
 
-    QJsonObject paramsObject = rvObject["EngineeringDemandParameter"].toObject()["Landslide"].toObject()["Params"].toObject()["YieldAcceleration"].toObject()["Params"].toObject();
+    //    QJsonObject paramsObject = rvObject["EngineeringDemandParameter"].toObject()["Landslide"].toObject()["Params"].toObject()["YieldAcceleration"].toObject()["Params"].toObject();
 
-    auto objKeys = paramsObject.keys();
+    //    auto objKeys = paramsObject.keys();
 
-    RVTableModel* tableModel = theRVTableView->getTableModel();
+    //    RVTableModel* tableModel = theRVTableView->getTableModel();
 
-    QVector<RV> data;
+    //    QVector<RV> data;
 
-    for(auto&& it : objKeys)
-    {
-        if(it == "MethodForKy")
-            continue;
+    //    for(auto&& it : objKeys)
+    //    {
+    //        if(it == "MethodForKy")
+    //            continue;
 
-        RV row = this->createNewRV(it,"EngineeringDemandParameter-Landslide-YieldAcceleration");
-        //        row[10] = QVariant();
+    //        RV row = this->createNewRV(it,"EngineeringDemandParameter-Landslide-YieldAcceleration");
+    //        //        row[10] = QVariant();
 
-        // auto itObj = paramsObject.value(it).toObject();
-        data.push_back(row);
-    }
+    //        // auto itObj = paramsObject.value(it).toObject();
+    //        data.push_back(row);
+    //    }
 
-    tableModel->populateData(data);
+    //    tableModel->populateData(data);
 
     return result;
 }
 
 
-bool RandomVariablesWidget::checkIfRVexists(const QString& name)
+bool RandomVariablesWidget::checkIfRVExists(const QString& name)
 {
     auto model = theRVTableView->getTableModel();
 
@@ -355,13 +407,61 @@ bool RandomVariablesWidget::checkIfRVexists(const QString& name)
 }
 
 
-RV RandomVariablesWidget::createNewRV(QString name, QString fromModel)
+bool RandomVariablesWidget::checkIfConstantExists(const QString& name)
+{
+    auto model = theConstantTableView->getTableModel();
+
+    auto params = model->getRandomVariables();
+
+    for(auto&& it: params)
+    {
+        if(it.getName().compare(name) == 0)
+            return true;
+    }
+
+    return false;
+}
+
+
+bool  RandomVariablesWidget::checkIfConstantuuidExists(const QString& uuid)
+{
+    auto model = theConstantTableView->getTableModel();
+
+    auto RVs = model->getRandomVariables();
+
+    for(auto&& it: RVs)
+    {
+        if(it.getUuid().compare(uuid) == 0)
+            return true;
+    }
+
+    return false;
+}
+
+
+bool RandomVariablesWidget::checkIfRVuuidExists(const QString& uuid)
+{
+    auto model = theRVTableView->getTableModel();
+
+    auto RVs = model->getRandomVariables();
+
+    for(auto&& it: RVs)
+    {
+        if(it.getUuid().compare(uuid) == 0)
+            return true;
+    }
+
+    return false;
+}
+
+
+RV RandomVariablesWidget::createNewRV(const QString& name, const QString& fromModel, const QString& uuid)
 {
     auto numCols = RVTableHeaders.size();
 
-    RV newRV(numCols);
+    RV newRV(numCols,uuid,fromModel);
 
-    // "Name","Source", "Mean", "Sigma","CoV","Distribution Type","Distribution Min", "Distribution Max", "Units","From Model","Plot Distribution"
+    // "Name","Source", "Mean", "Sigma","CoV","Distribution Type","Distribution Min", "Distribution Max", "Units","From Model"
     newRV[0] = name;
     newRV[1] = QVariant();
     newRV[2] = QVariant();
@@ -376,6 +476,50 @@ RV RandomVariablesWidget::createNewRV(QString name, QString fromModel)
     newRV.setName(name);
 
     return newRV;
+}
+
+
+RV RandomVariablesWidget::createNewConstant(const QString& name, const QString& fromModel, const QString& uuid)
+{
+    auto numCols = constantTableHeaders.size();
+
+    RV newRV(numCols,uuid,fromModel);
+
+    // "Name","Source", "Value", "Units", "From Model"
+    newRV[0] = name;
+    newRV[1] = QVariant();
+    newRV[2] = QVariant();
+    newRV[3] = QVariant();
+    newRV[4] = QVariant(fromModel);
+
+    newRV.setName(name);
+
+    return newRV;
+}
+
+
+bool RandomVariablesWidget::addNewInputParameter(const QString& name, const QString& fromModel, const QString& uuid, const QString& type)
+{
+    if(type.compare("random") == 0)
+        return addRandomVariable(name,fromModel,uuid);
+    else if(type.compare("fixed") == 0)
+        return addConstant(name,fromModel,uuid);
+    else
+        this->errorMessage("The type of parameter: "+type+ " is not recognized, for parameter: "+name+", from model: "+fromModel);
+
+    return false;
+}
+
+
+bool RandomVariablesWidget::removeInputParameter(const QString& uuid)
+{
+    // First try if it is a RV
+    if(this->checkIfRVuuidExists(uuid))
+        return removeRandomVariable(uuid);
+    else if(this->checkIfConstantuuidExists(uuid))
+        return removeConstant(uuid);
+    else
+        return false;
 }
 
 

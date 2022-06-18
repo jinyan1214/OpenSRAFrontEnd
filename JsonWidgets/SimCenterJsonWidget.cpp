@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "WidgetFactory.h"
 #include "AddToRunListWidget.h"
 #include "WorkflowAppOpenSRA.h"
+#include "RandomVariablesWidget.h"
 
 #include <QCheckBox>
 #include <QSplitter>
@@ -61,6 +62,10 @@ SimCenterJsonWidget::SimCenterJsonWidget(QString methodName, QJsonObject jsonObj
 {
     this->setObjectName(methodName);
 
+    theInputParamsWidget = WorkflowAppOpenSRA::getInstance()->getTheRandomVariableWidget();
+
+    assert(theInputParamsWidget != nullptr);
+
     methodKey = methodName;
 
     QSplitter *splitter = new QSplitter(this);
@@ -68,6 +73,7 @@ SimCenterJsonWidget::SimCenterJsonWidget(QString methodName, QJsonObject jsonObj
     listWidget = new CustomListWidget("List of Cases to Run",this);
 
     connect(listWidget,&QAbstractItemView::clicked,this,&SimCenterJsonWidget::handleListItemSelected);
+    connect(listWidget,&CustomListWidget::itemRemoved,this,&SimCenterJsonWidget::handleItemRemoved);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0,0,0,0);
@@ -125,8 +131,8 @@ QGroupBox* SimCenterJsonWidget::getWidgetBox(const QJsonObject jsonObj)
     mainLayout->setStretch(1,0);
 
     // Add a vertical spacer at the bottom to push everything up
-//    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
-//    mainLayout->addItem(vspacer);
+    //    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
+    //    mainLayout->addItem(vspacer);
 
 
     return groupBox;
@@ -160,12 +166,50 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
         return;
     }
 
-
     auto key = keys.front();
 
     methodObj = methodObj.value(key).toObject();
 
-    // Add the model weight, epistemic uncertainty, aleatory variability to json obj
+    // Object to store the variable types
+    QJsonObject typesObj;
+
+    QJsonObject uuidObj;
+
+    auto res = this->getVarTypes(methodObj,passedObj,key,typesObj);
+    if(res != 0)
+    {
+        this->errorMessage("Error, could not get the var types in SimCenterJsonWidget");
+        return;
+    }
+
+    auto paramsKeys = methodObj.keys();
+    for(auto&& it : paramsKeys)
+    {
+        // Create a unique id to identify the specific instance of these parameters
+        auto uid = QUuid::createUuid().toString();
+
+        uuidObj[it]=uid;
+
+        auto fromModel = methodKey+"-"+key;
+
+        auto varType = typesObj[it].toString();
+
+        if(varType.isEmpty())
+        {
+            this->errorMessage("Error getting the variable type for "+theInputParamsWidget->objectName());
+            return;
+        }
+
+        auto res = theInputParamsWidget->addNewInputParameter(it,fromModel,uid,varType);
+
+        if(!res)
+        {
+            this->errorMessage("Error adding a random variable to "+theInputParamsWidget->objectName());
+            return;
+        }
+    }
+
+    // Add the model weight, epistemic uncertainty, aleatory variability to json obj for this method
     addRunListWidget->outputToJSON(methodObj);
 
     // Get the human readable text or name to display
@@ -181,12 +225,39 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
 
     finalObj["Key"] = key;
     finalObj["ModelName"] = name;
+    finalObj["VarTypes"] = typesObj;
+
+    finalObj["Uuids"] = uuidObj;
 
     addRunListWidget->outputToJSON(finalObj);
 
     // qDebug()<<finalObj;
 
     listWidget->addItem(finalObj);
+}
+
+
+void SimCenterJsonWidget::handleItemRemoved(QJsonObject removedObj)
+{
+    auto uuids = removedObj.value("Uuids").toObject();
+
+    if(uuids.isEmpty())
+    {
+        this->errorMessage("Error, the object uuids are empty");
+        return;
+    }
+
+    for(auto&& it : uuids)
+    {
+        auto res = theInputParamsWidget->removeInputParameter(it.toString());
+
+        if(!res)
+        {
+            this->errorMessage("Error removing a random variable in "+theInputParamsWidget->objectName());
+            return;
+        }
+    }
+
 }
 
 
@@ -292,6 +363,41 @@ void SimCenterJsonWidget::handleListItemSelected(const QModelIndex& index)
         this->errorMessage("Error importing from Json in " + this->objectName());
         return;
     }
-
 }
 
+
+int SimCenterJsonWidget::getVarTypes(const QJsonObject& vars, const QJsonObject& origObj, const QString& key, QJsonObject& varTypes)
+{
+
+    auto paramsObj = origObj["Params"]["Method"]["Options"][key]["Params"].toObject();
+
+    if(paramsObj.isEmpty())
+    {
+        this->errorMessage("Error, could not get the parameter types, the parameter object is empty in the original json object");
+        return -1;
+    }
+
+    auto varNames = vars.keys();
+    foreach(const QString &key, varNames)
+    {
+        auto thisParamObj = paramsObj.value(key).toObject();
+
+        if(thisParamObj.isEmpty())
+        {
+            this->errorMessage("Error, could not find the parameter "+key+" in the original json object");
+            return -1;
+        }
+
+        auto type = thisParamObj["VarType"].toString();
+
+        if(type.isEmpty())
+        {
+            this->errorMessage("Error, could not find the variable type, i.e., VarType, for the parameter "+key);
+            return -1;
+        }
+
+        varTypes.insert(key,type);
+    }
+
+    return 0;
+}

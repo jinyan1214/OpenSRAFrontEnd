@@ -59,6 +59,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 EngineeringDemandParameterWidget::EngineeringDemandParameterWidget(QJsonObject mainObj, QWidget *parent): SimCenterAppWidget(parent)
 {
+    this->setObjectName("EngineeringDemandParameter");
+
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setMargin(0);
     mainLayout->setSpacing(0);
@@ -89,7 +91,7 @@ EngineeringDemandParameterWidget::EngineeringDemandParameterWidget(QJsonObject m
 
         auto nameToDisplay = currObj.value("NameToDisplay").toString();
 
-        auto newWidget = new SimCenterJsonWidget(nameToDisplay, currObj);
+        auto newWidget = new SimCenterJsonWidget(nameToDisplay, currObj, this);
 
         if(newWidget == nullptr)
         {

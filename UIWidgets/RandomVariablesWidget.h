@@ -65,10 +65,20 @@ public:
 
     QStringList getRandomVariableNames(void);
 
+    bool addNewInputParameter(const QString& name, const QString& fromModel, const QString& uuid, const QString& type);
+
+    bool removeInputParameter(const QString& uuid);
+
 public slots:
 
-    bool addRandomVariable(const RV& newRV, QString fromModel);
-    void removeRandomVariable(QString &varName);
+    bool addRandomVariable(const RV& newRV);
+    bool addRandomVariable(const QString& name, const QString& fromModel, const QString& uuid);
+
+    bool addConstant(const RV& newConstant);
+    bool addConstant(const QString& name, const QString& fromModel, const QString& uuid);
+
+    bool removeRandomVariable(const QString &uuid);
+    bool removeConstant(const QString &uuid);
 
     void handleCellChanged(int row, int col);
     void handleCellClicked(const QModelIndex &index);
@@ -94,12 +104,16 @@ private:
 
     QStringList constantTableHeaders;
     QStringList RVTableHeaders;
-    QStringList randomVariableNames;
 
     // Function to check if an RV exists
-    bool checkIfRVexists(const QString& name);
+    bool checkIfRVExists(const QString& name);
+    bool checkIfConstantExists(const QString& name);
 
-    RV createNewRV(QString name, QString fromModel);
+    bool checkIfRVuuidExists(const QString& name);
+    bool checkIfConstantuuidExists(const QString& name);
+
+    RV createNewRV(const QString& name, const QString& fromModel, const QString& uuid);
+    RV createNewConstant(const QString& name, const QString& fromModel, const QString& uuid);
 };
 
 #endif // RANDOM_VARIABLES_CONTAINER_H

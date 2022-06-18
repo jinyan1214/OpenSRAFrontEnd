@@ -176,7 +176,7 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
                     auto genModelWidget = new GenericModelWidget(parentName);
                     comboStackedWidget->addWidget(genModelWidget);
 
-                    connect(genModelWidget, &GenericModelWidget::RVadded, theRVWidget, &RandomVariablesWidget::addRandomVariable);
+                    connect(genModelWidget, SIGNAL(RVadded(RV)), theRVWidget, SLOT(addRandomVariable(RV)));
                 }
                 else
                 {
