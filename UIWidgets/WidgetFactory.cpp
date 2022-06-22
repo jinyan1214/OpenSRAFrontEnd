@@ -50,7 +50,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "QGISGasPipelineInputWidget.h"
 #include "WorkflowAppOpenSRA.h"
 #include "GenericModelWidget.h"
-#include "PipelineNetworkWidget.h"
 #include "RandomVariablesWidget.h"
 
 #include <QGroupBox>
@@ -355,6 +354,9 @@ QLayout* WidgetFactory::getLayoutFromParams(const QJsonObject& params, const QSt
             }
         }
     }
+
+    if(orientation == Qt::Vertical)
+        mainLayout->addStretch();
 
     return mainLayout;
 }

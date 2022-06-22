@@ -40,6 +40,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "sectiontitle.h"
 #include "SimCenterComponentSelection.h"
 #include "ComponentTableView.h"
+#include "RandomVariablesWidget.h"
+#include "WorkflowAppOpenSRA.h"
+#include "MixedDelegate.h"
+
 #include "QGISGasPipelineInputWidget.h"
 #include "QGISWellsCaprocksInputWidget.h"
 #include "QGISAboveGroundGasNetworkInputWidget.h"
@@ -66,10 +70,9 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
 {
     this->setContentsMargins(0,0,0,0);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setMargin(0);
-    mainLayout->setContentsMargins(5,0,0,0);
-    mainLayout->setSpacing(0);
+    theMainLayout->setMargin(0);
+    theMainLayout->setContentsMargins(5,0,0,0);
+    theMainLayout->setSpacing(0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     theHeaderLayout->setContentsMargins(0,0,0,0);
@@ -78,30 +81,43 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     SectionTitle *label = new SectionTitle();
     label->setText(QString("Infrastructure (Limited to a maximum of 1,000 sites)"));
     label->setMinimumWidth(150);
-
     theHeaderLayout->addWidget(label);
-
     theHeaderLayout->addStretch(1);
-    mainLayout->addLayout(theHeaderLayout);
 
-    theComponentInputWidget = new QGISGasPipelineInputWidget(this, theVisualizationWidget, "Gas Pipelines","Gas Network");
-    theComponentInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
+    theMainLayout->insertLayout(0,theHeaderLayout);
 
-    theComponentInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
-    theComponentInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
+    theBelowGroundInputWidget = new QGISGasPipelineInputWidget(this, theVisualizationWidget, "Gas Pipelines","Gas Network");
+    theBelowGroundInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
+
+    theBelowGroundInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
+    theBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
 
     theWellsCaprocksWidget = new QGISWellsCaprocksInputWidget(this, theVisualizationWidget, "Wells and Caprocks","Wells and Caprocks");
 
     theAboveGroundInfWidget = new QGISAboveGroundGasNetworkInputWidget(this, theVisualizationWidget, "Above Ground Gas Infrastructures","Above ground infrastructure");
 
-    this->addComponent("Pipelines", theComponentInputWidget);
+    this->addComponent("Pipelines", theBelowGroundInputWidget);
     this->addComponent("Wells and Caprocks", theWellsCaprocksWidget);
     this->addComponent("Above Ground \nGas Infrastructure", theAboveGroundInfWidget);
 
+    vectorOfComponents.append(theBelowGroundInputWidget);
+    vectorOfComponents.append(theWellsCaprocksWidget);
+    vectorOfComponents.append(theAboveGroundInfWidget);
+
+    auto colDelegate = WorkflowAppOpenSRA::getInstance()->getTheRandomVariableWidget()->getColDataComboDelegate();
+
+    assert(colDelegate);
+
+    connect(theBelowGroundInputWidget, &ComponentInputWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
+    connect(theWellsCaprocksWidget, &ComponentInputWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
+    connect(theAboveGroundInfWidget, &ComponentInputWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
 
     // Test to remove start
     //    theComponentInputWidget->loadFileFromPath("/Users/steve/Downloads/10000_random_sites_in_ca.csv");
     //    theComponentInputWidget->selectAllComponents();
+
+    theWellsCaprocksWidget->loadFileFromPath("/Users/steve/Desktop/ExWellCaprock.csv");
+
     // Test to remove end
 
 }
@@ -116,36 +132,46 @@ PipelineNetworkWidget::~PipelineNetworkWidget()
 bool PipelineNetworkWidget::outputToJSON(QJsonObject &jsonObject)
 {
 
-    auto numComponents = theComponentInputWidget->getTableWidget()->rowCount();
+    auto currCompIndex = this->getCurrentIndex();
+
+    if (currCompIndex < 0 && currCompIndex > vectorOfComponents.size()-1)
+        return false;
+
+    auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
+
+    if(theCurrInputWidget == nullptr)
+        return false;
+
+    auto numComponents = theCurrInputWidget->getTableWidget()->rowCount();
 
     if(numComponents == 0)
     {
-        errorMessage("No pipelines loaded");
+        errorMessage("No components loaded");
         return false;
     }
 
     QJsonObject infrastructureObj;
 
-    auto siteDataPath = theComponentInputWidget->getPathToComponentFile();
+    auto siteDataPath = theCurrInputWidget->getPathToComponentFile();
 
     QFileInfo file(siteDataPath);
 
     infrastructureObj.insert("SiteDataFile",file.absoluteFilePath());
 
-    QString filterString = theComponentInputWidget->getFilterString();
+    QString filterString = theCurrInputWidget->getFilterString();
     if(filterString.isEmpty())
     {
         statusMessage("Selecting all components for analysis");
 
-        theComponentInputWidget->selectAllComponents();
+        theCurrInputWidget->selectAllComponents();
 
-        filterString = theComponentInputWidget->getFilterString();
+        filterString = theCurrInputWidget->getFilterString();
     }
 
     infrastructureObj.insert("filter",filterString);
 
     QJsonObject locationParams;
-    theComponentInputWidget->outputToJSON(locationParams);
+    theCurrInputWidget->outputToJSON(locationParams);
 
     QJsonObject siteParamsObj;
 
@@ -178,6 +204,18 @@ bool PipelineNetworkWidget::outputToJSON(QJsonObject &jsonObject)
 
 bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
 {
+
+    auto currCompIndex = this->getCurrentIndex();
+
+    if (currCompIndex < 0 && currCompIndex > vectorOfComponents.size()-1)
+        return false;
+
+    auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
+
+    if(theCurrInputWidget == nullptr)
+        return false;
+
+
     auto fileName = jsonObject["SiteDataFile"].toString();
 
     if(fileName.isEmpty())
@@ -186,7 +224,7 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
-    if(!theComponentInputWidget->loadFileFromPath(fileName))
+    if(!theCurrInputWidget->loadFileFromPath(fileName))
     {
         errorMessage("Failed to load the 'SiteDataFile': "+fileName);
         return false;
@@ -195,15 +233,26 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
     auto filter = jsonObject["filter"].toString();
 
     if(!filter.isEmpty())
-        theComponentInputWidget->setFilterString(filter);
+        theCurrInputWidget->setFilterString(filter);
 
-    return theComponentInputWidget->inputFromJSON(jsonObject);
+    return theCurrInputWidget->inputFromJSON(jsonObject);
 }
 
 
 bool PipelineNetworkWidget::copyFiles(QString &destDir)
 {    
-    theComponentInputWidget->copyFiles(destDir);
+
+    auto currCompIndex = this->getCurrentIndex();
+
+    if (currCompIndex < 0 && currCompIndex > vectorOfComponents.size()-1)
+        return false;
+
+    auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
+
+    if(theCurrInputWidget == nullptr)
+        return false;
+
+    theCurrInputWidget->copyFiles(destDir);
 
     return false;
 }
@@ -211,11 +260,34 @@ bool PipelineNetworkWidget::copyFiles(QString &destDir)
 
 void PipelineNetworkWidget::clear(void)
 {
-    theComponentInputWidget->clear();
+    theBelowGroundInputWidget->clear();
+    theWellsCaprocksWidget->clear();
+    theAboveGroundInfWidget->clear();
 }
 
 
-QGISGasPipelineInputWidget *PipelineNetworkWidget::getTheComponentInputWidget() const
+ComponentInputWidget* PipelineNetworkWidget::getTheCurrentComponentInputWidget() const
 {
-    return theComponentInputWidget;
+    auto currCompIndex = this->getCurrentIndex();
+
+    if (currCompIndex < 0 && currCompIndex > vectorOfComponents.size()-1)
+        return nullptr;
+
+    auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
+
+    return theCurrInputWidget;
 }
+
+
+void PipelineNetworkWidget::handleComponentChanged(QString compName)
+{
+    auto currCompIndex = this->getIndexOfComponent(compName);
+
+    if (currCompIndex < 0 && currCompIndex > vectorOfComponents.size()-1)
+        emit componentChangedSignal(nullptr);
+
+    auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
+
+    emit componentChangedSignal(theCurrInputWidget);
+}
+

@@ -185,7 +185,7 @@ void WorkflowAppOpenSRA::initialize(void)
         }
     }
 
-    // Edit menu for the clear action
+    // Results menu to load the results
     QMenu *resultsMenu = new QMenu(tr("&Results"),theMainWindow->menuBar());
 
     // Set the path to the input file
@@ -204,8 +204,8 @@ void WorkflowAppOpenSRA::initialize(void)
     theVisualizationWidget = new QGISVisualizationWidget(theMainWindow);
 
     // Create the various widgets
-    thePipelineNetworkWidget = new PipelineNetworkWidget(this,theVisualizationWidget);
     theRandomVariableWidget = new RandomVariablesWidget(this);
+    thePipelineNetworkWidget = new PipelineNetworkWidget(this,theVisualizationWidget);
     theGenInfoWidget = new GeneralInformationWidget(this);
     theUQWidget = new UncertaintyQuantificationWidget(this);
     theIntensityMeasureWidget = new IntensityMeasureWidget(theVisualizationWidget, this);
@@ -227,8 +227,8 @@ void WorkflowAppOpenSRA::initialize(void)
 
     connect(this,SIGNAL(sendInfoMessage(QString)),this,SLOT(infoMessage(QString)));
 
-    connect(localApp,SIGNAL(setupForRun(QString &,QString &)), this, SLOT(setUpForApplicationRun(QString &,QString &)));
-    connect(this,SIGNAL(setUpForApplicationRunDone(QString&, QString &)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString &)));
+    connect(localApp,SIGNAL(setupForRun(QString,QString)), this, SLOT(setUpForApplicationRun(QString,QString)));
+    connect(this,SIGNAL(setUpForApplicationRunDone(QString, QString)), theRunWidget, SLOT(setupForRunApplicationDone(QString, QString)));
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);

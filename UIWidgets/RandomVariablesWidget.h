@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 class RVTableView;
 class ComboBoxDelegate;
 class MixedDelegate;
+class LineEditDelegate;
 
 class QVBoxLayout;
 class QDialog;
@@ -69,6 +70,9 @@ public:
 
     bool removeInputParameter(const QString& uuid);
 
+    MixedDelegate *getGisMapsComboDelegate() const;
+    MixedDelegate *getColDataComboDelegate() const;
+
 public slots:
 
     bool addRandomVariable(const RV& newRV);
@@ -80,8 +84,11 @@ public slots:
     bool removeRandomVariable(const QString &uuid);
     bool removeConstant(const QString &uuid);
 
+    // To handle when sigma and cov are changed
     void handleCellChanged(int row, int col);
-    void handleCellClicked(const QModelIndex &index);
+
+    // When the source is changed from preferred, from infrastructure table, etc.
+    void handleSourceChanged(int val);
 
     void loadRVsFromJson(void);
     void saveRVsToJson(void);
@@ -96,6 +103,8 @@ private:
     ComboBoxDelegate* sourceComboDelegate = nullptr;
     MixedDelegate* distTypeComboDelegate = nullptr;
     MixedDelegate* colDataComboDelegate = nullptr;
+    MixedDelegate* gisMapsComboDelegate = nullptr;
+    LineEditDelegate* LEDelegate = nullptr;
 
     RVTableView* theRVTableView = nullptr;
     RVTableView* theConstantTableView = nullptr;

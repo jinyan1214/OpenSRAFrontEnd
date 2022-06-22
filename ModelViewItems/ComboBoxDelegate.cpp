@@ -44,11 +44,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 ComboBoxDelegate::ComboBoxDelegate(QObject *parent) : QItemDelegate(parent)
 {
     items = QStringList({"NONE"});
+    initialValue = 0;
 }
 
 
 QWidget *ComboBoxDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &/* option */, const QModelIndex &index) const
 {
+    Q_UNUSED(index);
+
     QComboBox *editor = new QComboBox(parent);
     editor->setFrame(false);
     editor->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -56,6 +59,8 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent, const QStyleOptionViewI
     editor->addItems(items);
     editor->setEditable(isEditable);
     connect(editor, SIGNAL(currentIndexChanged(int)), this, SLOT(handleComboBoxChanged(int)));
+
+    editor->setCurrentIndex(initialValue);
 
     return editor;
 }
@@ -96,9 +101,10 @@ void ComboBoxDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionV
 }
 
 
-void ComboBoxDelegate::setItems(const QStringList &newItems)
+void ComboBoxDelegate::setItems(const QStringList &newItems,const int initialIndex)
 {
     items = newItems;
+    initialValue = initialIndex;
 }
 
 

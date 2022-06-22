@@ -54,10 +54,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 MultiComponentDVWidget::MultiComponentDVWidget(QWidget *parent) : MultiComponentR2D(parent)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setMargin(0);
-    mainLayout->setSpacing(0);
-    mainLayout->setContentsMargins(5,0,0,0);
+    theMainLayout->setMargin(0);
+    theMainLayout->setSpacing(0);
+    theMainLayout->setContentsMargins(5,0,0,0);
 
     QHBoxLayout *theHeaderLayout = new QHBoxLayout();
     SectionTitle *label = new SectionTitle();
@@ -68,7 +67,8 @@ MultiComponentDVWidget::MultiComponentDVWidget(QWidget *parent) : MultiComponent
     theHeaderLayout->addItem(spacer);
 
     theHeaderLayout->addStretch(1);
-    mainLayout->addLayout(theHeaderLayout);
+
+    theMainLayout->insertLayout(0,theHeaderLayout);
 
     auto mainObj = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsObj();
 

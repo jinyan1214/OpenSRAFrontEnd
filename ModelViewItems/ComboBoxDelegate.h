@@ -59,7 +59,7 @@ public:
 
     void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
-    void setItems(const QStringList &newItems);
+    void setItems(const QStringList &newItems, const int initialIndex = 0);
 
     void setIsEditable(bool newIsEditable);
 
@@ -77,6 +77,7 @@ public slots:
 private:
 
     QStringList items;
+    int initialValue;
     bool isEditable = false;
     bool isActive = true;
 };

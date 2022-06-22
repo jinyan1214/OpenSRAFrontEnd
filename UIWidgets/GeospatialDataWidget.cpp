@@ -38,12 +38,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "GeospatialDataWidget.h"
 #include "GenericModelWidget.h"
+#include "GISMapWidget.h"
 
 #include "UserInputCPTWidget.h"
 
 GeospatialDataWidget::GeospatialDataWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppSelection(QString("Geospatial Data"),QString("Data"), parent), visualizationWidget(visWidget)
 {
     cptInputWidget = new UserInputCPTWidget(visualizationWidget, this);
+
+    GISMapInputWidget = new GISMapWidget(visualizationWidget,this);
+
+    this->addComponent("GIS Map Input Widget", "GISMaps", GISMapInputWidget);
     this->addComponent("CPT Borehole Input", "CPTs", cptInputWidget);
 }
 

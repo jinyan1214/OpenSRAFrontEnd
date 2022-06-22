@@ -85,7 +85,6 @@ void RVTableModel::update()
     numCols = columnCount();
 
     emit layoutChanged();
-
 }
 
 Qt::ItemFlags RVTableModel::flags(const QModelIndex &index) const
@@ -133,8 +132,6 @@ bool RVTableModel::setData(const QModelIndex &index, const QVariant &value, int 
 {
     if (!index.isValid() || role != Qt::EditRole || value == "")
         return false;
-
-
 
     auto col = index.column();
     auto row = index.row();

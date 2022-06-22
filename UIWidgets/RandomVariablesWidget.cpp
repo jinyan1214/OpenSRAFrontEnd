@@ -62,7 +62,7 @@ RandomVariablesWidget::RandomVariablesWidget(QWidget *parent) : SimCenterWidget(
     verticalLayout->setMargin(2);
     verticalLayout->setSpacing(2);
 
-    RVTableHeaders = QStringList({"Name","Source", "Mean", "Sigma","CoV","Distribution Type","Distribution Min", "Distribution Max", "Units","From Model"/*,"Plot Distribution"*/});
+    RVTableHeaders = QStringList({"Name","Source", "Mean or Median", "Sigma","CoV","Distribution Type","Distribution Min", "Distribution Max", "Units","From Model"});
     constantTableHeaders = QStringList({"Name","Source", "Value", "Units", "From Model"});
 
     this->makeRVWidget();
@@ -127,22 +127,25 @@ void RandomVariablesWidget::makeRVWidget(void)
 
     // Source type
     sourceComboDelegate = new ComboBoxDelegate(this);
-    QStringList sourceTypes = {"Preferred","User-defined"};
+    QStringList sourceTypes = {"Preferred","From Infrastructure Table","From user-provided GIS maps"};
     sourceComboDelegate->setItems(sourceTypes);
     theRVTableView->setItemDelegateForColumn(1, sourceComboDelegate);
+    connect(sourceComboDelegate,&ComboBoxDelegate::currentIndexChanged,this,&RandomVariablesWidget::handleSourceChanged);
 
     // Column selection/data type delegate
     colDataComboDelegate = new MixedDelegate(this);
-    QStringList meanTypes = {"N/A"};
-    colDataComboDelegate->setItems(meanTypes);
-    colDataComboDelegate->setIsEditable(true);
-
-    ComponentInputWidget* pipelineWidget = WorkflowAppOpenSRA::getInstance()->getThePipelineNetworkWidget()->getTheComponentInputWidget();
-    connect(pipelineWidget, &ComponentInputWidget::headingValuesChanged, colDataComboDelegate, &MixedDelegate::updateComboBoxValues);
+    QStringList colTypes = {"No infrastructure information available"};
+    colDataComboDelegate->setItems(colTypes);
+    colDataComboDelegate->setIsEditable(false);
 
     theRVTableView->setItemDelegateForColumn(2, colDataComboDelegate);
     theRVTableView->setItemDelegateForColumn(3, colDataComboDelegate);
     theRVTableView->setItemDelegateForColumn(4, colDataComboDelegate);
+
+    gisMapsComboDelegate = new MixedDelegate(this);
+    QStringList gisMaps = {"No GIS maps loaded"};
+    gisMapsComboDelegate->setItems(gisMaps);
+    gisMapsComboDelegate->setIsEditable(false);
 
     // Distribution type
     distTypeComboDelegate = new MixedDelegate(this);
@@ -152,7 +155,7 @@ void RandomVariablesWidget::makeRVWidget(void)
     theRVTableView->setItemDelegateForColumn(5, distTypeComboDelegate);
 
     // Min/max distribution
-    LineEditDelegate* LEDelegate = new LineEditDelegate(this);
+    LEDelegate = new LineEditDelegate(this);
     theRVTableView->setItemDelegateForColumn(6, LEDelegate);
     theRVTableView->setItemDelegateForColumn(7, LEDelegate);
 
@@ -185,8 +188,19 @@ void RandomVariablesWidget::makeRVWidget(void)
     verticalLayout->addWidget(theConstantTableView);
 
 
-
     verticalLayout->addStretch(1);
+}
+
+
+MixedDelegate *RandomVariablesWidget::getColDataComboDelegate() const
+{
+    return colDataComboDelegate;
+}
+
+
+MixedDelegate *RandomVariablesWidget::getGisMapsComboDelegate() const
+{
+    return gisMapsComboDelegate;
 }
 
 
@@ -238,13 +252,17 @@ bool RandomVariablesWidget::addRandomVariable(const RV& newRV)
         return false;
     }
 
-
     auto tableModel = theRVTableView->getTableModel();
 
     if(tableModel == nullptr)
         return false;
 
     tableModel->addRandomVariable(newRV);
+
+    // Set the default source value to "Preferred"
+    auto row = tableModel->rowCount() - 1;
+    auto RvIndex = tableModel->index(row,1);
+    tableModel->setData(RvIndex,QVariant("Preferred"));
 
     return true;
 }
@@ -273,7 +291,6 @@ bool RandomVariablesWidget::addConstant(const RV& newConstant)
 }
 
 
-
 bool RandomVariablesWidget::addRandomVariable(const QString& name, const QString& fromModel, const QString& uuid)
 {
     RV newRV = this->createNewRV(name,fromModel,uuid);
@@ -290,17 +307,19 @@ bool RandomVariablesWidget::addConstant(const QString& name, const QString& from
 }
 
 
-
 void RandomVariablesWidget::clear(void)
 {
     theConstantTableView->clear();
     theRVTableView->clear();
 
     theRVTableView->getTableModel()->setHeaderStringList(RVTableHeaders);
+    theConstantTableView->getTableModel()->setHeaderStringList(constantTableHeaders);
 }
 
 
 bool RandomVariablesWidget::outputToJSON(QJsonObject &rvObject) {
+
+    Q_UNUSED(rvObject);
 
     //    bool result = true;
     //    QJsonArray rvArray;
@@ -523,27 +542,22 @@ bool RandomVariablesWidget::removeInputParameter(const QString& uuid)
 }
 
 
-void RandomVariablesWidget::handleCellClicked(const QModelIndex &index)
+void RandomVariablesWidget::handleSourceChanged(int val)
 {
-    //    auto row = index.row();
-    //    auto col = index.column();
-
-    //    if(col != 10)
-    //        return;
-
-    //    auto distType = theRVTableView->item(row,5).toString();
-
-    //    if(distType.isEmpty())
-    //        return;
-
-    //    if(distType.compare("Normal") == 0)
-    //    {
-
-    //    }
-    //    else if(distType.compare("Lognormal") == 0)
-    //    {
-
-    //    }
-
+    if(val == 0 || val == 1)
+    {
+        theRVTableView->setItemDelegateForColumn(2, colDataComboDelegate);
+        theRVTableView->setItemDelegateForColumn(3, colDataComboDelegate);
+        theRVTableView->setItemDelegateForColumn(4, colDataComboDelegate);
+    }
+    else if(val == 2)
+    {
+        theRVTableView->setItemDelegateForColumn(2, gisMapsComboDelegate);
+        theRVTableView->setItemDelegateForColumn(3, LEDelegate);
+        theRVTableView->setItemDelegateForColumn(4, LEDelegate);
+    }
+    else
+    {
+        this->errorMessage("Combobox input not handled in RandomVariablesWidget::handleSourceChanged. Please let the developers know");
+    }
 }
-

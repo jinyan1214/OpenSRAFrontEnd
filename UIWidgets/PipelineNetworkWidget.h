@@ -40,11 +40,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <MultiComponentR2D.h>
 
+class VisualizationWidget;
+class ComponentInputWidget;
+
 class QGroupBox;
 class QGISGasPipelineInputWidget;
 class QGISWellsCaprocksInputWidget;
 class QGISAboveGroundGasNetworkInputWidget;
-class VisualizationWidget;
 
 class PipelineNetworkWidget : public  MultiComponentR2D
 {
@@ -60,19 +62,25 @@ public:
 
     void clear(void);
 
-    QGISGasPipelineInputWidget *getTheComponentInputWidget() const;
+    ComponentInputWidget* getTheCurrentComponentInputWidget() const;
 
 signals:
 
+    void componentChangedSignal(ComponentInputWidget* widget);
+
 public slots:
+
+    void handleComponentChanged(QString compName);
 
 private:
 
-    QGISGasPipelineInputWidget* theComponentInputWidget = nullptr;
+    QGISGasPipelineInputWidget* theBelowGroundInputWidget = nullptr;
     QGISWellsCaprocksInputWidget* theWellsCaprocksWidget = nullptr;
     QGISAboveGroundGasNetworkInputWidget* theAboveGroundInfWidget = nullptr;
 
     VisualizationWidget* theVisualizationWidget;
+
+    QVector<ComponentInputWidget*> vectorOfComponents;
 };
 
 #endif // WIND_SELECTION_H

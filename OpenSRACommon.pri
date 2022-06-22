@@ -39,6 +39,7 @@ SOURCES +=  $$PATH_TO_R2D/Tools/CSVReaderWriter.cpp \
             $$PATH_TO_R2D/UIWidgets/QGISAboveGroundGasNetworkInputWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/ComponentInputWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/ShakeMapWidget.cpp \
+            $$PATH_TO_R2D/UIWidgets/GISMapWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/GroundMotionStation.cpp \
             $$PATH_TO_R2D/UIWidgets/GroundMotionTimeHistory.cpp \
             $$PATH_TO_R2D/UIWidgets/SimCenterUnitsWidget.cpp \
@@ -95,6 +96,7 @@ HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
             $$PATH_TO_R2D/UIWidgets/QGISAboveGroundGasNetworkInputWidget.h \
             $$PATH_TO_R2D/UIWidgets/ComponentInputWidget.h \
             $$PATH_TO_R2D/UIWidgets/ShakeMapWidget.h \
+            $$PATH_TO_R2D/UIWidgets/GISMapWidget.h \
             $$PATH_TO_R2D/UIWidgets/GroundMotionStation.h \
             $$PATH_TO_R2D/UIWidgets/GroundMotionTimeHistory.h \
             $$PATH_TO_R2D/UIWidgets/SimCenterUnitsWidget.h \

@@ -66,23 +66,18 @@ EngineeringDemandParameterWidget::EngineeringDemandParameterWidget(QJsonObject m
     mainLayout->setSpacing(0);
     mainLayout->setContentsMargins(5,0,0,0);
 
-    QHBoxLayout *theHeaderLayout = new QHBoxLayout();
-    SectionTitle *label = new SectionTitle();
-    label->setText(QString("Engineering Demand Parameters (EDP)"));
-    label->setMinimumWidth(150);
-
-    theHeaderLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
-    theHeaderLayout->addItem(spacer);
-
-    theHeaderLayout->addStretch(1);
-    mainLayout->addLayout(theHeaderLayout);
-
     theComponentSelection = new SimCenterComponentSelection(this);
 
-    auto dvObj = mainObj.value("EngineeringDemandParameter").toObject();
+    auto thisObj = mainObj.value("EngineeringDemandParameter").toObject();
 
-    foreach(const QJsonValue &value, dvObj)
+    if(thisObj.isEmpty())
+    {
+        this->errorMessage("Could not find the 'EngineeringDemandParameter' key in the methods and params file");
+        return;
+    }
+
+    // Iterate through the objects to create the widgets
+    foreach(const QJsonValue &value, thisObj)
     {
         auto currObj = value.toObject();
 
@@ -105,6 +100,8 @@ EngineeringDemandParameterWidget::EngineeringDemandParameterWidget(QJsonObject m
 
     theComponentSelection->setWidth(120);
     theComponentSelection->setItemWidthHeight(120,70);
+
+    theComponentSelection->displayComponent(0);
 
     mainLayout->addWidget(theComponentSelection);
 
