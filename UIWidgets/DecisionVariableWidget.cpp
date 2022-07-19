@@ -64,7 +64,7 @@ DecisionVariableWidget::DecisionVariableWidget(QJsonObject mainObj, QWidget *par
     mainLayout->setSpacing(0);
     mainLayout->setContentsMargins(5,0,0,0);
 
-    theComponentSelection = new SimCenterComponentSelection(this);
+    theComponentSelection = new SimCenterComponentSelection();
 
     auto dvObj = mainObj.value("DecisionVariable").toObject();
 

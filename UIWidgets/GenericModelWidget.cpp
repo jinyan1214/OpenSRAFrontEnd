@@ -56,10 +56,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 GenericModelWidget::GenericModelWidget(QString parName, QWidget *parent) : SimCenterAppWidget(parent), parentName(parName)
 {
+    this->setObjectName("Generic Model Widget of "+parName);
     verticalLayout = new QVBoxLayout(this);
     verticalLayout->setMargin(2);
     verticalLayout->setSpacing(2);
     this->makeRVWidget();
+
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 }
 
 
@@ -155,7 +158,7 @@ void GenericModelWidget::makeRVWidget(void)
     verticalLayout->addWidget(eqnGB);
 
     RVTableModel* tableModel = theRVTableView->getTableModel();
-    QStringList headers = {"RV Name","Level","Coeff. Mean", "Coeff. Sigma", "Apply Ln", "Power"};
+    QStringList headers = {"RV Name","Level","Coeff. Value", "Apply Ln", "Power"};
     tableModel->setHeaderStringList(headers);
     theRVTableView->show();
 
@@ -171,17 +174,17 @@ void GenericModelWidget::makeRVWidget(void)
     applyLnComboDelegate = new ComboBoxDelegate(this);
     QStringList distTypes = {"true","false"};
     applyLnComboDelegate->setItems(distTypes);
-    theRVTableView->setItemDelegateForColumn(4, applyLnComboDelegate);
+    theRVTableView->setItemDelegateForColumn(3, applyLnComboDelegate);
 
     // Power
     powerComboDelegate = new ComboBoxDelegate(this);
     QStringList powerTypes = {"0","1","2"};
     powerComboDelegate->setItems(powerTypes);
-    theRVTableView->setItemDelegateForColumn(5, powerComboDelegate);
+    theRVTableView->setItemDelegateForColumn(4, powerComboDelegate);
 
     //    theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
-    // Add five random levels
+    // Add five random parameters to start with
     for(int i = 0; i<5; ++i)
         this->addParam();
 
@@ -222,6 +225,9 @@ void GenericModelWidget::clear(void) {
 
 bool GenericModelWidget::outputToJSON(QJsonObject &rvObject) {
 
+    // Here we get the random variables and constants
+    // At the same time we need to populate the methods json object to provide some more information about the type of RV
+
     bool result = true;
 
     QJsonArray rvArray;
@@ -232,8 +238,9 @@ bool GenericModelWidget::outputToJSON(QJsonObject &rvObject) {
 
     for (int i = 0; i <theRVTableView->rowCount(); ++i)
     {
-
         QJsonObject rv;
+
+        auto RVname = tableModel->item(i,0).toString();
 
         for (int j = 0; j <tableHeaders.size(); ++j)
         {
@@ -244,12 +251,16 @@ bool GenericModelWidget::outputToJSON(QJsonObject &rvObject) {
             rv.insert(headerStr,val);
         }
 
-        rvArray.append(rv);
+        rvObject.insert(RVname,rv);
     }
 
-    rvObject["randomVariables"]=rvArray;
-
     return result;
+}
+
+
+void GenericModelWidget::reset(void)
+{
+
 }
 
 
@@ -262,7 +273,11 @@ void GenericModelWidget::addParam(void)
 
     // From model
     auto fromModel = parentName;
-    RV newRV(6,uid,fromModel);
+    auto desc = "User-created parameter from the generic model widget";
+
+    auto name = "RV_"+QString::number(i)+"-"+parentName;
+
+    RV newRV(5,uid,fromModel,desc);
 
     int level = 1;
 
@@ -273,12 +288,11 @@ void GenericModelWidget::addParam(void)
     if(level > 3)
         level = 3;
 
-    newRV[0] = QVariant("RV_"+QString::number(i)+"-"+parentName);
+    newRV[0] = QVariant(name);
     newRV[1] = level;
     newRV[2] = QVariant(rand() % 5 + 1);
-    newRV[3] = QVariant(0.5);
-    newRV[4] = rand() % 10 < 5 ? true : false;
-    newRV[5] = QVariant(rand() % 2);
+    newRV[3] = rand() % 10 < 5 ? true : false;
+    newRV[4] = QVariant(rand() % 2);
 
     newRV.setName(newRV[0].toString());
 
@@ -289,8 +303,6 @@ void GenericModelWidget::addParam(void)
     tableModel->populateData(data);
 
     this->generateEquation();
-
-    emit RVadded(newRV);
 
     theRVTableView->resizeEvent(nullptr);
 }
@@ -315,13 +327,7 @@ void GenericModelWidget::removeParam(void)
         auto rowNum = it.row();
 
         if(rowNum<=data.size()-1)
-        {
-            auto oldRV = data.at(rowNum);
-
-            emit RVremoved(oldRV);
-
             data.remove(rowNum);
-        }
     }
 
     this->sortData();
@@ -329,6 +335,8 @@ void GenericModelWidget::removeParam(void)
     tableModel->populateData(data);
 
     theRVTableView->resizeEvent(nullptr);
+
+    this->generateEquation();
 }
 
 
@@ -365,8 +373,8 @@ void GenericModelWidget::generateEquation(void)
     for(int i = 0; i<numRows; ++i)
     {
         auto rvName = data[i][0].toString();
-        auto applyLn = data[i][4].toBool();
-        auto pow = data[i][5].toInt();
+        auto applyLn = data[i][3].toBool();
+        auto pow = data[i][4].toInt();
 
         QString str;
 

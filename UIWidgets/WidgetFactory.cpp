@@ -46,8 +46,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "JsonLabel.h"
 #include "JsonWidget.h"
 #include "JsonGroupBoxWidget.h"
-#include "ComponentInputWidget.h"
-#include "QGISGasPipelineInputWidget.h"
+#include "AssetInputWidget.h"
+#include "LineAssetInputWidget.h"
 #include "WorkflowAppOpenSRA.h"
 #include "GenericModelWidget.h"
 #include "RandomVariablesWidget.h"
@@ -61,7 +61,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFormLayout>
 #include <QHBoxLayout>
 
-WidgetFactory::WidgetFactory(ComponentInputWidget *parent) : SimCenterWidget(parent), parentInputWidget(parent)
+WidgetFactory::WidgetFactory(AssetInputWidget *parent) : SimCenterWidget(parent), parentInputWidget(parent)
 {
     this->setObjectName("NULL");
 
@@ -123,6 +123,7 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
     JsonComboBox* comboWidget = new JsonComboBox(mainWidget);
     comboWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
     comboWidget->setObjectName(parentKey);
+    comboWidget->setJsonObj(obj);
     mainLayout->addWidget(comboWidget);
 
     JsonStackedWidget* comboStackedWidget = new JsonStackedWidget(mainWidget);
@@ -139,7 +140,7 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
     // Special case where the combo box is the column headers
     if(listKeys.contains("ColumnHeaders"))
     {
-        connect(parentInputWidget, &ComponentInputWidget::headingValuesChanged, comboWidget, &JsonComboBox::updateComboBoxValues);
+        connect(parentInputWidget, &AssetInputWidget::headingValuesChanged, comboWidget, &JsonComboBox::updateComboBoxValues);
     }
     else
     {
@@ -173,9 +174,8 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
                     auto parentName = parent->objectName();
 
                     auto genModelWidget = new GenericModelWidget(parentName);
+                    genModelWidget->setJsonObj(itemObj);
                     comboStackedWidget->addWidget(genModelWidget);
-
-                    connect(genModelWidget, SIGNAL(RVadded(RV)), theRVWidget, SLOT(addRandomVariable(RV)));
                 }
                 else
                 {
@@ -386,6 +386,7 @@ bool WidgetFactory::addWidgetToLayout(const QJsonObject& paramObj, const QString
     if(isNestedComboBoxWidget(paramObj))
     {
         QLabel* widgetLabel = new QLabel(widgetLabelText,this->parentWidget());
+
         mainLayout->addWidget(widgetLabel,Qt::AlignTop);
         mainLayout->addWidget(widget);
     }
@@ -393,14 +394,34 @@ bool WidgetFactory::addWidgetToLayout(const QJsonObject& paramObj, const QString
     {
         mainLayout->addWidget(widget);
     }
-    else
+    else if(widgetType.compare("QLabel") == 0)
     {
-        QLabel* widgetLabel = new QLabel(widgetLabelText,this->parentWidget());
+        auto numThings = mainLayout->count();
+
+        QLabel* widgetLabel = new QLabel(QString::number(numThings+1)+".  "+widgetLabelText+":",this->parentWidget());
+
+        widgetLabel->setStyleSheet("font-weight: bold; color: black");
+
         QGridLayout* newHLayout = new QGridLayout();
         newHLayout->setMargin(0);
         newHLayout->setSpacing(4);
 
-        newHLayout->addWidget(widgetLabel,0,0,Qt::AlignTop);
+        newHLayout->addWidget(widgetLabel,0,0);
+        newHLayout->addWidget(widget,1,0);
+
+        mainLayout->addLayout(newHLayout);
+    }
+    else
+    {
+        QLabel* widgetLabel = new QLabel(widgetLabelText+":",this->parentWidget());
+
+        widgetLabel->setStyleSheet("font-weight: bold; color: black");
+
+        QGridLayout* newHLayout = new QGridLayout();
+        newHLayout->setMargin(0);
+        newHLayout->setSpacing(4);
+
+        newHLayout->addWidget(widgetLabel,0,0);
         newHLayout->addWidget(widget,0,1);
 
         mainLayout->addLayout(newHLayout);

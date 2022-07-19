@@ -52,7 +52,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterComponentSelection.h"
 #include "UIWidgets/CustomVisualizationWidget.h"
 #include "QGISVisualizationWidget.h"
-#include "QGISGasPipelineInputWidget.h"
+#include "LineAssetInputWidget.h"
 #include "WorkflowAppOpenSRA.h"
 #include "UncertaintyQuantificationWidget.h"
 #include "MainWindowWorkflowApp.h"
@@ -206,8 +206,11 @@ void WorkflowAppOpenSRA::initialize(void)
     // Create the various widgets
     theRandomVariableWidget = new RandomVariablesWidget(this);
     thePipelineNetworkWidget = new PipelineNetworkWidget(this,theVisualizationWidget);
+
+    theWidgetFactory = std::make_unique<WidgetFactory>(thePipelineNetworkWidget->getTheBelowGroundInputWidget());
+
     theGenInfoWidget = new GeneralInformationWidget(this);
-    theUQWidget = new UncertaintyQuantificationWidget(this);
+    //theUQWidget = new UncertaintyQuantificationWidget(this);
     theIntensityMeasureWidget = new IntensityMeasureWidget(theVisualizationWidget, this);
     theDamageMeasureWidget = new MultiComponentDMWidget(this);
     theEDPWidget = new MultiComponentEDPWidget(this);
@@ -227,8 +230,8 @@ void WorkflowAppOpenSRA::initialize(void)
 
     connect(this,SIGNAL(sendInfoMessage(QString)),this,SLOT(infoMessage(QString)));
 
-    connect(localApp,SIGNAL(setupForRun(QString,QString)), this, SLOT(setUpForApplicationRun(QString,QString)));
-    connect(this,SIGNAL(setUpForApplicationRunDone(QString, QString)), theRunWidget, SLOT(setupForRunApplicationDone(QString, QString)));
+    connect(localApp, SIGNAL(setupForRun(QString&,QString&)), this, SLOT(setUpForApplicationRun(QString&,QString&)));
+    connect(this, SIGNAL(setUpForApplicationRunDone(QString&, QString&)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString&)));
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
@@ -453,7 +456,7 @@ void WorkflowAppOpenSRA::postprocessResults(QString resultsDirectory, QString /*
 void WorkflowAppOpenSRA::clear(void)
 {
     theGenInfoWidget->clear();
-    theUQWidget->clear();
+//    theUQWidget->clear();
     theGISDataWidget->clear();
     theRandomVariableWidget->clear();
     thePipelineNetworkWidget->clear();
@@ -760,18 +763,6 @@ PipelineNetworkWidget *WorkflowAppOpenSRA::getThePipelineNetworkWidget() const
 WidgetFactory* WorkflowAppOpenSRA::getTheWidgetFactory() const
 {
     return theWidgetFactory.get();
-}
-
-
-void WorkflowAppOpenSRA::setTheWidgetFactory(WidgetFactory* value)
-{
-    if(theWidgetFactory != nullptr)
-    {
-        this->errorMessage("Error, widget factory already created!");
-        return;
-    }
-
-    theWidgetFactory = std::unique_ptr<WidgetFactory>(value);
 }
 
 

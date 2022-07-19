@@ -42,7 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QJsonObject>
 
-class ComponentInputWidget;
+class AssetInputWidget;
 class RandomVariablesWidget;
 
 class QFormLayout;
@@ -51,7 +51,7 @@ class QBoxLayout;
 class WidgetFactory : public SimCenterWidget
 {
 public:
-    WidgetFactory(ComponentInputWidget* parent = nullptr);
+    WidgetFactory(AssetInputWidget* parent = nullptr);
 
     QLayout* getLayout(const QJsonObject& obj, const QString& parentKey, QWidget* parent, QStringList widgetOrder = QStringList());
 
@@ -71,7 +71,7 @@ private:
 
     bool isNestedComboBoxWidget(const QJsonObject& obj);
 
-    ComponentInputWidget* parentInputWidget;
+    AssetInputWidget* parentInputWidget = nullptr;
 
     RandomVariablesWidget* theRVWidget = nullptr;
 };

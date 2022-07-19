@@ -38,8 +38,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Created by: Dr. Stevan Gavrilovic, UC Berkeley
 
-#include <SimCenterAppWidget.h>
-#include <RV.h>
+#include "SimCenterAppWidget.h"
+#include "JsonSerializable.h"
+#include "RV.h"
 
 #include <QVariant>
 
@@ -52,26 +53,25 @@ class QDialog;
 class QComboBox;
 class QLineEdit;
 
-class GenericModelWidget : public SimCenterAppWidget
+class GenericModelWidget : public SimCenterAppWidget, public JsonSerializable
 {
     Q_OBJECT
 public:
     explicit GenericModelWidget(QString parName, QWidget *parent = 0);
     ~GenericModelWidget();
 
-    bool inputFromJSON(QJsonObject &rvObject);
-    bool outputToJSON(QJsonObject &rvObject);
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &rvObject) override;
+
+    void reset(void) override;
 
 public slots:
-    void clear(void);
+    void clear(void) override;
     void addParam(void);
     void removeParam(void);
     void handleCellChanged(int row, int col);
     void handleTypeChanged(int type);
 
-signals:
-    void RVadded(const RV& newRV);
-    void RVremoved(RV oldRV);
 
 private:
 
@@ -81,11 +81,11 @@ private:
 
     QVector<RV> data;
     void makeRVWidget(void);
-    QVBoxLayout *verticalLayout;
+    QVBoxLayout* verticalLayout = nullptr;
 
-    QLabel* eqnLabelLevel1;
-    QLabel* eqnLabelLevel2;
-    QLabel* eqnLabelLevel3;
+    QLabel* eqnLabelLevel1 = nullptr;
+    QLabel* eqnLabelLevel2 = nullptr;
+    QLabel* eqnLabelLevel3 = nullptr;
 
     ComboBoxDelegate* levelComboDelegate = nullptr;
     ComboBoxDelegate* applyLnComboDelegate = nullptr;

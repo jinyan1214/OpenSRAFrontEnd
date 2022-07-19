@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RandomVariablesWidget.h"
 #include "WorkflowAppOpenSRA.h"
 #include "PipelineNetworkWidget.h"
-#include "QGISGasPipelineInputWidget.h"
+#include "LineAssetInputWidget.h"
 
 #include "RVTableView.h"
 #include "RVTableModel.h"
@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LabelDelegate.h"
 #include "ComboBoxDelegate.h"
 #include "ButtonDelegate.h"
+#include "StringListDelegate.h"
 
 #include <QComboBox>
 #include <QVBoxLayout>
@@ -62,8 +63,8 @@ RandomVariablesWidget::RandomVariablesWidget(QWidget *parent) : SimCenterWidget(
     verticalLayout->setMargin(2);
     verticalLayout->setSpacing(2);
 
-    RVTableHeaders = QStringList({"Name","Source", "Mean or Median", "Sigma","CoV","Distribution Type","Distribution Min", "Distribution Max", "Units","From Model"});
-    constantTableHeaders = QStringList({"Name","Source", "Value", "Units", "From Model"});
+    RVTableHeaders = QStringList({"Name","Description","From Model","Source","Distribution Type","Mean or Median","Sigma","CoV","Distribution Min","Distribution Max"});
+    constantTableHeaders = QStringList({"Name","Description","From Model","Source","Value"});
 
     this->makeRVWidget();
 }
@@ -75,9 +76,9 @@ RandomVariablesWidget::~RandomVariablesWidget()
 }
 
 
-bool RandomVariablesWidget::removeRandomVariable(const QString &uuid)
+bool RandomVariablesWidget::removeRandomVariable(const QString &uuid, const QString &fromModel)
 {
-    auto res = theRVTableView->getTableModel()->removeRandomVariable(uuid);
+    auto res = theRVTableView->getTableModel()->removeRandomVariable(uuid,fromModel);
 
     if(res == false)
         this->errorMessage("Failed to remove random variable "+uuid);
@@ -86,9 +87,9 @@ bool RandomVariablesWidget::removeRandomVariable(const QString &uuid)
 }
 
 
-bool RandomVariablesWidget::removeConstant(const QString &uuid)
+bool RandomVariablesWidget::removeConstant(const QString &uuid, const QString &fromModel)
 {
-    auto res = theConstantTableView->getTableModel()->removeRandomVariable(uuid);
+    auto res = theConstantTableView->getTableModel()->removeRandomVariable(uuid,fromModel);
 
     if(res == false)
         this->errorMessage("Failed to remove the constant "+uuid);
@@ -127,20 +128,16 @@ void RandomVariablesWidget::makeRVWidget(void)
 
     // Source type
     sourceComboDelegate = new ComboBoxDelegate(this);
-    QStringList sourceTypes = {"Preferred","From Infrastructure Table","From user-provided GIS maps"};
+    QStringList sourceTypes = {"Preferred","From Infrastructure Table or Enter Value","From user-provided GIS maps"};
     sourceComboDelegate->setItems(sourceTypes);
-    theRVTableView->setItemDelegateForColumn(1, sourceComboDelegate);
+
     connect(sourceComboDelegate,&ComboBoxDelegate::currentIndexChanged,this,&RandomVariablesWidget::handleSourceChanged);
 
     // Column selection/data type delegate
     colDataComboDelegate = new MixedDelegate(this);
     QStringList colTypes = {"No infrastructure information available"};
     colDataComboDelegate->setItems(colTypes);
-    colDataComboDelegate->setIsEditable(false);
-
-    theRVTableView->setItemDelegateForColumn(2, colDataComboDelegate);
-    theRVTableView->setItemDelegateForColumn(3, colDataComboDelegate);
-    theRVTableView->setItemDelegateForColumn(4, colDataComboDelegate);
+    colDataComboDelegate->setIsEditable(true);
 
     gisMapsComboDelegate = new MixedDelegate(this);
     QStringList gisMaps = {"No GIS maps loaded"};
@@ -152,28 +149,51 @@ void RandomVariablesWidget::makeRVWidget(void)
     QStringList distTypes = {"","Lognormal","Normal"};
     distTypeComboDelegate->setItems(distTypes);
     distTypeComboDelegate->setIsEditable(false);
-    theRVTableView->setItemDelegateForColumn(5, distTypeComboDelegate);
-
-    // Min/max distribution
-    LEDelegate = new LineEditDelegate(this);
-    theRVTableView->setItemDelegateForColumn(6, LEDelegate);
-    theRVTableView->setItemDelegateForColumn(7, LEDelegate);
 
     connect(theRVTableView->getTableModel(),SIGNAL(handleCellChanged(int,int)),this,SLOT(handleCellChanged(int,int)));
 
-    // From model
     LabelDelegate* labDelegate = new LabelDelegate(this);
 
+    LEDelegate = new LineEditDelegate(this);
+
+    //    StringListDelegate* SLDelegate = new StringListDelegate(this);
+
+    // "Name","Description","From Model","Source","Distribution Type","Mean or Median","Sigma","CoV","Distribution Min","Distribution Max"
+
+    // Name
     theRVTableView->setItemDelegateForColumn(0, labDelegate);
-    theRVTableView->setItemDelegateForColumn(9, labDelegate);
+
+    // Description
+    theRVTableView->setItemDelegateForColumn(1, labDelegate);
+
+    // From Model
+    theRVTableView->setItemDelegateForColumn(2, labDelegate);
+
+    // Source
+    theRVTableView->setItemDelegateForColumn(3, sourceComboDelegate);
+
+    // Distribution Type
+    theRVTableView->setItemDelegateForColumn(4, distTypeComboDelegate);
+
+    // Mean or Median
+    theRVTableView->setItemDelegateForColumn(5, colDataComboDelegate);
+
+    // Sigma
+    theRVTableView->setItemDelegateForColumn(6, colDataComboDelegate);
+
+    // Cov
+    theRVTableView->setItemDelegateForColumn(7, colDataComboDelegate);
+
+    // Min/max distribution
+    theRVTableView->setItemDelegateForColumn(8, LEDelegate);
+    theRVTableView->setItemDelegateForColumn(9, LEDelegate);
 
     theRVTableView->setEditTriggers(QAbstractItemView::AllEditTriggers);
-
     theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
 
     // The constant table
-    QLabel* constLabel = new QLabel("Constant Variables");
+    QLabel* constLabel = new QLabel("Constant or Fixed Variables");
     constLabel->setStyleSheet("font-weight: bold; color: black");
     verticalLayout->addWidget(constLabel,0,Qt::AlignHCenter);
 
@@ -185,8 +205,28 @@ void RandomVariablesWidget::makeRVWidget(void)
     RVTableModel* constTableModel = theConstantTableView->getTableModel();
     constTableModel->setHeaderStringList(constantTableHeaders);
 
+    // "Name","Description","From Model","Source","Value"
+    // Name
+    theConstantTableView->setItemDelegateForColumn(0, labDelegate);
+
+    // Description
+    theConstantTableView->setItemDelegateForColumn(1, labDelegate);
+
+    // From Model
+    theConstantTableView->setItemDelegateForColumn(2, labDelegate);
+
+    // Source
+    theConstantTableView->setItemDelegateForColumn(3, sourceComboDelegate);
+
+    // "Value"
+    theConstantTableView->setItemDelegateForColumn(4, colDataComboDelegate);
+
+
     verticalLayout->addWidget(theConstantTableView);
 
+    QLabel* instructionsLabel = new QLabel("Instructions for using this tab");
+
+    verticalLayout->addWidget(instructionsLabel);
 
     verticalLayout->addStretch(1);
 }
@@ -204,41 +244,28 @@ MixedDelegate *RandomVariablesWidget::getGisMapsComboDelegate() const
 }
 
 
-void RandomVariablesWidget::loadRVsFromJson(void)
+bool RandomVariablesWidget::addNewModelToExistingParameter(const RV& rv, const QStringList& fromModel, RVTableView* database)
 {
-    QString RVsFileDir=QFileDialog::getOpenFileName(this,tr("Open File"),"", "JSON File (*.json)");
 
-    QFile file(RVsFileDir);
-    if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        QString message = QString("Error: could not open file") + RVsFileDir;
-        this->errorMessage(message);
-    }
-    QString val;
-    val=file.readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(val.toUtf8());
-    QJsonObject rvObject = doc.object();
-    if (!RVsFileDir.isEmpty())
-        inputFromJSON(rvObject);
-}
+    auto name = rv.getName();
 
+    auto model = database->getTableModel();
 
-void RandomVariablesWidget::saveRVsToJson(void)
-{
-    QString RVsFileDir = QFileDialog::getSaveFileName(this,
-                                                      tr("Save Data"), "RVs",
-                                                      tr("JSON File (*.json)"));
-    QFile file(RVsFileDir);
-    if (file.open(QIODevice::WriteOnly))
+    auto& RVs = model->getRandomVariables();
+
+    for(auto& it: RVs)
     {
-        QJsonObject rvObject;
-        outputToJSON(rvObject);
-
-        QJsonDocument doc(rvObject);
-        file.write(doc.toJson());
-        file.close();
+        if(it.getName().compare(name) == 0)
+        {
+            it.addModelToList(fromModel);
+            database->updateTable();
+            return true;
+        }
     }
 
+    return false;
 }
+
 
 
 bool RandomVariablesWidget::addRandomVariable(const RV& newRV)
@@ -246,23 +273,30 @@ bool RandomVariablesWidget::addRandomVariable(const RV& newRV)
 
     auto rvName = newRV.getName();
 
-    if(this->checkIfRVExists(rvName))
+    auto fromModel = newRV.getFromModelList();
+
+    if(!this->checkIfRVExists(rvName).isEmpty())
     {
-        this->errorMessage("Warning, the RV "+rvName+ " already exists!");
-        return false;
+        return this->addNewModelToExistingParameter(newRV,fromModel,theRVTableView);
     }
 
-    auto tableModel = theRVTableView->getTableModel();
+    auto RVtableModel = theRVTableView->getTableModel();
 
-    if(tableModel == nullptr)
+    if(RVtableModel == nullptr)
         return false;
 
-    tableModel->addRandomVariable(newRV);
+    RVtableModel->addRandomVariable(newRV);
 
     // Set the default source value to "Preferred"
-    auto row = tableModel->rowCount() - 1;
-    auto RvIndex = tableModel->index(row,1);
-    tableModel->setData(RvIndex,QVariant("Preferred"));
+    auto rowRV = RVtableModel->rowCount() - 1;
+
+    // Source column
+    auto RvIndex = RVtableModel->index(rowRV,3);
+    RVtableModel->setData(RvIndex,QVariant("Preferred"));
+
+    // Dist type column
+    auto distTypeIndex = RVtableModel->index(rowRV,4);
+    RVtableModel->setData(distTypeIndex,QVariant("Normal"));
 
     return true;
 }
@@ -272,13 +306,12 @@ bool RandomVariablesWidget::addConstant(const RV& newConstant)
 {
 
     auto paramName = newConstant.getName();
+    auto fromModel = newConstant.getFromModelList();
 
-    if(this->checkIfConstantExists(paramName))
+    if(!this->checkIfConstantExists(paramName).isEmpty())
     {
-        this->errorMessage("Warning, the constant "+paramName+ " already exists!");
-        return false;
+        return this->addNewModelToExistingParameter(newConstant,fromModel,theConstantTableView);
     }
-
 
     auto tableModel = theConstantTableView->getTableModel();
 
@@ -287,21 +320,30 @@ bool RandomVariablesWidget::addConstant(const RV& newConstant)
 
     tableModel->addRandomVariable(newConstant);
 
+    auto constanTableModel = theConstantTableView->getTableModel();
+
+    // Set the default source value to "Preferred"
+    auto rowConst = constanTableModel->rowCount() - 1;
+
+    // Source column
+    auto constIndex = constanTableModel->index(rowConst,3);
+    constanTableModel->setData(constIndex,QVariant("Preferred"));
+
     return true;
 }
 
 
-bool RandomVariablesWidget::addRandomVariable(const QString& name, const QString& fromModel, const QString& uuid)
+bool RandomVariablesWidget::addRandomVariable(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid)
 {
-    RV newRV = this->createNewRV(name,fromModel,uuid);
+    RV newRV = this->createNewRV(name,fromModel,desc,uuid);
 
     return this->addRandomVariable(newRV);
 }
 
 
-bool RandomVariablesWidget::addConstant(const QString& name, const QString& fromModel, const QString& uuid)
+bool RandomVariablesWidget::addConstant(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid)
 {
-    RV newRV = this->createNewConstant(name,fromModel,uuid);
+    RV newRV = this->createNewConstant(name,fromModel,desc,uuid);
 
     return this->addConstant(newRV);
 }
@@ -358,16 +400,16 @@ void RandomVariablesWidget::handleCellChanged(int row, int col)
 {
     RVTableModel* tableModel = theRVTableView->getTableModel();
 
-    if(col == 3)
+    if(col == 6)
     {
-        auto index = theRVTableView->getTableModel()->index(row,4);
+        auto index = theRVTableView->getTableModel()->index(row,7);
         tableModel->blockSignals(true);
         tableModel->setData(index,QVariant(),Qt::EditRole);
         tableModel->blockSignals(false);
     }
-    else if(col == 4)
+    else if(col == 7)
     {
-        auto index = theRVTableView->getTableModel()->index(row,3);
+        auto index = theRVTableView->getTableModel()->index(row,6);
         tableModel->blockSignals(true);
         tableModel->setData(index,QVariant(),Qt::EditRole);
         tableModel->blockSignals(false);
@@ -410,7 +452,29 @@ bool RandomVariablesWidget::inputFromJSON(QJsonObject &rvObject)
 }
 
 
-bool RandomVariablesWidget::checkIfRVExists(const QString& name)
+QString RandomVariablesWidget::checkIfParameterExists(const QString& name, bool& OK)
+{
+
+    auto RVUUid = checkIfRVExists(name);
+    auto constantUUid = checkIfConstantExists(name);
+
+    if(!RVUUid.isEmpty() && !constantUUid.isEmpty())
+    {
+        this->errorMessage("Warning, a RV and a constant have the same name, this is not allowed.");
+        OK = false;
+        return QString();
+    }
+
+    if(!RVUUid.isEmpty())
+        return RVUUid;
+    else
+        return constantUUid;
+
+    return QString();
+}
+
+
+QString RandomVariablesWidget::checkIfRVExists(const QString& name)
 {
     auto model = theRVTableView->getTableModel();
 
@@ -419,14 +483,14 @@ bool RandomVariablesWidget::checkIfRVExists(const QString& name)
     for(auto&& it: RVs)
     {
         if(it.getName().compare(name) == 0)
-            return true;
+            return it.getUuid();
     }
 
-    return false;
+    return QString();
 }
 
 
-bool RandomVariablesWidget::checkIfConstantExists(const QString& name)
+QString RandomVariablesWidget::checkIfConstantExists(const QString& name)
 {
     auto model = theConstantTableView->getTableModel();
 
@@ -435,10 +499,10 @@ bool RandomVariablesWidget::checkIfConstantExists(const QString& name)
     for(auto&& it: params)
     {
         if(it.getName().compare(name) == 0)
-            return true;
+            return it.getUuid();
     }
 
-    return false;
+    return QString();
 }
 
 
@@ -474,23 +538,23 @@ bool RandomVariablesWidget::checkIfRVuuidExists(const QString& uuid)
 }
 
 
-RV RandomVariablesWidget::createNewRV(const QString& name, const QString& fromModel, const QString& uuid)
+RV RandomVariablesWidget::createNewRV(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid)
 {
     auto numCols = RVTableHeaders.size();
 
-    RV newRV(numCols,uuid,fromModel);
+    RV newRV(numCols,uuid,fromModel,desc);
 
-    // "Name","Source", "Mean", "Sigma","CoV","Distribution Type","Distribution Min", "Distribution Max", "Units","From Model"
+    // "Name","Description","From Model","Source","Distribution Type","Mean or Median","Sigma","CoV","Distribution Min","Distribution Max"
     newRV[0] = name;
-    newRV[1] = QVariant();
-    newRV[2] = QVariant();
+    newRV[1] = QVariant(desc);
+    newRV[2] = QVariant(QStringList(fromModel));
     newRV[3] = QVariant();
     newRV[4] = QVariant();
     newRV[5] = QVariant();
     newRV[6] = QVariant();
     newRV[7] = QVariant();
     newRV[8] = QVariant();
-    newRV[9] = QVariant(fromModel);
+    newRV[9] = QVariant();
 
     newRV.setName(name);
 
@@ -498,18 +562,18 @@ RV RandomVariablesWidget::createNewRV(const QString& name, const QString& fromMo
 }
 
 
-RV RandomVariablesWidget::createNewConstant(const QString& name, const QString& fromModel, const QString& uuid)
+RV RandomVariablesWidget::createNewConstant(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid)
 {
     auto numCols = constantTableHeaders.size();
 
-    RV newRV(numCols,uuid,fromModel);
+    RV newRV(numCols,uuid,fromModel,desc);
 
-    // "Name","Source", "Value", "Units", "From Model"
+    // "Name","Description","From Model","Source","Value"
     newRV[0] = name;
-    newRV[1] = QVariant();
-    newRV[2] = QVariant();
+    newRV[1] = QVariant(desc);
+    newRV[2] = QVariant(QStringList(fromModel));
     newRV[3] = QVariant();
-    newRV[4] = QVariant(fromModel);
+    newRV[4] = QVariant();
 
     newRV.setName(name);
 
@@ -517,12 +581,12 @@ RV RandomVariablesWidget::createNewConstant(const QString& name, const QString& 
 }
 
 
-bool RandomVariablesWidget::addNewInputParameter(const QString& name, const QString& fromModel, const QString& uuid, const QString& type)
+bool RandomVariablesWidget::addNewParameter(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid, const QString& type)
 {
     if(type.compare("random") == 0)
-        return addRandomVariable(name,fromModel,uuid);
+        return addRandomVariable(name,fromModel,desc,uuid);
     else if(type.compare("fixed") == 0)
-        return addConstant(name,fromModel,uuid);
+        return addConstant(name,fromModel,desc,uuid);
     else
         this->errorMessage("The type of parameter: "+type+ " is not recognized, for parameter: "+name+", from model: "+fromModel);
 
@@ -530,13 +594,13 @@ bool RandomVariablesWidget::addNewInputParameter(const QString& name, const QStr
 }
 
 
-bool RandomVariablesWidget::removeInputParameter(const QString& uuid)
+bool RandomVariablesWidget::removeParameter(const QString& uuid, const QString& fromModel)
 {
     // First try if it is a RV
     if(this->checkIfRVuuidExists(uuid))
-        return removeRandomVariable(uuid);
-    else if(this->checkIfConstantuuidExists(uuid))
-        return removeConstant(uuid);
+        return removeRandomVariable(uuid,fromModel);
+    else if(this->checkIfConstantuuidExists(uuid)) // Then check to see if it is an object
+        return removeConstant(uuid,fromModel);
     else
         return false;
 }
@@ -546,15 +610,27 @@ void RandomVariablesWidget::handleSourceChanged(int val)
 {
     if(val == 0 || val == 1)
     {
-        theRVTableView->setItemDelegateForColumn(2, colDataComboDelegate);
-        theRVTableView->setItemDelegateForColumn(3, colDataComboDelegate);
-        theRVTableView->setItemDelegateForColumn(4, colDataComboDelegate);
+        // "Name","Description","From Model","Source","Distribution Type","Mean or Median","Sigma","CoV","Distribution Min","Distribution Max"
+
+        // "Mean or Median"
+        theRVTableView->setItemDelegateForColumn(5, colDataComboDelegate);
+
+        // "Sigma"
+        theRVTableView->setItemDelegateForColumn(6, colDataComboDelegate);
+
+        // "CoV"
+        theRVTableView->setItemDelegateForColumn(7, colDataComboDelegate);
+
+        // "Name","Description","From Model","Source","Value"
+        theConstantTableView->setItemDelegateForColumn(4, colDataComboDelegate);
     }
     else if(val == 2)
     {
-        theRVTableView->setItemDelegateForColumn(2, gisMapsComboDelegate);
-        theRVTableView->setItemDelegateForColumn(3, LEDelegate);
-        theRVTableView->setItemDelegateForColumn(4, LEDelegate);
+        theRVTableView->setItemDelegateForColumn(5, gisMapsComboDelegate);
+        theRVTableView->setItemDelegateForColumn(6, LEDelegate);
+        theRVTableView->setItemDelegateForColumn(7, LEDelegate);
+
+        theConstantTableView->setItemDelegateForColumn(4, gisMapsComboDelegate);
     }
     else
     {

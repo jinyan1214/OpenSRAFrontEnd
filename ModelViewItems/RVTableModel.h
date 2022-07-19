@@ -68,8 +68,8 @@ public:
 
     void addRandomVariable(const RV& newRV);
 
-    bool removeRandomVariable(const RV& RVRemove);
-    bool removeRandomVariable(const QString& rvuuid);
+    bool removeRandomVariable(const RV& RVRemove, const QString& fromModel);
+    bool removeRandomVariable(const QString& rvuuid, const QString& fromModel);
 
     QVector<RV>& getRandomVariables();
 
@@ -79,13 +79,14 @@ public:
 
     int getNumRVs();
 
+    // Call when data changes
+    void update();
+
 signals:
 
     void handleCellChanged(int row, int col);
 
 private:
-
-    void update();
 
     QVector<RV> tableData;
     QStringList headerStringList;

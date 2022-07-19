@@ -43,8 +43,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RandomVariablesWidget.h"
 #include "WorkflowAppOpenSRA.h"
 #include "MixedDelegate.h"
+#include "SimCenterAppSelection.h"
+#include "GISGasNetworkInputWidget.h"
 
-#include "QGISGasPipelineInputWidget.h"
+#include "LineAssetInputWidget.h"
 #include "QGISWellsCaprocksInputWidget.h"
 #include "QGISAboveGroundGasNetworkInputWidget.h"
 
@@ -86,21 +88,32 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
 
     theMainLayout->insertLayout(0,theHeaderLayout);
 
-    theBelowGroundInputWidget = new QGISGasPipelineInputWidget(this, theVisualizationWidget, "Gas Pipelines","Gas Network");
-    theBelowGroundInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
+    gasPipelineWidget = new SimCenterAppSelection(QString("Regional Gas Pipelines"), QString("Assets"), QString("NaturalGasPipelines"), this);
 
-    theBelowGroundInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
-    theBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
+
+    csvBelowGroundInputWidget = new LineAssetInputWidget(this, theVisualizationWidget, "Gas Pipelines","Gas Network");
+    csvBelowGroundInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
+
+    csvBelowGroundInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
+    csvBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
+
+    GISGasNetworkInputWidget *gisGasNetworkInventory = new GISGasNetworkInputWidget(this, theVisualizationWidget);
 
     theWellsCaprocksWidget = new QGISWellsCaprocksInputWidget(this, theVisualizationWidget, "Wells and Caprocks","Wells and Caprocks");
 
     theAboveGroundInfWidget = new QGISAboveGroundGasNetworkInputWidget(this, theVisualizationWidget, "Above Ground Gas Infrastructures","Above ground infrastructure");
 
-    this->addComponent("Pipelines", theBelowGroundInputWidget);
+    gasPipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvBelowGroundInputWidget);
+    gasPipelineWidget->addComponent(QString("GIS to Pipeline"), QString("GIS_to_PIPELINE"), gisGasNetworkInventory);
+
+    this->addComponent("Pipelines", gasPipelineWidget);
     this->addComponent("Wells and Caprocks", theWellsCaprocksWidget);
     this->addComponent("Above Ground \nGas Infrastructure", theAboveGroundInfWidget);
 
-    vectorOfComponents.append(theBelowGroundInputWidget);
+    auto testInputWidget = new LineAssetInputWidget(this, theVisualizationWidget, "Test","Test");
+    this->addComponent("Future Infrastructure", testInputWidget);
+
+    vectorOfComponents.append(csvBelowGroundInputWidget);
     vectorOfComponents.append(theWellsCaprocksWidget);
     vectorOfComponents.append(theAboveGroundInfWidget);
 
@@ -108,13 +121,15 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
 
     assert(colDelegate);
 
-    connect(theBelowGroundInputWidget, &ComponentInputWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
-    connect(theWellsCaprocksWidget, &ComponentInputWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
-    connect(theAboveGroundInfWidget, &ComponentInputWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
+    connect(csvBelowGroundInputWidget, &AssetInputWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
+    connect(gisGasNetworkInventory, &GISGasNetworkInputWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
+
+    connect(theWellsCaprocksWidget, &AssetInputWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
+    connect(theAboveGroundInfWidget, &AssetInputWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
 
     // Test to remove start
-    //    theComponentInputWidget->loadFileFromPath("/Users/steve/Downloads/10000_random_sites_in_ca.csv");
-    //    theComponentInputWidget->selectAllComponents();
+    //    theAssetInputWidget->loadFileFromPath("/Users/steve/Downloads/10000_random_sites_in_ca.csv");
+    //    theAssetInputWidget->selectAllComponents();
 
     theWellsCaprocksWidget->loadFileFromPath("/Users/steve/Desktop/ExWellCaprock.csv");
 
@@ -260,13 +275,13 @@ bool PipelineNetworkWidget::copyFiles(QString &destDir)
 
 void PipelineNetworkWidget::clear(void)
 {
-    theBelowGroundInputWidget->clear();
+    csvBelowGroundInputWidget->clear();
     theWellsCaprocksWidget->clear();
     theAboveGroundInfWidget->clear();
 }
 
 
-ComponentInputWidget* PipelineNetworkWidget::getTheCurrentComponentInputWidget() const
+AssetInputWidget* PipelineNetworkWidget::getTheCurrentAssetInputWidget() const
 {
     auto currCompIndex = this->getCurrentIndex();
 
@@ -289,5 +304,11 @@ void PipelineNetworkWidget::handleComponentChanged(QString compName)
     auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
 
     emit componentChangedSignal(theCurrInputWidget);
+}
+
+
+LineAssetInputWidget *PipelineNetworkWidget::getTheBelowGroundInputWidget() const
+{
+    return csvBelowGroundInputWidget;
 }
 

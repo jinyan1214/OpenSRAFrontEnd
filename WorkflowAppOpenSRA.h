@@ -104,13 +104,8 @@ public:
 
     WidgetFactory* getTheWidgetFactory() const;
 
-    void setTheWidgetFactory(WidgetFactory* value);
-
     RandomVariablesWidget *getTheRandomVariableWidget() const;
 
-signals:
-    void setUpForApplicationRunDone(QString &tmpDirectory, QString &inputFile);
-    void sendLoadFile(QString filename);
 
 public slots:  
     void clear(void);

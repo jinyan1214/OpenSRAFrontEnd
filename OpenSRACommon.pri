@@ -34,15 +34,19 @@ SOURCES +=  $$PATH_TO_R2D/Tools/CSVReaderWriter.cpp \
             $$PATH_TO_R2D/GraphicElements/GridNode.cpp \
             $$PATH_TO_R2D/GraphicElements/NodeHandle.cpp \
             $$PATH_TO_R2D/GraphicElements/RectangleGrid.cpp \
-            $$PATH_TO_R2D/UIWidgets/QGISGasPipelineInputWidget.cpp \
+            $$PATH_TO_R2D/UIWidgets/LineAssetInputWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/QGISWellsCaprocksInputWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/QGISAboveGroundGasNetworkInputWidget.cpp \
-            $$PATH_TO_R2D/UIWidgets/ComponentInputWidget.cpp \
+            $$PATH_TO_R2D/UIWidgets/AssetInputWidget.cpp \
+            $$PATH_TO_R2D/UIWidgets/CRSSelectionWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/ShakeMapWidget.cpp \
+            $$PATH_TO_R2D/UIWidgets/GISAssetInputWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/GISMapWidget.cpp \
+            $$PATH_TO_R2D/UIWidgets/GISGasNetworkInputWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/GroundMotionStation.cpp \
             $$PATH_TO_R2D/UIWidgets/GroundMotionTimeHistory.cpp \
             $$PATH_TO_R2D/UIWidgets/SimCenterUnitsWidget.cpp \
+            $$PATH_TO_R2D/UIWidgets/UserInputFaultWidget.cpp \
             $$PATH_TO_R2D/ModelViewItems/CustomListWidget.cpp \
             $$PATH_TO_R2D/ModelViewItems/MutuallyExclusiveListWidget.cpp \
             $$PATH_TO_R2D/ModelViewItems/ComponentTableModel.cpp \
@@ -91,15 +95,19 @@ HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
             $$PATH_TO_R2D/GraphicElements/GridNode.h \
             $$PATH_TO_R2D/GraphicElements/NodeHandle.h \
             $$PATH_TO_R2D/GraphicElements/RectangleGrid.h \
-            $$PATH_TO_R2D/UIWidgets/QGISGasPipelineInputWidget.h \
+            $$PATH_TO_R2D/UIWidgets/LineAssetInputWidget.h \
             $$PATH_TO_R2D/UIWidgets/QGISWellsCaprocksInputWidget.h \
             $$PATH_TO_R2D/UIWidgets/QGISAboveGroundGasNetworkInputWidget.h \
-            $$PATH_TO_R2D/UIWidgets/ComponentInputWidget.h \
+            $$PATH_TO_R2D/UIWidgets/AssetInputWidget.h \
+            $$PATH_TO_R2D/UIWidgets/CRSSelectionWidget.h \
             $$PATH_TO_R2D/UIWidgets/ShakeMapWidget.h \
-            $$PATH_TO_R2D/UIWidgets/GISMapWidget.h \
+            $$PATH_TO_R2D/UIWidgets/GISAssetInputWidget.h \
+            $$PATH_TO_R2D/UIWidgets/GISMapWidget.h \    
+            $$PATH_TO_R2D/UIWidgets/GISGasNetworkInputWidget.h \
             $$PATH_TO_R2D/UIWidgets/GroundMotionStation.h \
             $$PATH_TO_R2D/UIWidgets/GroundMotionTimeHistory.h \
             $$PATH_TO_R2D/UIWidgets/SimCenterUnitsWidget.h \
+            $$PATH_TO_R2D/UIWidgets/UserInputFaultWidget.h \
             $$PATH_TO_R2D/ModelViewItems/CustomListWidget.h \
             $$PATH_TO_R2D/ModelViewItems/MutuallyExclusiveListWidget.h \
             $$PATH_TO_R2D/ModelViewItems/ComponentTableModel.h \

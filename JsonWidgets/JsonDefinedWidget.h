@@ -41,6 +41,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "WidgetFactory.h"
 #include "JsonWidget.h"
 
+class QVBoxLayout;
+
 class JsonDefinedWidget : public JsonWidget
 {
 public:
@@ -49,7 +51,7 @@ public:
 
 private:
 
-    QLayout* layout = nullptr;
+    QVBoxLayout* layout = nullptr;
 };
 
 #endif // JSONDEFINEDWIDGET_H

@@ -52,7 +52,7 @@ public:
 
     bool inputFromJSON(QJsonObject &jsonObject);
 
-    void setDefaultValue(const QJsonValue& obj);
+    void setDefaultValue(const QJsonValue& obj, const QString& prepend = QString(), const QString& append = QString());
 
     void reset(void);
 

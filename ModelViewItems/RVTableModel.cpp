@@ -181,27 +181,42 @@ int RVTableModel::getNumRVs()
 }
 
 
-bool RVTableModel::removeRandomVariable(const RV& RVRemove)
+bool RVTableModel::removeRandomVariable(const RV& RVRemove, const QString& fromModel)
 {
     auto rvName = RVRemove.getUuid();
 
-    return this->removeRandomVariable(rvName);
+    return this->removeRandomVariable(rvName,fromModel);
 }
 
 
-bool RVTableModel::removeRandomVariable(const QString& rvuuid)
+bool RVTableModel::removeRandomVariable(const QString& rvuuid, const QString& fromModel)
 {
     if(tableData.isEmpty())
         return false;
 
+    // Get the index of the RV in the table
     auto removeIdx = -1;
 
     for(int i = 0; i<tableData.size(); ++i)
     {
-        if(tableData.at(i).getUuid().compare(rvuuid) == 0)
+        RV& rv = tableData[i];
+
+        if(rv.getUuid().compare(rvuuid) == 0)
         {
             removeIdx = i;
-            break;
+
+            // Remove the model from the RV list first, the RC could be shared by multiple models
+            auto res = rv.removeModelFromList(fromModel);
+
+            this->update();
+
+            // Model removed from list, but still models in list so RV is shared, do not remove from table
+            if(res == 0)
+                return true;
+            else if(res == -1) // Error
+                return false;
+            else
+                break;
         }
     }
 

@@ -41,10 +41,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <MultiComponentR2D.h>
 
 class VisualizationWidget;
-class ComponentInputWidget;
+class AssetInputWidget;
+class SimCenterAppSelection;
 
 class QGroupBox;
-class QGISGasPipelineInputWidget;
+class LineAssetInputWidget;
 class QGISWellsCaprocksInputWidget;
 class QGISAboveGroundGasNetworkInputWidget;
 
@@ -62,11 +63,13 @@ public:
 
     void clear(void);
 
-    ComponentInputWidget* getTheCurrentComponentInputWidget() const;
+    AssetInputWidget* getTheCurrentAssetInputWidget() const;
+
+    LineAssetInputWidget *getTheBelowGroundInputWidget() const;
 
 signals:
 
-    void componentChangedSignal(ComponentInputWidget* widget);
+    void componentChangedSignal(AssetInputWidget* widget);
 
 public slots:
 
@@ -74,13 +77,15 @@ public slots:
 
 private:
 
-    QGISGasPipelineInputWidget* theBelowGroundInputWidget = nullptr;
+    SimCenterAppSelection* gasPipelineWidget = nullptr;
+
+    LineAssetInputWidget* csvBelowGroundInputWidget = nullptr;
     QGISWellsCaprocksInputWidget* theWellsCaprocksWidget = nullptr;
     QGISAboveGroundGasNetworkInputWidget* theAboveGroundInfWidget = nullptr;
 
     VisualizationWidget* theVisualizationWidget;
 
-    QVector<ComponentInputWidget*> vectorOfComponents;
+    QVector<AssetInputWidget*> vectorOfComponents;
 };
 
 #endif // WIND_SELECTION_H

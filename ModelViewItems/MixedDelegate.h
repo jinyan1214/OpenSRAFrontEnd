@@ -72,11 +72,12 @@ private:
 
     bool isPreferred(const QModelIndex &index) const;
 
-    int col = 1;
+    // Column where need to look for source
+    int col = 3;
 
     QStringList items;
 
-    bool isEditable = false;
+    bool isEditable = true;
 };
 
 #endif // MixedDelegate_H

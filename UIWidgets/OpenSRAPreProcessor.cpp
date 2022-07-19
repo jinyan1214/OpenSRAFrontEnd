@@ -39,7 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "WorkflowAppOpenSRA.h"
 #include "PipelineNetworkWidget.h"
 #include "QGISVisualizationWidget.h"
-#include "QGISGasPipelineInputWidget.h"
+#include "LineAssetInputWidget.h"
 #include "OpenSRAPreProcessor.h"
 #include "ComponentDatabaseManager.h"
 

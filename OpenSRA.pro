@@ -112,6 +112,7 @@ SOURCES += main.cpp \
     ModelViewItems/MixedDelegate.cpp \
     ModelViewItems/LineEditDelegate.cpp \
     ModelViewItems/LabelDelegate.cpp \
+    ModelViewItems/StringListDelegate.cpp \
     RunWidget.cpp \
 
 HEADERS  += \
@@ -166,6 +167,7 @@ HEADERS  += \
     ModelViewItems/MixedDelegate.h \
     ModelViewItems/LineEditDelegate.h \
     ModelViewItems/LabelDelegate.h \
+    ModelViewItems/StringListDelegate.h \
 
 RESOURCES += \
     images.qrc \

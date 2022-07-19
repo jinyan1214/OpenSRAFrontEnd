@@ -90,9 +90,11 @@ bool JsonLabel::inputFromJSON(QJsonObject &jsonObject)
 }
 
 
-void JsonLabel::setDefaultValue(const QJsonValue& obj)
+void JsonLabel::setDefaultValue(const QJsonValue& obj, const QString& prepend, const QString& append)
 {
-    auto defValueStr = this->getStringValueJson(obj);
+    QString defValueStr = prepend;
+    defValueStr+=this->getStringValueJson(obj);
+    defValueStr+=append;
     this->setText(defValueStr);
 
     defaultValue = defValueStr;

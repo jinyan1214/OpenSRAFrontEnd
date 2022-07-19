@@ -47,7 +47,7 @@ class RV
 {
 
 public:
-    RV(int numParams, QString id, QString modelName);
+    RV(int numParams, QString id, QString modelName, QString desc);
     ~RV();
 
     int size() const;
@@ -68,7 +68,14 @@ public:
 
     const QString &getUuid() const;
 
-    const QString &getFromModel() const;
+    const QStringList &getFromModelList() const;
+
+    void addModelToList(const QString& modelName);
+    void addModelToList(const QStringList& modelNames);
+
+    int removeModelFromList(const QString& modelName);
+
+    const QString &getDescription() const;
 
 private:
 
@@ -77,7 +84,8 @@ private:
 
     QString name;
     QString uuid;
-    QString fromModel;
+    QStringList fromModelList;
+    QString description;
 };
 
 #endif // RV_H

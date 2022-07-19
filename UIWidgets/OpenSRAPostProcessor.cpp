@@ -37,7 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "CSVReaderWriter.h"
-#include "ComponentInputWidget.h"
+#include "AssetInputWidget.h"
 #include "GeneralInformationWidget.h"
 #include "MainWindowWorkflowApp.h"
 #include "OpenSRAPostProcessor.h"

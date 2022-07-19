@@ -61,6 +61,7 @@ bool JsonComboBox::outputToJSON(QJsonObject &jsonObject)
     QJsonObject outputObj;
     boxStackedWidget->outputToJSON(outputObj);
 
+    // If this is the last object in the chain, output the value
     if(outputObj.isEmpty())
     {
         jsonObject[key] = data;

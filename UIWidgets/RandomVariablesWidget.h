@@ -60,29 +60,17 @@ public:
     bool inputFromJSON(QJsonObject &rvObject);
     bool outputToJSON(QJsonObject &rvObject);
 
-    //void setInitialConstantRVs(QStringList &varNamesAndValues);
-
     void addRVs(QVector<RV>& RVs);
 
     QStringList getRandomVariableNames(void);
-
-    bool addNewInputParameter(const QString& name, const QString& fromModel, const QString& uuid, const QString& type);
-
-    bool removeInputParameter(const QString& uuid);
 
     MixedDelegate *getGisMapsComboDelegate() const;
     MixedDelegate *getColDataComboDelegate() const;
 
 public slots:
 
-    bool addRandomVariable(const RV& newRV);
-    bool addRandomVariable(const QString& name, const QString& fromModel, const QString& uuid);
-
-    bool addConstant(const RV& newConstant);
-    bool addConstant(const QString& name, const QString& fromModel, const QString& uuid);
-
-    bool removeRandomVariable(const QString &uuid);
-    bool removeConstant(const QString &uuid);
+    bool addNewParameter(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid, const QString& type);
+    bool removeParameter(const QString& uuid, const QString& fromModel);
 
     // To handle when sigma and cov are changed
     void handleCellChanged(int row, int col);
@@ -90,12 +78,24 @@ public slots:
     // When the source is changed from preferred, from infrastructure table, etc.
     void handleSourceChanged(int val);
 
-    void loadRVsFromJson(void);
-    void saveRVsToJson(void);
-
     void clear(void);
 
+    // Function to check if an input parameter exists, returns a UUID string if exists and empty string if it does not    
+    QString checkIfParameterExists(const QString& name, bool& OK);
+
 private:
+
+    bool addRandomVariable(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid);
+    bool addRandomVariable(const RV& newRV);
+
+    bool addNewModelToExistingParameter(const RV& rv, const QStringList& fromModel, RVTableView* database);
+
+    bool addConstant(const RV& newConstant);
+    bool addConstant(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid);
+
+    bool removeRandomVariable(const QString &uuid, const QString &fromModel);
+    bool removeConstant(const QString &uuid, const QString &fromModel);
+
     int addRVsType;
     void makeRVWidget(void);
     QVBoxLayout *verticalLayout;
@@ -115,14 +115,14 @@ private:
     QStringList RVTableHeaders;
 
     // Function to check if an RV exists
-    bool checkIfRVExists(const QString& name);
-    bool checkIfConstantExists(const QString& name);
+    QString checkIfRVExists(const QString& name);
+    QString checkIfConstantExists(const QString& name);
 
     bool checkIfRVuuidExists(const QString& name);
     bool checkIfConstantuuidExists(const QString& name);
 
-    RV createNewRV(const QString& name, const QString& fromModel, const QString& uuid);
-    RV createNewConstant(const QString& name, const QString& fromModel, const QString& uuid);
+    RV createNewRV(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid);
+    RV createNewConstant(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid);
 };
 
 #endif // RANDOM_VARIABLES_CONTAINER_H

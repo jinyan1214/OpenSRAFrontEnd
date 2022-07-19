@@ -17,7 +17,7 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -36,100 +36,72 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
-#include "RVTableModel.h"
-#include "RVTableView.h"
-#include "VisualizationWidget.h"
+#include "StringListDelegate.h"
 
-#include <QDebug>
-#include <QScrollBar>
-#include <QMenu>
-#include <QVariant>
-#include <QHeaderView>
+#include <QLineEdit>
+#include <QDoubleValidator>
+#include <QModelIndex>
+#include <QLabel>
+#include <QPainter>
 
-RVTableView::RVTableView(QWidget *parent) : QTableView(parent)
+StringListDelegate::StringListDelegate(QObject *parent) : QItemDelegate(parent)
 {
-    tableModel = new RVTableModel();
-    this->setModel(tableModel);
-    this->setToolTip("Specify the input parameters");
-    this->verticalHeader()->setVisible(false);
-    this->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    this->setWordWrap(true);
 
-    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-
-    this->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
-    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
-
-    this->setEditTriggers(EditTrigger::DoubleClicked);
-    this->setSelectionMode(SelectionMode::SingleSelection);
 }
 
 
-void RVTableView::resizeEvent(QResizeEvent *event)
+QWidget *StringListDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &/* option */, const QModelIndex &/*index*/) const
 {
-    Q_UNUSED(event);
 
-//    auto height = this->horizontalHeader()->height();
+    QLabel *editor = new QLabel(parent);
+    editor->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    editor->setVisible(true);
 
-//    for(int i = 0; i<this->rowCount(); ++i)
+    return editor;
+}
+
+
+void StringListDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+{
+    auto value = index.model()->data(index, Qt::DisplayRole).toStringList();
+
+    if(value.isEmpty())
+        return;
+
+    auto str = value.join(",");
+
+    QLabel *LEBox = dynamic_cast<QLabel*>(editor);
+
+    if(LEBox)
+        LEBox->setText(str);
+}
+
+
+void StringListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    QItemDelegate::paint(painter, option, index);
+}
+
+
+//void StringListDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+//{
+
+//    QLabel *LEBox = dynamic_cast<QLabel*>(editor);
+
+//    if(LEBox)
 //    {
-//        height += this->rowHeight(i);
+//        auto value = LEBox->text();
+
+//        model->setData(index, value, Qt::EditRole);
 //    }
 
-//    if (this->horizontalScrollBar()->isVisible())
-//        height += this->horizontalScrollBar()->height();
-
-//    this->setFixedHeight(height + 2);
-}
+//}
 
 
-
-void RVTableView::clear(void)
+void StringListDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &/* index */) const
 {
-    tableModel->clear();
+    editor->setGeometry(option.rect);
 }
 
 
-int RVTableView::columnCount(void)
-{
-    return tableModel->columnCount();
-}
 
-
-int RVTableView::rowCount(void)
-{
-    return tableModel->rowCount();
-}
-
-
-QString RVTableView::horizontalHeaderItem(int section)
-{
-    return this->horizontalHeaderItemVariant(section).toString();
-}
-
-
-QVariant RVTableView::horizontalHeaderItemVariant(int section)
-{
-    auto headerData = tableModel->headerData(section, Qt::Horizontal);
-
-    return headerData;
-}
-
-
-RVTableModel *RVTableView::getTableModel() const
-{
-    return tableModel;
-}
-
-
-QVariant RVTableView::item(int row, int col)
-{
-    return tableModel->item(row,col);
-}
-
-
-void RVTableView::updateTable(void)
-{
-    tableModel->update();
-}

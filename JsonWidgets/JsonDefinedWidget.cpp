@@ -40,11 +40,19 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "WorkflowAppOpenSRA.h"
 
 #include <QJsonArray>
+#include <QLabel>
 #include <QVariantList>
 #include <QScrollArea>
+#include <QVBoxLayout>
 
 JsonDefinedWidget::JsonDefinedWidget(QWidget* parent, const QJsonObject& obj, const QString parentKey) : JsonWidget(parent)
 {
+    layout = new QVBoxLayout(this);
+    layout->setMargin(0);
+    layout->setContentsMargins(0,0,0,0);
+
+    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
     auto theWidgetFactory = WorkflowAppOpenSRA::getInstance()->getTheWidgetFactory();
 
     this->setJsonObj(obj);
@@ -60,7 +68,47 @@ JsonDefinedWidget::JsonDefinedWidget(QWidget* parent, const QJsonObject& obj, co
     for(auto&& varnt : displayOrderVarList)
         displayOrder.append(varnt.toString());
 
-    layout = theWidgetFactory->getLayout(params, parentKey, parent, displayOrder);
+    auto paramsLayout = theWidgetFactory->getLayout(params, parentKey, parent, displayOrder);
 
-    this->setLayout(layout);
+    auto returnObj = obj["Return"].toObject();
+
+    auto upstreamObj = obj["UpstreamDependency"].toObject();
+
+    if(!returnObj.isEmpty())
+    {
+        auto returnStr = "\t"+returnObj.value("Description").toString();
+
+        QLabel* returnLabel = new QLabel("Returns:");
+        returnLabel->setStyleSheet("font-weight: bold; color: black");
+
+        QLabel* returnVal = new QLabel(returnStr);
+
+        layout->addWidget(returnLabel);
+        layout->addWidget(returnVal);
+
+        if(!upstreamObj.isEmpty())
+        {
+            QLabel* upstreamLabel = new QLabel("Upstream Dependencies:");
+            upstreamLabel->setStyleSheet("font-weight: bold; color: black");
+
+            auto upstreamStr = "\t"+upstreamObj.value("Description").toString();
+
+            QLabel* upstreamVal = new QLabel(upstreamStr);
+
+            layout->addWidget(upstreamLabel);
+            layout->addWidget(upstreamVal);
+        }
+
+        QLabel* paramsLabel = new QLabel("Additional Input Parameters (see the \"Input Variables\" tab):");
+        paramsLabel->setStyleSheet("font-weight: bold; color: black");
+
+        layout->addWidget(paramsLabel);
+    }
+
+    layout->addLayout(paramsLayout);
+
+    layout->addStretch(0);
+//    layout->setStretch(0,1);
+//    layout->setStretch(1,0);
+
 }

@@ -65,6 +65,8 @@ public:
 
     void resizeEvent(QResizeEvent *event);
 
+    void updateTable(void);
+
 private:
     RVTableModel* tableModel = nullptr;
 };

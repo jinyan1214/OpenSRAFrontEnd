@@ -64,7 +64,7 @@ DamageMeasureWidget::DamageMeasureWidget(QJsonObject mainObj, QWidget *parent): 
     mainLayout->setSpacing(0);
     mainLayout->setContentsMargins(5,0,0,0);
 
-    theComponentSelection = new SimCenterComponentSelection(this);
+    theComponentSelection = new SimCenterComponentSelection();
 
     auto thisObj = mainObj.value("DamageMeasure").toObject();
 

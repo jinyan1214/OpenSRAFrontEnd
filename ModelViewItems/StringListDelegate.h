@@ -1,10 +1,10 @@
-#ifndef EARTHQUAKE_EVENT_SELECTION_H
-#define EARTHQUAKE_EVENT_SELECTION_H
+#ifndef StringListDelegate_H
+#define StringListDelegate_H
 /* *****************************************************************************
-Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -28,71 +28,41 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written by: Stevan Gavrilovic
+// Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
-#include <SimCenterAppWidget.h>
+#include <QItemDelegate>
 
-class VisualizationWidget;
-class OpenSHAWidget;
-class JsonGroupBoxWidget;
-class ShakeMapWidget;
-class UserDefinedApplication;
-class UserInputFaultWidget;
+class QWidget;
 
-class QComboBox;
-class QGroupBox;
-class QCheckBox;
-class QStackedWidget;
-
-class IntensityMeasureWidget : public  SimCenterAppWidget
+class StringListDelegate : public QItemDelegate
 {
     Q_OBJECT
 
 public:
+    StringListDelegate(QObject *parent = nullptr);
 
-    explicit IntensityMeasureWidget(VisualizationWidget* visWidget, QWidget *parent = 0);
-    ~IntensityMeasureWidget();
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
-    bool outputToJSON(QJsonObject &rvObject);
-    bool inputFromJSON(QJsonObject &rvObject);
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
-    bool copyFiles(QString &destName);
+    void setEditorData(QWidget *editor, const QModelIndex &index) const;
 
-    void clear();
+//    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
 
-signals:
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
 public slots:
 
-    void IMSelectionChanged(int index);
-
 private:
-
-    QComboBox* IMSelectCombo = nullptr;
-
-    OpenSHAWidget* openSHA = nullptr;
-    ShakeMapWidget* shakeMap = nullptr;
-
-    QWidget* shakeMapStackedWidget = nullptr;
-
-    QStackedWidget* mainPanel = nullptr;
-
-    QWidget* getIMBox(void);
-    QWidget* getCorrelationWidget(void);
-
-    JsonGroupBoxWidget* typeWidget = nullptr;
-    JsonGroupBoxWidget* corrWidget = nullptr;
-
-    UserInputFaultWidget* userFaultWidget = nullptr;
 
 };
 
-#endif // EARTHQUAKE_EVENT_SELECTION_H
+#endif // StringListDelegate_H

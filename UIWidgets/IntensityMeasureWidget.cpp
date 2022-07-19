@@ -43,6 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SourceCharacterizationWidget.h"
 #include "WorkflowAppOpenSRA.h"
 #include "JsonDefinedWidget.h"
+#include "UserInputFaultWidget.h"
 #include "JsonGroupBoxWidget.h"
 
 #include <QHBoxLayout>
@@ -68,10 +69,13 @@ IntensityMeasureWidget::IntensityMeasureWidget(VisualizationWidget* visWidget, Q
     : SimCenterAppWidget(parent)
 {
     this->setContentsMargins(0,0,0,0);
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     IMSelectCombo = new QComboBox(this);
     IMSelectCombo->addItem("UCERF3 (Preferred)","OpenSHA");
     IMSelectCombo->addItem("ShakeMap","ShakeMap");
+    IMSelectCombo->addItem("User-defined Rupture","UserDefinedRupture");
+
     //    IMSelectCombo->addItem("User-defined");
     IMSelectCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
@@ -104,19 +108,23 @@ IntensityMeasureWidget::IntensityMeasureWidget(VisualizationWidget* visWidget, Q
 
     shakeMapStackedWidget = shakeMap->getShakeMapWidget();
 
-    mainPanel = new QStackedWidget(this);
+    userFaultWidget = new UserInputFaultWidget(visWidget, this);
+
+    mainPanel = new QStackedWidget();
+    mainPanel->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     mainPanel->setContentsMargins(5,0,0,0);
     mainPanel->layout()->setMargin(0);
     mainPanel->layout()->setSpacing(0);
 
     mainPanel->addWidget(openSHA);
     mainPanel->addWidget(shakeMapStackedWidget);
+    mainPanel->addWidget(userFaultWidget);
 
     mainLayout->addLayout(theHeaderLayout);
     mainLayout->addWidget(mainPanel);
 //    mainLayout->addWidget(IMBox);
 //    mainLayout->addWidget(corrBox);
-    mainLayout->addStretch(1);
+//    mainLayout->addStretch(1);
 
 }
 
@@ -162,6 +170,19 @@ bool IntensityMeasureWidget::outputToJSON(QJsonObject &jsonObject)
         }
 
         sourceIM["ShakeMap"] = outObject;
+    }
+    else if(index == 2)
+    {
+        QJsonObject outObject;
+        res = userFaultWidget->outputToJSON(outObject);
+
+        if(!res)
+        {
+            this->errorMessage("Error in the json output of UserInputFault widget");
+            return false;
+        }
+
+        sourceIM["UserDefinedRupture"] = outObject;
     }
     else
     {
@@ -214,6 +235,7 @@ void IntensityMeasureWidget::clear()
 
     openSHA->clear();
     shakeMap->clear();
+    userFaultWidget->clear();
 
 //    typeWidget->reset();
 //    corrWidget->reset();
@@ -254,6 +276,12 @@ bool IntensityMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
         if(res == false)
             return false;
     }
+    else if(IMSourceType == "UserDefinedRupture")
+    {
+        auto res =  userFaultWidget->inputFromJSON(IMSourceObject);
+        if(res == false)
+            return false;
+    }
     else
     {
         this->errorMessage("Cannot find the intensity measure object of type " + IMSourceType);
@@ -281,6 +309,10 @@ void IntensityMeasureWidget::IMSelectionChanged(int index)
     else if(index == 1)
     {
         mainPanel->setCurrentWidget(shakeMapStackedWidget);
+    }
+    else if(index == 2)
+    {
+        mainPanel->setCurrentWidget(userFaultWidget);
     }
 
 }

@@ -37,6 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
 #include "JsonStackedWidget.h"
+#include "SimCenterAppWidget.h"
 
 JsonStackedWidget::JsonStackedWidget(QWidget *parent) : QStackedWidget(parent)
 {
@@ -46,13 +47,17 @@ JsonStackedWidget::JsonStackedWidget(QWidget *parent) : QStackedWidget(parent)
 
 bool JsonStackedWidget::outputToJSON(QJsonObject &jsonObject)
 {
-    auto currWidget = dynamic_cast<JsonSerializable *>(this->currentWidget());
+    auto currWidget = this->currentWidget();
 
-    if(currWidget)
+    // auto currWIdgetName = currWidget->objectName();
+
+    if(auto currJsonWidget = dynamic_cast<JsonSerializable *>(currWidget))
     {
-        // auto currWIdgetName = this->currentWidget()->objectName();
-
-        currWidget->outputToJSON(jsonObject);
+        currJsonWidget->outputToJSON(jsonObject);
+    }
+    else if(auto currJsonWidget = dynamic_cast<SimCenterAppWidget *>(currWidget))
+    {
+        currJsonWidget->outputToJSON(jsonObject);
     }
     else
         return false;

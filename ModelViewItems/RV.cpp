@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <qdebug.h>
 
-RV::RV(int numParams, QString id, QString modelName) : uuid(id), fromModel(modelName)
+RV::RV(int numParams, QString id, QString modelName, QString desc) : uuid(id), fromModelList(modelName), description(desc)
 {
     data.resize(numParams);
 }
@@ -81,9 +81,16 @@ const QString &RV::getUuid() const
     return uuid;
 }
 
-const QString &RV::getFromModel() const
+
+const QStringList &RV::getFromModelList() const
 {
-    return fromModel;
+    return fromModelList;
+}
+
+
+const QString &RV::getDescription() const
+{
+    return description;
 }
 
 
@@ -132,5 +139,47 @@ const QVariant& RV::operator[](const int index) const
 QVariant& RV::at(const int index)
 {
     return data[index];
+}
+
+
+void RV::addModelToList(const QString& modelName)
+{
+    if(fromModelList.contains(modelName))
+        return;
+
+    fromModelList.append(modelName);
+    data[2] = QVariant(fromModelList);
+}
+
+
+void RV::addModelToList(const QStringList& modelNames)
+{
+    fromModelList.append(modelNames);
+    fromModelList.removeDuplicates();
+
+    data[2] = QVariant(fromModelList.join(", "));
+}
+
+
+int RV::removeModelFromList(const QString& modelName)
+{
+    auto idx = fromModelList.indexOf(modelName);
+
+    if(idx == -1)
+        return -1;
+
+    fromModelList.removeAt(idx);
+
+    if(!fromModelList.isEmpty())
+    {
+        data[2] = QVariant(fromModelList.join(", "));
+    }
+    else
+    {
+        data[2] = QVariant("");
+        return 1;
+    }
+
+    return 0;
 }
 

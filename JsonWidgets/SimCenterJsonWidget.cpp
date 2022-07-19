@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "WorkflowAppOpenSRA.h"
 #include "RandomVariablesWidget.h"
 
+#include <QScrollArea>
 #include <QCheckBox>
 #include <QSplitter>
 #include <QJsonArray>
@@ -68,9 +69,10 @@ SimCenterJsonWidget::SimCenterJsonWidget(QString methodName, QJsonObject jsonObj
 
     methodKey = methodName;
 
-    QSplitter *splitter = new QSplitter(this);
+    QSplitter *splitter = new QSplitter();
+    splitter->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    listWidget = new CustomListWidget("List of Cases to Run",this);
+    listWidget = new CustomListWidget("List of Cases to Run");
 
     connect(listWidget,&QAbstractItemView::clicked,this,&SimCenterJsonWidget::handleListItemSelected);
     connect(listWidget,&CustomListWidget::itemRemoved,this,&SimCenterJsonWidget::handleItemRemoved);
@@ -98,37 +100,36 @@ QGroupBox* SimCenterJsonWidget::getWidgetBox(const QJsonObject jsonObj)
         return nullptr;
     }
 
+    //    QGroupBox* groupBox = new QGroupBox("test GB Name");
     QGroupBox* groupBox = new QGroupBox(this->objectName());
+    groupBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     groupBox->setContentsMargins(0,0,0,0);
     groupBox->setFlat(true);
 
     methodWidget = new JsonDefinedWidget(this, jsonObj, this->objectName());
     methodWidget->setObjectName("MethodWidget");
 
-    QVBoxLayout* mainLayout = new QVBoxLayout(groupBox);
-    mainLayout->setContentsMargins(3,10,0,0);
+    QScrollArea *scrollWidget = new QScrollArea;
+    scrollWidget->setWidgetResizable(true);
+    scrollWidget->setLineWidth(0);
+    scrollWidget->setWidget(methodWidget);
+    scrollWidget->setFrameShape(QFrame::NoFrame);
+    scrollWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    QVBoxLayout* methodLayout = new QVBoxLayout();
-    methodLayout->setMargin(0);
-    methodLayout->addWidget(methodWidget);
-    methodLayout->addStretch();
+    QVBoxLayout* groupBoxLayout = new QVBoxLayout(groupBox);
+    groupBoxLayout->setContentsMargins(3,10,0,0);
 
     // Add the weight and add to run list button at the bottom
     addRunListWidget = new AddToRunListWidget();
 
     connect(addRunListWidget,&AddToRunListWidget::addToRunListButtonPressed, this, &SimCenterJsonWidget::handleAddButtonPressed);
 
-    QHBoxLayout* inputLayout = new QHBoxLayout();
-    inputLayout->setMargin(0);
-    inputLayout->setContentsMargins(0,0,0,0);
-    inputLayout->addLayout(methodLayout);
+    groupBoxLayout->addWidget(scrollWidget);
 
-    mainLayout->addLayout(inputLayout);
+    groupBoxLayout->addWidget(addRunListWidget,Qt::AlignCenter);
 
-    mainLayout->addWidget(addRunListWidget,Qt::AlignCenter);
-
-    mainLayout->setStretch(0,1);
-    mainLayout->setStretch(1,0);
+    groupBoxLayout->setStretch(0,1);
+    groupBoxLayout->setStretch(1,0);
 
     // Add a vertical spacer at the bottom to push everything up
     //    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
@@ -166,32 +167,71 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
         return;
     }
 
-    auto key = keys.front();
-
-    methodObj = methodObj.value(key).toObject();
-
     // Object to store the variable types
     QJsonObject typesObj;
 
-    QJsonObject uuidObj;
+    auto key = keys.front();
 
-    auto res = this->getVarTypes(methodObj,passedObj,key,typesObj);
-    if(res != 0)
+    // Handle the special case of a user defined model
+    if(key.compare("UserdefinedModel") == 0)
     {
-        this->errorMessage("Error, could not get the var types in SimCenterJsonWidget");
-        return;
+        auto paramObj = methodObj.value(key).toObject();
+
+        QJsonObject newMethodObj;
+
+        auto keys = paramObj.keys();
+
+        foreach(auto&& key, keys)
+        {
+            newMethodObj.insert(key,"User-created generic model parameter");
+
+            typesObj.insert(key,"random");
+        }
+
+        methodObj = newMethodObj;
     }
+    else
+    {
+        methodObj = methodObj.value(key).toObject();
+
+        auto res = this->getVarTypes(methodObj,passedObj,key,typesObj);
+        if(res != 0)
+        {
+            this->errorMessage("Error, could not get the var types in SimCenterJsonWidget");
+            return;
+        }
+    }
+
+    // Object to store the uuid's of the parameters, where the key is the parameter name
+    QJsonObject uuidObj;
 
     auto paramsKeys = methodObj.keys();
     for(auto&& it : paramsKeys)
     {
-        // Create a unique id to identify the specific instance of these parameters
-        auto uid = QUuid::createUuid().toString();
+        // If the parameter already exists, get its UID
+        bool ok = true;
+        auto uid = theInputParamsWidget->checkIfParameterExists(it,ok);
 
+        if(!ok)
+        {
+            this->errorMessage("Error adding a new parameter in "+theInputParamsWidget->objectName());
+            return;
+        }
+
+        // If uid is empty, create a new parameter as it does not exist
+        if (uid.isEmpty())
+        {
+            // Create a unique id to identify the specific instance of these parameters
+            uid = QUuid::createUuid().toString();
+        }
+
+        // Save the parameter uid
         uuidObj[it]=uid;
 
+        // Generate the from model string
         auto fromModel = methodKey+"-"+key;
 
+        // Get the type of variable, e.g., random or constant
         auto varType = typesObj[it].toString();
 
         if(varType.isEmpty())
@@ -200,7 +240,10 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
             return;
         }
 
-        auto res = theInputParamsWidget->addNewInputParameter(it,fromModel,uid,varType);
+        // Get the description of the input variable
+        QString desc = methodObj.value(it).toString();
+
+        auto res = theInputParamsWidget->addNewParameter(it,fromModel,desc,uid,varType);
 
         if(!res)
         {
@@ -247,9 +290,19 @@ void SimCenterJsonWidget::handleItemRemoved(QJsonObject removedObj)
         return;
     }
 
+    auto key = removedObj["Key"].toString();
+
+    if(key.isEmpty())
+    {
+        this->errorMessage("Error, the object is empty");
+        return;
+    }
+
+    auto fromModel = methodKey+"-"+key;
+
     for(auto&& it : uuids)
     {
-        auto res = theInputParamsWidget->removeInputParameter(it.toString());
+        auto res = theInputParamsWidget->removeParameter(it.toString(),fromModel);
 
         if(!res)
         {
