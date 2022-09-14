@@ -83,6 +83,7 @@ SOURCES += main.cpp \
     UIWidgets/OpenSHAWidget.cpp \
     UIWidgets/OpenSRAPostProcessor.cpp \
     UIWidgets/OpenSRAPreProcessor.cpp \
+    UIWidgets/PythonProcessHandler.cpp \
     UIWidgets/ResultsWidget.cpp \
     UIWidgets/UncertaintyQuantificationWidget.cpp \
     UIWidgets/WidgetFactory.cpp \
@@ -137,6 +138,7 @@ HEADERS  += \
     UIWidgets/OpenSHAWidget.h \
     UIWidgets/OpenSRAPostProcessor.h \
     UIWidgets/OpenSRAPreProcessor.h \
+    UIWidgets/PythonProcessHandler.h \
     UIWidgets/ResultsWidget.h \
     UIWidgets/UncertaintyQuantificationWidget.h \
     UIWidgets/WidgetFactory.h \

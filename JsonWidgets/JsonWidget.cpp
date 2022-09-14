@@ -37,6 +37,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Dr. Stevan Gavrilovic, UC Berkeley
 
 #include "JsonWidget.h"
+#include "JsonStackedWidget.h"
 
 JsonWidget::JsonWidget(QWidget* parent) : QWidget(parent)
 {
@@ -73,29 +74,29 @@ bool JsonWidget::outputToJSON(QJsonObject &jsonObject)
 
     // Works with ex 6,
 
-//    auto childWidgetList = this->findChildren<QWidget*>(QRegularExpression(), Qt::FindDirectChildrenOnly);
-//    QStringList childList;
-//    for(auto&& child : childWidgetList)
-//        childList<<child->objectName();
+    //    auto childWidgetList = this->findChildren<QWidget*>(QRegularExpression(), Qt::FindDirectChildrenOnly);
+    //    QStringList childList;
+    //    for(auto&& child : childWidgetList)
+    //        childList<<child->objectName();
 
-//    auto thisObj = this->objectName();
+    //    auto thisObj = this->objectName();
 
-//    // qDebug()<<thisObj;
+    //    // qDebug()<<thisObj;
 
-//    auto subWidgetList = this->findChildren<QWidget*>(QRegularExpression(), Qt::FindDirectChildrenOnly);
-//    for(auto&& subWidget : subWidgetList)
-//    {
-//        auto key = subWidget->objectName();
+    //    auto subWidgetList = this->findChildren<QWidget*>(QRegularExpression(), Qt::FindDirectChildrenOnly);
+    //    for(auto&& subWidget : subWidgetList)
+    //    {
+    //        auto key = subWidget->objectName();
 
-//        if(key.isEmpty() == true || key.compare("NULL") == 0)
-//            continue;
+    //        if(key.isEmpty() == true || key.compare("NULL") == 0)
+    //            continue;
 
-//        auto asJson = dynamic_cast<JsonSerializable*>(subWidget);
-//        if(asJson != nullptr)
-//        {
-//            asJson->outputToJSON(jsonObject);
-//        }
-//    }
+    //        auto asJson = dynamic_cast<JsonSerializable*>(subWidget);
+    //        if(asJson != nullptr)
+    //        {
+    //            asJson->outputToJSON(jsonObject);
+    //        }
+    //    }
 
 
     return true;

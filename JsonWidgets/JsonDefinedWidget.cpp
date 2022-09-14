@@ -55,7 +55,7 @@ JsonDefinedWidget::JsonDefinedWidget(QWidget* parent, const QJsonObject& obj, co
 
     auto theWidgetFactory = WorkflowAppOpenSRA::getInstance()->getTheWidgetFactory();
 
-    this->setJsonObj(obj);
+    this->setMethodAndParamJsonObj(obj);
 
     auto params = obj["Params"].toObject();
 

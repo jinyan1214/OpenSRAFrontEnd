@@ -30,7 +30,11 @@ public:
     void setCite(QString &cite);
     void createHelpMenu();
 
- protected:
+    QPushButton *getPreProcessButton() const;
+
+    QPushButton *getRunButton() const;
+
+protected:
 
  signals:
     void attemptLogin(QString, QString);
@@ -59,8 +63,8 @@ public:
 
     // for main actions
     void onRunButtonClicked();
-    void onExitButtonClicked();
     void onPreprocessButtonClicked();
+    void onExitButtonClicked();
 
  private:
     void setCurrentFile(const QString &fileName);
@@ -69,24 +73,25 @@ public:
 
     void createActions();
 
-    QMenu *fileMenu;
-    QMenu *editMenu;
-    QMenu *selectSubMenu;
-    QMenu *toolsMenu;
-    QMenu *optionsMenu;
-    QMenu *helpMenu;
-    QToolBar *fileToolBar;
-    QToolBar *editToolBar;
+    QMenu *fileMenu = nullptr;
+    QMenu *editMenu = nullptr;
+    QMenu *selectSubMenu = nullptr;
+    QMenu *toolsMenu = nullptr;
+    QMenu *optionsMenu = nullptr;
+    QMenu *helpMenu = nullptr;
+    QToolBar *fileToolBar = nullptr;
+    QToolBar *editToolBar = nullptr;
 
 
     QString currentFile;
-    WorkflowAppWidget *inputWidget;
+    WorkflowAppWidget *inputWidget = nullptr;
 
-    QPushButton *loginButton;
-    QLabel *errorLabel;
+    QPushButton *preProcessButton = nullptr;
+    QPushButton *runButton = nullptr;
+    QPushButton *loginButton = nullptr;
 
-    PythonProgressDialog* statusWidget;
-    QDockWidget* statusDockWidget;
+    PythonProgressDialog* statusWidget = nullptr;
+    QDockWidget* statusDockWidget = nullptr;
 
     QString versionText;
     QString aboutText;
@@ -97,7 +102,7 @@ public:
     QString feedbackURL;
     QString citeText;
 
-    OpenSRAPreferences *thePreferences;
+    OpenSRAPreferences *thePreferences = nullptr;
 };
 
 #endif // MAIN_WINDOW_WORKFLOW_APP_H

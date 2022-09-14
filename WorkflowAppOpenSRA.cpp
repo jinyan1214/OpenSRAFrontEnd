@@ -120,28 +120,31 @@ WorkflowAppOpenSRA::~WorkflowAppOpenSRA()
 void WorkflowAppOpenSRA::initialize(void)
 {
 
+    QString appDir = OpenSRAPreferences::getInstance()->getAppDir();
+    auto backEndFilePath = appDir + QDir::separator();
+
     // Load the common methods and params json file
-    QString commonPath = QCoreApplication::applicationDirPath() + QDir::separator() + "OpenSRABackEnd" + QDir::separator() + "methods_params_doc" + QDir::separator() + "common.json";
+    QString commonPath = backEndFilePath + QDir::separator() + "methods_params_doc" + QDir::separator() + "common.json";
 
     methodsAndParamsObj = getMethodAndParamsObj(commonPath);
 
 
     // Load the below ground methods and params json file
-    QString belowGroundPath = QCoreApplication::applicationDirPath() + QDir::separator() + "OpenSRABackEnd" + QDir::separator() + "methods_params_doc" + QDir::separator() + "below_ground.json";
+    QString belowGroundPath = backEndFilePath + QDir::separator() + "methods_params_doc" + QDir::separator() + "below_ground.json";
 
     auto belowGroundObj = getMethodAndParamsObj(belowGroundPath);
 
     methodsAndParamsObj.insert("BelowGround",belowGroundObj);
 
     // Load the above ground methods and params
-    QString aboveGroundPath = QCoreApplication::applicationDirPath() + QDir::separator() + "OpenSRABackEnd" + QDir::separator() + "methods_params_doc" + QDir::separator() + "above_ground.json";
+    QString aboveGroundPath = backEndFilePath + QDir::separator() + "methods_params_doc" + QDir::separator() + "above_ground.json";
 
     auto aboveGroundObj = getMethodAndParamsObj(aboveGroundPath);
 
     methodsAndParamsObj.insert("AboveGround",aboveGroundObj);
 
     // Load the wells and caprocks methods and params
-    QString wellsAndCaprocksPath = QCoreApplication::applicationDirPath() + QDir::separator() + "OpenSRABackEnd" + QDir::separator() + "methods_params_doc" + QDir::separator() + "wells_caprocks.json";
+    QString wellsAndCaprocksPath = backEndFilePath + QDir::separator() + "methods_params_doc" + QDir::separator() + "wells_caprocks.json";
 
     auto wellsCaprocksObj = getMethodAndParamsObj(wellsAndCaprocksPath);
 
@@ -231,7 +234,10 @@ void WorkflowAppOpenSRA::initialize(void)
     connect(this,SIGNAL(sendInfoMessage(QString)),this,SLOT(infoMessage(QString)));
 
     connect(localApp, SIGNAL(setupForRun(QString&,QString&)), this, SLOT(setUpForApplicationRun(QString&,QString&)));
+    connect(localApp, SIGNAL(setupForPreprocessing(QString&,QString&)), this, SLOT(setUpForPreprocessingRun(QString&,QString&)));
+
     connect(this, SIGNAL(setUpForApplicationRunDone(QString&, QString&)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString&)));
+    connect(this, SIGNAL(setUpForPreprocessingDone(QString&, QString&)), theRunWidget, SLOT(setupForRunPreprocessingDone(QString&, QString&)));
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
@@ -247,7 +253,7 @@ void WorkflowAppOpenSRA::initialize(void)
     theComponentSelection->addComponent(QString("Visualization"), theCustomVisualizationWidget);
     theComponentSelection->addComponent(QString("General\nInformation"), theGenInfoWidget);
     theComponentSelection->addComponent(QString("GIS Data"), theGISDataWidget);
-//    theComponentSelection->addComponent(QString("Sampling\nMethod"), theUQWidget);
+    //    theComponentSelection->addComponent(QString("Sampling\nMethod"), theUQWidget);
     theComponentSelection->addComponent(QString("Infrastructure"), thePipelineNetworkWidget);
     theComponentSelection->addComponent(QString("Decision\nVariable"), theDecisionVariableWidget);
     theComponentSelection->addComponent(QString("Damage\nMeasure"), theDamageMeasureWidget);
@@ -260,14 +266,18 @@ void WorkflowAppOpenSRA::initialize(void)
 
     theComponentSelection->displayComponent("Visualization");
 
-//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex1_OpenSHA_noEDP_noDV/Input/SetupConfig.json");
-//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex2_ShakeMap_noEDP_noDV/Input/SetupConfig.json");
-//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex3_IMCorr_RepairRatePGV/Input/SetupConfig.json");
-//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex4_EDPs_and_RepairRatePGD/Input/SetupConfig.json");
-//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex5_MultipleMethods/Input/SetupConfig.json");
-//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex6_UserInputModelParams/Input/SetupConfig.json");
+    preprocessor =  new OpenSRAPreProcessor(backEndFilePath, this);
 
-//    theResultsWidget->processResults("/Users/steve/Desktop/ResToDelete/");
+    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/gui_test_csv_input/Input/SetupConfig.json");
+
+    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex1_OpenSHA_noEDP_noDV/Input/SetupConfig.json");
+    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex2_ShakeMap_noEDP_noDV/Input/SetupConfig.json");
+    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex3_IMCorr_RepairRatePGV/Input/SetupConfig.json");
+    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex4_EDPs_and_RepairRatePGD/Input/SetupConfig.json");
+    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex5_MultipleMethods/Input/SetupConfig.json");
+    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex6_UserInputModelParams/Input/SetupConfig.json");
+
+    //    theResultsWidget->processResults("/Users/steve/Desktop/ResToDelete/");
 }
 
 
@@ -319,10 +329,10 @@ QJsonObject WorkflowAppOpenSRA::getMethodAndParamsObj(const QString& path)
 
                 if(methodsParamsMap.contains(key))
                 {
-//                    this->errorMessage("Error, the methods and params map already contains the key "+key);
-//                    auto oldVal = methodsParamsMap.value(key);
-//                    auto newVal = name;
-//                    this->errorMessage("Old Val "+oldVal+" new val "+newVal);
+                    //                    this->errorMessage("Error, the methods and params map already contains the key "+key);
+                    //                    auto oldVal = methodsParamsMap.value(key);
+                    //                    auto newVal = name;
+                    //                    this->errorMessage("Old Val "+oldVal+" new val "+newVal);
                     continue;
                 }
 
@@ -411,10 +421,10 @@ bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
     if(!res)
         return false;
 
-    res = theUQWidget->outputToJSON(jsonObjectTop);
+    //    res = theUQWidget->outputToJSON(jsonObjectTop);
 
-    if(!res)
-        return false;
+    //    if(!res)
+    //        return false;
 
     res = thePipelineNetworkWidget->outputToJSON(jsonObjectTop);
 
@@ -456,7 +466,7 @@ void WorkflowAppOpenSRA::postprocessResults(QString resultsDirectory, QString /*
 void WorkflowAppOpenSRA::clear(void)
 {
     theGenInfoWidget->clear();
-//    theUQWidget->clear();
+    //    theUQWidget->clear();
     theGISDataWidget->clear();
     theRandomVariableWidget->clear();
     thePipelineNetworkWidget->clear();
@@ -466,6 +476,7 @@ void WorkflowAppOpenSRA::clear(void)
     theEDPWidget->clear();
     theCustomVisualizationWidget->clear();
     theResultsWidget->clear();
+    localApp->clear();
 }
 
 
@@ -503,12 +514,12 @@ bool WorkflowAppOpenSRA::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
-    auto UQJsonObj = jsonObject.value("SamplingMethod").toObject();
-    if(theUQWidget->inputFromJSON(UQJsonObj) == false)
-    {
-        errorMessage("Error loading .json input file at " + theUQWidget->objectName() + " panel");
-        return false;
-    }
+//    auto UQJsonObj = jsonObject.value("SamplingMethod").toObject();
+//    if(theUQWidget->inputFromJSON(UQJsonObj) == false)
+//    {
+//        errorMessage("Error loading .json input file at " + theUQWidget->objectName() + " panel");
+//        return false;
+//    }
 
     auto InfraJsonObj = jsonObject.value("Infrastructure").toObject();
     if(thePipelineNetworkWidget->inputFromJSON(InfraJsonObj) == false)
@@ -549,39 +560,19 @@ bool WorkflowAppOpenSRA::inputFromJSON(QJsonObject &jsonObject)
 }
 
 
-void WorkflowAppOpenSRA::onRunButtonClicked()
+void WorkflowAppOpenSRA::onRunButtonClicked(QPushButton* button)
 {
-    theRunWidget->hide();
-    theRunWidget->setMinimumWidth(this->width()*0.5);
-    theRunWidget->showLocalApplication();
+    //    theRunWidget->hide();
+    //    theRunWidget->setMinimumWidth(this->width()*0.5);
+    //    theRunWidget->showLocalApplication();
+
+    localApp->onRunButtonPressed(button);
 }
 
 
-void WorkflowAppOpenSRA::onPreprocessButtonClicked()
+void WorkflowAppOpenSRA::onPreprocessButtonClicked(QPushButton* button)
 {
-
-    if(theRandomVariableWidget->inputFromJSON(methodsAndParamsObj) == false)
-    {
-        errorMessage("Error loading RVs in " + theRandomVariableWidget->objectName() + " from methods and params file");
-        return;
-    }
-
-    QString appDir = OpenSRAPreferences::getInstance()->getAppDir();
-
-    auto backEndFilePath = appDir + QDir::separator();
-
-    //Run GIS pre-processing
-    OpenSRAPreProcessor GISPreProcessor(backEndFilePath);
-
-    statusMessage("Starting GIS Preprocessing");
-
-    if(GISPreProcessor.run() != 0)
-    {
-        errorMessage("Failed in GIS Preprocessing step");
-        return;
-    }
-
-    statusMessage("GIS Preprocessing Finished");
+    localApp->onPreprocessButtonPressed(button);
 }
 
 
@@ -610,7 +601,39 @@ int WorkflowAppOpenSRA::getMaxNumParallelTasks()
 }
 
 
+void WorkflowAppOpenSRA::setUpForPreprocessingRun(QString &workingDir, QString &subDir)
+{
+    auto tmpDirectory = this->assembleInputFile(workingDir,subDir);
+
+    if(tmpDirectory.isEmpty())
+    {
+        errorMessage("Error setting up the analysis.  Analysis did not run.");
+        return;
+    }
+
+    QString inputDirectory = tmpDirectory + QDir::separator();
+
+    emit setUpForPreprocessingDone(tmpDirectory, inputDirectory);
+}
+
+
 void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &subDir)
+{
+    auto tmpDirectory = this->assembleInputFile(workingDir,subDir);
+
+    if(tmpDirectory.isEmpty())
+    {
+        errorMessage("Error setting up the analysis.  Analysis did not run.");
+        return;
+    }
+
+    QString inputDirectory = tmpDirectory + QDir::separator();
+
+    emit setUpForApplicationRunDone(tmpDirectory, inputDirectory);
+}
+
+
+QString WorkflowAppOpenSRA::assembleInputFile(QString &workingDir, QString &subDir)
 {
     Q_UNUSED(subDir);
 
@@ -634,11 +657,37 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
     destinationDirectory.mkpath(tmpDirectory);
 
     // copyPath(path, tmpDirectory, false);
-    theIntensityMeasureWidget->copyFiles(tmpDirectory);
-    theDamageMeasureWidget->copyFiles(tmpDirectory);
-    thePipelineNetworkWidget->copyFiles(tmpDirectory);
-    theEDPWidget->copyFiles(tmpDirectory);
+    auto copyOk = theIntensityMeasureWidget->copyFiles(tmpDirectory);
 
+    if(!copyOk)
+    {
+        this->errorMessage("Failed to copy files in "+theIntensityMeasureWidget->objectName());
+        return QString();
+    }
+
+    copyOk = theDamageMeasureWidget->copyFiles(tmpDirectory);
+
+    if(!copyOk)
+    {
+        this->errorMessage("Failed to copy files in "+theDamageMeasureWidget->objectName());
+        return QString();
+    }
+
+    copyOk = thePipelineNetworkWidget->copyFiles(tmpDirectory);
+
+    if(!copyOk)
+    {
+        this->errorMessage("Failed to copy files in "+thePipelineNetworkWidget->objectName());
+        return QString();
+    }
+
+    copyOk = theEDPWidget->copyFiles(tmpDirectory);
+
+    if(!copyOk)
+    {
+        this->errorMessage("Failed to copy files in "+theEDPWidget->objectName());
+        return QString();
+    }
     //
     // in new templatedir dir save the UI data into dakota.json file (same result as using saveAs)
     // NOTE: we append object workingDir to this which points to template dir
@@ -649,14 +698,15 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
     QFile file(inputFile);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         //errorMessage();
-        return;
+        return QString();
     }
+
     QJsonObject json;
     auto res = this->outputToJSON(json);
     if(!res)
     {
-        errorMessage("Error setting up the analysis.  Analysis did not run.");
-        return;
+        errorMessage("Error setting up the analysis input file.");
+        return QString();
     }
 
     json["runDir"]=tmpDirectory;
@@ -668,9 +718,7 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
 
     statusMessage("Set up Done.  Now starting the analysis.");
 
-    QString inputDirectory = tmpDirectory + QDir::separator();
-
-    emit setUpForApplicationRunDone(tmpDirectory, inputDirectory);
+    return tmpDirectory;
 }
 
 
@@ -714,6 +762,10 @@ int WorkflowAppOpenSRA::loadFile(const QString fileName)
 
     this->clear();
     this->clearWorkDir();
+
+    // Set the current dir to the input file
+    QFileInfo fileinfo( file );
+    QDir::setCurrent( fileinfo.absoluteDir().path() );
 
     auto res = this->inputFromJSON(jsonObj);
 

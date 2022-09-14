@@ -46,41 +46,50 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterWidget.h"
 #include "Application.h"
+#include "PythonProcessHandler.h"
 
 #include <QProcess>
 
 class QLabel;
+class QPushButton;
 
 class LocalApplication : public Application
 {
     Q_OBJECT
 public:
     explicit LocalApplication(QString workflowScriptName, QWidget *parent = nullptr);
+
     bool outputToJSON(QJsonObject &rvObject);
-    bool inputFromJSON(QJsonObject &rvObject);
+
     bool setupDoneRunApplication(QString &tmpDirectory, QString &inputFile);
-    void displayed(void);
+    bool setupDoneRunPreprocessing(QString &tmpDirectory, QString &inputFile);
+
+    void clear();
+
+    void onRunButtonPressed(QPushButton* button);
+    void onPreprocessButtonPressed(QPushButton* button);
 
 signals:
     void processResults(QString,QString,QString);
 
-public slots:
-   void onRunButtonPressed(void);
+    void setupForPreprocessing(QString &, QString &);
 
-   // Handles the results when the process is finished
-   void handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
-
-   // Gives a message to the user that the process has started
-   void handleProcessStarted(void);
-
-   // Displays the text output of the process in the dialog
-   void handleProcessTextOutput(void);
+    void setupForRunDone(QString &, QString &);
+    void setupForPreProcessingDone(QString &, QString &);
 
 private:
-    void submitJob(void);
     QString workflowScript;
 
-    QProcess *proc;
+    bool setUpForRun = false;
+
+    QString workingDir;
+
+    void setupTempDir();
+
+    std::unique_ptr<PythonProcessHandler> theProcessHandler = nullptr;
+
+    QPushButton* runButton = nullptr;
+    QPushButton* preProcessButton = nullptr;
 
 };
 

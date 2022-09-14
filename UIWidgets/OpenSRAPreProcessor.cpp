@@ -52,6 +52,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QDir>
 #include <QVariant>
+#include <QPushButton>
 
 // Test to remove
 #include <chrono>
@@ -66,235 +67,241 @@ OpenSRAPreProcessor::OpenSRAPreProcessor(QString path, QWidget *parent) : SimCen
 
     // Get the visualization widget
     theVisualizationWidget = workFlowApp->getVisualizationWidget();
+
+//    theProcessHandler = std::make_unique<PythonProcessHandler>("preprocess OpenSRA data", startButton);
+
+//    connect(startButton, &QPushButton::clicked,this,&OpenSRAPreProcessor::run);
+
 }
 
 
-int OpenSRAPreProcessor::run()
-{
-
-    // Get the pipeline network widget
-    // Get the pipelines database
-    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getGasPipelineComponentDb();
-
-    if(thePipelineDB == nullptr)
-    {        
-        this->errorMessage("Error getting the pipeline database from the input widget.");
-        return -1;
-    }
-
-    if(thePipelineDB->isEmpty())
-    {
-        this->errorMessage("Pipeline database is empty. No pipelines to preprocess.");
-        return -1;
-    }
-
-    // Check if folder exists
-    auto externalDataFolder = pathToBackend + QDir::separator() + "lib" + QDir::separator() + "OtherData";
-
-    if(!QDir(externalDataFolder).exists())
-    {
-        this->errorMessage("Error, could not find the folder containing backend data: "+externalDataFolder);
-        return -1;
-    }
-
-    // Get the layer containing the features that are selected for analysis
-    auto selFeatLayer = thePipelineDB->getSelectedLayer();
-    if(selFeatLayer == nullptr)
-    {
-        this->errorMessage("Error, could not get the selected features layer");
-        return -1;
-    }
-
-    auto numFeat = selFeatLayer->featureCount();
-
-    if(numFeat == 0)
-    {
-        this->errorMessage("Error, the number of features selected for analysis is zero");
-        return -1;
-    }
-
-    // Layer group to hold all of the layers
-    QVector<QgsMapLayer*> layerGroup;
-
-    // Need to return the features with ascending ids
-    QgsFeatureRequest featRequest;
-
-    QgsFeatureRequest::OrderByClause orderByClause(QString("id"),true);
-    QList<QgsFeatureRequest::OrderByClause> obcList = {orderByClause};
-    QgsFeatureRequest::OrderBy orderBy(obcList);
-    featRequest.setOrderBy(orderBy);
-    auto pipeFeatures = selFeatLayer->getFeatures(featRequest);
-
-    // First pull in the geologic soil parameters
-    auto pathGeoMap = externalDataFolder + QDir::separator() + "CGS_CA_Geologic_Map_2010"+ QDir::separator() +"shapefiles"+ QDir::separator() +"GMC_geo_poly.shp";
-
-    auto geoMapLayer = theVisualizationWidget->addVectorLayer(pathGeoMap, "CGS CA Geologic Map 2010", "ogr");
-    if(geoMapLayer == nullptr)
-    {
-        this->errorMessage("Error, could not load the geologic map layer");
-        return -1;
-    }
-
-    layerGroup.push_back(geoMapLayer);
-
-    // Set the crs for the provided layer so that it appears where it should in the map
-    geoMapLayer->setCrs(QgsCoordinateReferenceSystem(QStringLiteral("EPSG:3310")));
-
-    QgsFillSymbol* fillSymbol = new QgsFillSymbol();
-
-    theVisualizationWidget->createCategoryRenderer("PTYPE",geoMapLayer,fillSymbol);
-
-    // Test to remove start
-    auto start = high_resolution_clock::now();
-    // Test to remove end
-
-    // Coordinate transform to transform into the selected layers coordinate system
-    QgsCoordinateTransform ct(geoMapLayer->crs(), selFeatLayer->crs(), QgsProject::instance());
-
-    // The geology layer
-    std::vector<QgsFeature> geoFeatVec;
-    geoFeatVec.reserve(geoMapLayer->featureCount());
-    auto geoMapFeatures = geoMapLayer->getFeatures();
-    QgsFeature geoMapFeat;
-    while (geoMapFeatures.nextFeature(geoMapFeat))
-    {
-        auto geom = geoMapFeat.geometry();
-        geom.get()->transform(ct);
-        geoMapFeat.setGeometry(geom);
-        geoFeatVec.push_back(geoMapFeat);
-    }
+int OpenSRAPreProcessor::run(void)
+{    
 
 
-    auto pathSlopeDegrees = externalDataFolder + QDir::separator() + "Slope_Interpretted_From_CA_DEM" + QDir::separator() +"CA_Slope_Degrees_UTM_clip.tif";
+//    // Get the pipeline network widget
+//    // Get the pipelines database
+//    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getAssetDb("GasNetworkPipelines");
 
-    auto slopeDegRasterLayer = this->loadRaster(pathSlopeDegrees, "CA Slope Degrees");
-    if(slopeDegRasterLayer == nullptr)
-    {
-        this->errorMessage("Error, could not load the slope raster map layer");
-        return -1;
-    }
+//    if(thePipelineDB == nullptr)
+//    {
+//        this->errorMessage("Error getting the pipeline database from the input widget.");
+//        return -1;
+//    }
 
-    layerGroup.push_back(slopeDegRasterLayer);
+//    if(thePipelineDB->isEmpty())
+//    {
+//        this->errorMessage("Pipeline database is empty. No pipelines to preprocess.");
+//        return -1;
+//    }
 
-    slopeDegRasterLayer->setCrs(QgsCoordinateReferenceSystem(QStringLiteral("EPSG:4326")));
+//    // Check if folder exists
+//    auto externalDataFolder = pathToBackend + QDir::separator() + "lib" + QDir::separator() + "OtherData";
 
-    // this->statusMessage("Number of geo features="+QString::number(numgeoFeat));
+//    if(!QDir(externalDataFolder).exists())
+//    {
+//        this->errorMessage("Error, could not find the folder containing backend data: "+externalDataFolder);
+//        return -1;
+//    }
 
-    QStringList fieldNames = {"PTYPE","Slope Degrees"};
-    QVector< QgsAttributes > fieldAttributes(numFeat, QgsAttributes(fieldNames.size()));
+//    // Get the layer containing the features that are selected for analysis
+//    auto selFeatLayer = thePipelineDB->getSelectedLayer();
+//    if(selFeatLayer == nullptr)
+//    {
+//        this->errorMessage("Error, could not get the selected features layer");
+//        return -1;
+//    }
+
+//    auto numFeat = selFeatLayer->featureCount();
+
+//    if(numFeat == 0)
+//    {
+//        this->errorMessage("Error, the number of features selected for analysis is zero");
+//        return -1;
+//    }
+
+//    // Layer group to hold all of the layers
+//    QVector<QgsMapLayer*> layerGroup;
+
+//    // Need to return the features with ascending ids
+//    QgsFeatureRequest featRequest;
+
+//    QgsFeatureRequest::OrderByClause orderByClause(QString("id"),true);
+//    QList<QgsFeatureRequest::OrderByClause> obcList = {orderByClause};
+//    QgsFeatureRequest::OrderBy orderBy(obcList);
+//    featRequest.setOrderBy(orderBy);
+//    auto pipeFeatures = selFeatLayer->getFeatures(featRequest);
+
+//    // First pull in the geologic soil parameters
+//    auto pathGeoMap = externalDataFolder + QDir::separator() + "CGS_CA_Geologic_Map_2010"+ QDir::separator() +"shapefiles"+ QDir::separator() +"GMC_geo_poly.shp";
+
+//    auto geoMapLayer = theVisualizationWidget->addVectorLayer(pathGeoMap, "CGS CA Geologic Map 2010", "ogr");
+//    if(geoMapLayer == nullptr)
+//    {
+//        this->errorMessage("Error, could not load the geologic map layer");
+//        return -1;
+//    }
+
+//    layerGroup.push_back(geoMapLayer);
+
+//    // Set the crs for the provided layer so that it appears where it should in the map
+//    geoMapLayer->setCrs(QgsCoordinateReferenceSystem(QStringLiteral("EPSG:3310")));
+
+//    QgsFillSymbol* fillSymbol = new QgsFillSymbol();
+
+//    theVisualizationWidget->createCategoryRenderer("PTYPE",geoMapLayer,fillSymbol);
+
+//    // Test to remove start
+//    auto start = high_resolution_clock::now();
+//    // Test to remove end
+
+//    // Coordinate transform to transform into the selected layers coordinate system
+//    QgsCoordinateTransform ct(geoMapLayer->crs(), selFeatLayer->crs(), QgsProject::instance());
+
+//    // The geology layer
+//    std::vector<QgsFeature> geoFeatVec;
+//    geoFeatVec.reserve(geoMapLayer->featureCount());
+//    auto geoMapFeatures = geoMapLayer->getFeatures();
+//    QgsFeature geoMapFeat;
+//    while (geoMapFeatures.nextFeature(geoMapFeat))
+//    {
+//        auto geom = geoMapFeat.geometry();
+//        geom.get()->transform(ct);
+//        geoMapFeat.setGeometry(geom);
+//        geoFeatVec.push_back(geoMapFeat);
+//    }
 
 
-    QgsFeature pipeFeat;
-    int count = 0;
-    while (pipeFeatures.nextFeature(pipeFeat))
-    {
-        // Get the pipe geometry
-        auto pipeGeom = pipeFeat.geometry();
+//    auto pathSlopeDegrees = externalDataFolder + QDir::separator() + "Slope_Interpretted_From_CA_DEM" + QDir::separator() +"CA_Slope_Degrees_UTM_clip.tif";
 
-        if(pipeGeom.isNull())
-        {
-            this->errorMessage("Error: the pipe feature geometry is null "+QString::number(pipeFeat.id()));
-            return -1;
-        }
+//    auto slopeDegRasterLayer = this->loadRaster(pathSlopeDegrees, "CA Slope Degrees");
+//    if(slopeDegRasterLayer == nullptr)
+//    {
+//        this->errorMessage("Error, could not load the slope raster map layer");
+//        return -1;
+//    }
 
-        // Use the midpoint of the pipe
-        auto pipeMidPoint = pipeGeom.centroid();
+//    layerGroup.push_back(slopeDegRasterLayer);
 
-        auto pipeMidPointXY = pipeMidPoint.asPoint();
+//    slopeDegRasterLayer->setCrs(QgsCoordinateReferenceSystem(QStringLiteral("EPSG:4326")));
 
-        // if(count%10 == 0)
-        //     statusMessage("For point "+QString::number(count)+" pipe coords are "+pipeMidPoint.asWkt());
+//    // this->statusMessage("Number of geo features="+QString::number(numgeoFeat));
 
-        // if(pipeMidPoint.isGeosValid())
-        // {
-        //     this->errorMessage("Error: the pipe feature geometry is not valid "+QString::number(pipeFeat.id()));
-        //     return -1;
-        // }
+//    QStringList fieldNames = {"PTYPE","Slope Degrees"};
+//    QVector< QgsAttributes > fieldAttributes(numFeat, QgsAttributes(fieldNames.size()));
 
-        std::unique_ptr< QgsGeometryEngine > pipeGeometryEngine(QgsGeometry::createGeometryEngine(pipeMidPoint.constGet()));
-        pipeGeometryEngine->prepareGeometry();
 
-        if(!pipeGeometryEngine->isValid())
-        {
-            this->errorMessage("Error: the geometry engine is not valid for feature "+QString::number(pipeFeat.id()));
-            return -1;
-        }
+//    QgsFeature pipeFeat;
+//    int count = 0;
+//    while (pipeFeatures.nextFeature(pipeFeat))
+//    {
+//        // Get the pipe geometry
+//        auto pipeGeom = pipeFeat.geometry();
 
-        // Did we find the information
-        bool found = false;
+//        if(pipeGeom.isNull())
+//        {
+//            this->errorMessage("Error: the pipe feature geometry is null "+QString::number(pipeFeat.id()));
+//            return -1;
+//        }
 
-        for(auto&& it:geoFeatVec)
-        {
-            auto g = it.geometry();
+//        // Use the midpoint of the pipe
+//        auto pipeMidPoint = pipeGeom.centroid();
 
-            // Do initial bounding box check which is very fast to exclude points that are far away
-            auto bb = g.boundingBox();
+//        auto pipeMidPointXY = pipeMidPoint.asPoint();
 
-            // If bounding box contains the point then do a deeper check
-            if(bb.contains(pipeMidPointXY))
-            {
-                QString errMsg;
-                const bool intersects = pipeGeometryEngine->intersects(g.constGet(), &errMsg);
+//        // if(count%10 == 0)
+//        //     statusMessage("For point "+QString::number(count)+" pipe coords are "+pipeMidPoint.asWkt());
 
-                if(!errMsg.isEmpty())
-                {
-                    this->errorMessage("Error: "+errMsg+" for feature "+QString::number(pipeFeat.id()));
-                    return -1;
-                }
+//        // if(pipeMidPoint.isGeosValid())
+//        // {
+//        //     this->errorMessage("Error: the pipe feature geometry is not valid "+QString::number(pipeFeat.id()));
+//        //     return -1;
+//        // }
 
-                if(intersects)
-                {
-                    //auto gMidPoint = g.centroid();
-                    //statusMessage("For geom "+QString::number(it.id())+" coords are "+gMidPoint.asWkt());
+//        std::unique_ptr< QgsGeometryEngine > pipeGeometryEngine(QgsGeometry::createGeometryEngine(pipeMidPoint.constGet()));
+//        pipeGeometryEngine->prepareGeometry();
 
-                    //this->statusMessage("Pipe "+QString::number(pipeFeat.id())+" intersects with "+QString::number(it.id()));
-                    QVariant ptype = it.attribute("PTYPE");
+//        if(!pipeGeometryEngine->isValid())
+//        {
+//            this->errorMessage("Error: the geometry engine is not valid for feature "+QString::number(pipeFeat.id()));
+//            return -1;
+//        }
 
-                    if(!ptype.isValid())
-                        this->infoMessage("Warning: could not find the attribute PTYPE for feature "+QString::number(pipeFeat.id()));
-                    else
-                        fieldAttributes[count][0] = ptype;
+//        // Did we find the information
+//        bool found = false;
 
-                    found = true;
-                    break;
-                }
-            }
-        }
+//        for(auto&& it:geoFeatVec)
+//        {
+//            auto g = it.geometry();
 
-        if(!found)
-            this->infoMessage("Warning: could not find data from the CGS_CA_Geologic_Map_2010 for feature: "+QString::number(pipeFeat.id()));
+//            // Do initial bounding box check which is very fast to exclude points that are far away
+//            auto bb = g.boundingBox();
 
-        found = false;
+//            // If bounding box contains the point then do a deeper check
+//            if(bb.contains(pipeMidPointXY))
+//            {
+//                QString errMsg;
+//                const bool intersects = pipeGeometryEngine->intersects(g.constGet(), &errMsg);
 
-        auto midPointX = pipeMidPointXY.x();
-        auto midPointY = pipeMidPointXY.y();
+//                if(!errMsg.isEmpty())
+//                {
+//                    this->errorMessage("Error: "+errMsg+" for feature "+QString::number(pipeFeat.id()));
+//                    return -1;
+//                }
 
-        auto val = theVisualizationWidget->sampleRaster(midPointX,midPointY,slopeDegRasterLayer,1);
+//                if(intersects)
+//                {
+//                    //auto gMidPoint = g.centroid();
+//                    //statusMessage("For geom "+QString::number(it.id())+" coords are "+gMidPoint.asWkt());
 
-        if (isnan(val))
-            this->infoMessage("Warning: failed to sample raster layer for feature: "+QString::number(pipeFeat.id()));
+//                    //this->statusMessage("Pipe "+QString::number(pipeFeat.id())+" intersects with "+QString::number(it.id()));
+//                    QVariant ptype = it.attribute("PTYPE");
 
-        fieldAttributes[count][1] = QVariant(val);
+//                    if(!ptype.isValid())
+//                        this->infoMessage("Warning: could not find the attribute PTYPE for feature "+QString::number(pipeFeat.id()));
+//                    else
+//                        fieldAttributes[count][0] = ptype;
 
-        ++count;
-    }
+//                    found = true;
+//                    break;
+//                }
+//            }
+//        }
 
-    // Starting editing
-    thePipelineDB->startEditing();
+//        if(!found)
+//            this->infoMessage("Warning: could not find data from the CGS_CA_Geologic_Map_2010 for feature: "+QString::number(pipeFeat.id()));
 
-    QString errMsg;
-    auto res = thePipelineDB->addNewComponentAttributes(fieldNames,fieldAttributes,errMsg);
-    if(!res)
-        this->errorMessage(errMsg);
+//        found = false;
 
-    // Commit the changes
-    thePipelineDB->commitChanges();
+//        auto midPointX = pipeMidPointXY.x();
+//        auto midPointY = pipeMidPointXY.y();
 
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<seconds>(stop - start);
-    this->statusMessage("Done preprocessing in "+QString::number(duration.count())+ " seconds");
+//        auto val = theVisualizationWidget->sampleRaster(midPointX,midPointY,slopeDegRasterLayer,1);
 
-    theVisualizationWidget->createLayerGroup(layerGroup,"Data Layers");
+//        if (isnan(val))
+//            this->infoMessage("Warning: failed to sample raster layer for feature: "+QString::number(pipeFeat.id()));
+
+//        fieldAttributes[count][1] = QVariant(val);
+
+//        ++count;
+//    }
+
+//    // Starting editing
+//    thePipelineDB->startEditing();
+
+//    QString errMsg;
+//    auto res = thePipelineDB->addNewComponentAttributes(fieldNames,fieldAttributes,errMsg);
+//    if(!res)
+//        this->errorMessage(errMsg);
+
+//    // Commit the changes
+//    thePipelineDB->commitChanges();
+
+//    auto stop = high_resolution_clock::now();
+//    auto duration = duration_cast<seconds>(stop - start);
+//    this->statusMessage("Done preprocessing in "+QString::number(duration.count())+ " seconds");
+
+//    theVisualizationWidget->createLayerGroup(layerGroup,"Data Layers");
 
     return 0;
 }
@@ -324,3 +331,6 @@ QgsRasterLayer* OpenSRAPreProcessor::loadRaster(const QString& rasterFilePath, c
 
     return rasterlayer;
 }
+
+
+

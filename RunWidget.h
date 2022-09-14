@@ -57,6 +57,8 @@ signals:
 
 public slots:
     void setupForRunApplicationDone(QString &tmpDirectory, QString &inputFile);
+    void setupForRunPreprocessingDone(QString &tmpDirectory, QString &inputFile);
+
     void showLocalApplication(void);
 
 private:

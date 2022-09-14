@@ -103,7 +103,7 @@ MultiComponentEDPWidget::~MultiComponentEDPWidget()
 void MultiComponentEDPWidget::handleWidgetSelected(const QString& name)
 {
 
-    auto res = this->displayComponent(name);
+    auto res = this->show(name);
 
     if(!res)
         this->errorMessage("Error, could not display the widget with the name "+name);
@@ -113,7 +113,15 @@ void MultiComponentEDPWidget::handleWidgetSelected(const QString& name)
 
 bool MultiComponentEDPWidget::outputToJSON(QJsonObject &jsonObject)
 {
-    return this->getCurrentComponent()->outputToJSON(jsonObject);
+    auto currComponent = this->getCurrentComponent();
+
+    if(currComponent == nullptr)
+    {
+        this->errorMessage("Could not get the current component in "+QString(__FUNCTION__)+", contact the developer");
+        return false;
+    }
+
+    return currComponent->outputToJSON(jsonObject);
 }
 
 
@@ -122,7 +130,15 @@ bool MultiComponentEDPWidget::inputFromJSON(QJsonObject &jsonObject)
     if(jsonObject.isEmpty())
         return false;
 
-    return this->getCurrentComponent()->inputFromJSON(jsonObject);
+    auto currComponent = this->getCurrentComponent();
+
+    if(currComponent == nullptr)
+    {
+        this->errorMessage("Could not get the current component in "+QString(__FUNCTION__)+", contact the developer");
+        return false;
+    }
+
+    return currComponent->inputFromJSON(jsonObject);
 }
 
 
@@ -143,8 +159,7 @@ bool MultiComponentEDPWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
 bool MultiComponentEDPWidget::copyFiles(QString &destDir)
 {
     Q_UNUSED(destDir);
-
-    return false;
+    return true;
 }
 
 

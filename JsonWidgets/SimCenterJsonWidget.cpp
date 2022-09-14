@@ -142,40 +142,41 @@ QGroupBox* SimCenterJsonWidget::getWidgetBox(const QJsonObject jsonObj)
 
 void SimCenterJsonWidget::handleAddButtonPressed(void)
 {
-    QJsonObject methodObj;
-    methodWidget->outputToJSON(methodObj);
+    QJsonObject variablesObj;
+    methodWidget->outputToJSON(variablesObj);
 
-    auto passedObj = methodWidget->getJsonObj();
+    // The object that was originally given in the methods and params file
+    auto passedObj = methodWidget->getMethodAndParamJsonObj();
 
-    auto isObj = methodObj.value("Method").toObject();
+    auto isObj = variablesObj.value("Method").toObject();
 
     QStringList keys;
 
     if(!isObj.isEmpty())
     {
-        methodObj = isObj;
-        keys = methodObj.keys();
+        variablesObj = isObj;
+        keys = variablesObj.keys();
     }
     else
     {
-        keys.push_back(methodObj.value("Method").toString());
+        keys.push_back(variablesObj.value("Method").toString());
     }
 
-    if(methodObj.isEmpty() || keys.size() != 1)
+    if(variablesObj.isEmpty() || keys.size() != 1)
     {
         this->errorMessage("Error in getting the method in SimCenterJsonWidget");
         return;
     }
 
     // Object to store the variable types
-    QJsonObject typesObj;
+    QJsonObject variableTypesObj;
 
     auto key = keys.front();
 
     // Handle the special case of a user defined model
     if(key.compare("UserdefinedModel") == 0)
     {
-        auto paramObj = methodObj.value(key).toObject();
+        auto paramObj = variablesObj.value(key).toObject();
 
         QJsonObject newMethodObj;
 
@@ -185,16 +186,16 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
         {
             newMethodObj.insert(key,"User-created generic model parameter");
 
-            typesObj.insert(key,"random");
+            variableTypesObj.insert(key,"random");
         }
 
-        methodObj = newMethodObj;
+        variablesObj = newMethodObj;
     }
     else
     {
-        methodObj = methodObj.value(key).toObject();
+        variablesObj = variablesObj.value(key).toObject();
 
-        auto res = this->getVarTypes(methodObj,passedObj,key,typesObj);
+        auto res = this->getVarTypes(variablesObj,passedObj,key,variableTypesObj);
         if(res != 0)
         {
             this->errorMessage("Error, could not get the var types in SimCenterJsonWidget");
@@ -202,58 +203,7 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
         }
     }
 
-    // Object to store the uuid's of the parameters, where the key is the parameter name
-    QJsonObject uuidObj;
 
-    auto paramsKeys = methodObj.keys();
-    for(auto&& it : paramsKeys)
-    {
-        // If the parameter already exists, get its UID
-        bool ok = true;
-        auto uid = theInputParamsWidget->checkIfParameterExists(it,ok);
-
-        if(!ok)
-        {
-            this->errorMessage("Error adding a new parameter in "+theInputParamsWidget->objectName());
-            return;
-        }
-
-        // If uid is empty, create a new parameter as it does not exist
-        if (uid.isEmpty())
-        {
-            // Create a unique id to identify the specific instance of these parameters
-            uid = QUuid::createUuid().toString();
-        }
-
-        // Save the parameter uid
-        uuidObj[it]=uid;
-
-        // Generate the from model string
-        auto fromModel = methodKey+"-"+key;
-
-        // Get the type of variable, e.g., random or constant
-        auto varType = typesObj[it].toString();
-
-        if(varType.isEmpty())
-        {
-            this->errorMessage("Error getting the variable type for "+theInputParamsWidget->objectName());
-            return;
-        }
-
-        // Get the description of the input variable
-        QString desc = methodObj.value(it).toString();
-
-        auto res = theInputParamsWidget->addNewParameter(it,fromModel,desc,uid,varType);
-
-        if(!res)
-        {
-            this->errorMessage("Error adding a random variable to "+theInputParamsWidget->objectName());
-            return;
-        }
-    }
-
-    // Add the model weight, epistemic uncertainty, aleatory variability to json obj for this method
-    addRunListWidget->outputToJSON(methodObj);
 
     // Get the human readable text or name to display
     auto methodsAndParamsMap = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsMap();
@@ -262,15 +212,31 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
     if(name.isEmpty())
         name = key;
 
+
+    // Object to store the uuid's of the parameters, where the key is the parameter name
+    QJsonObject uuidObjs;
+
+    auto res2 = this->addNewParametersToInputWidget(variablesObj,variableTypesObj, key, uuidObjs);
+
+    if(!res2)
+    {
+        this->errorMessage("Error, adding the parameters to the input widget for the model "+name+" in "+methodKey);
+        return;
+    }
+
+    // Add the model weight, epistemic uncertainty, aleatory variability to json obj for this method
+    addRunListWidget->outputToJSON(variablesObj);
+
+
     QJsonObject finalObj;
 
-    finalObj[key] = methodObj;
+    finalObj[key] = variablesObj;
 
     finalObj["Key"] = key;
     finalObj["ModelName"] = name;
-    finalObj["VarTypes"] = typesObj;
+    finalObj["VarTypes"] = variableTypesObj;
 
-    finalObj["Uuids"] = uuidObj;
+    finalObj["Uuids"] = uuidObjs;
 
     addRunListWidget->outputToJSON(finalObj);
 
@@ -337,24 +303,104 @@ bool SimCenterJsonWidget::outputToJSON(QJsonObject &jsonObj)
 }
 
 
+bool SimCenterJsonWidget::addNewParametersToInputWidget(const QJsonObject& variablesObj, const QJsonObject& variablesTypeObj, const QString& key, QJsonObject& uuidObj)
+{
+
+    auto paramsKeys = variablesObj.keys();
+    for(auto&& it : paramsKeys)
+    {
+        // If the parameter already exists, get its UID
+        bool ok = true;
+        auto uid = theInputParamsWidget->checkIfParameterExists(it,ok);
+
+        if(!ok)
+        {
+            this->errorMessage("Error adding a new parameter in "+theInputParamsWidget->objectName());
+            return false;
+        }
+
+        // If uid is empty, create a new parameter as it does not exist
+        if (uid.isEmpty())
+        {
+            // Create a unique id to identify the specific instance of these parameters
+            uid = QUuid::createUuid().toString();
+        }
+
+        // Save the parameter uid
+        uuidObj[it]=uid;
+
+        // Generate the from model string
+        auto fromModel = methodKey+"-"+key;
+
+        // Get the type of variable, e.g., random or constant
+        auto varType = variablesTypeObj[it].toString();
+
+        if(varType.isEmpty())
+        {
+            this->errorMessage("Error getting the variable type for "+theInputParamsWidget->objectName());
+            return false;
+        }
+
+        // Get the description of the input variable
+        QString desc = variablesObj.value(it).toString();
+
+        auto res = theInputParamsWidget->addNewParameter(it,fromModel,desc,uid,varType);
+
+        if(!res)
+        {
+            this->errorMessage("Error adding a random variable to "+theInputParamsWidget->objectName());
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
 bool SimCenterJsonWidget::inputFromJSON(QJsonObject &jsonObject)
 {
+
+    auto thisName = this->objectName();
+
+    // If to include is false, skip it
+    auto toInclude = jsonObject["ToInclude"].toBool();
+    if(!toInclude)
+        return true;
+
+    // Get the list of methods or models
     auto methodsObj = jsonObject["Method"].toObject();
+    if(methodsObj.isEmpty())
+    {
+        this->errorMessage("Error, the 'Method' object is empty in "+methodKey);
+        return false;
+    }
 
     auto methodsAndParamsMap = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsMap();
+
+    // Get the original method object passed from the methods and params file, this is where the parameters are stored
+    QJsonObject origMethodObj;
+    methodWidget->outputToJSON(origMethodObj);
 
     auto keys = methodsObj.keys();
     for(int i = 0; i < keys.size(); ++i)
     {
         auto key = keys.at(i);
 
+        // Check if the name is in the methods and params map
         auto name = methodsAndParamsMap.value(key);
 
         if(name.isEmpty())
             name = key;
 
+        if(origMethodObj.isEmpty())
+        {
+            this->errorMessage("Error, could not find the orginial object with the key "+key);
+            return false;
+        }
+
         auto methodObj = methodsObj.value(key).toObject();
 
+        // The final object that will be passed to the list widget
         QJsonObject finalObj;
 
         finalObj[key] = methodObj;
@@ -363,7 +409,49 @@ bool SimCenterJsonWidget::inputFromJSON(QJsonObject &jsonObject)
         finalObj["ModelName"] = name;
         finalObj["ModelWeight"] = methodObj.value("ModelWeight").toDouble();
 
-        listWidget->addItem(finalObj);
+
+        auto passedObj = methodWidget->getMethodAndParamJsonObj();
+
+        QJsonObject variableTypesObj;
+
+        // Get the variables
+        QJsonObject variablesObj = origMethodObj["Method"].toObject()[key].toObject();
+
+        if(variablesObj.isEmpty())
+        {
+            this->errorMessage("Error, could not get the variables for method "+name+" in "+this->objectName());
+            return false;
+        }
+
+        auto res = this->getVarTypes(variablesObj,passedObj,key,variableTypesObj);
+        if(res != 0)
+        {
+            this->errorMessage("Error, could not get the variable types for method "+name+" in "+this->objectName());
+            return false;
+        }
+
+        finalObj["VarTypes"] = variableTypesObj;
+
+        // Object to store the uuid's of the parameters, where the key is the parameter name
+        QJsonObject uuidObjs;
+
+        auto res2 = this->addNewParametersToInputWidget(variablesObj,variableTypesObj, key, uuidObjs);
+
+        if(!res2)
+        {
+            this->errorMessage("Error, adding the parameters to the input widget for the model "+name+" in "+methodKey);
+            return false;
+        }
+
+        finalObj["Uuids"] = uuidObjs;
+
+        auto item = listWidget->addItem(finalObj);
+
+        if(item == nullptr)
+        {
+            this->errorMessage("Error, failed to add the model "+name+" in "+methodKey);
+            return false;
+        }
     }
 
     // Select the last row
@@ -417,6 +505,9 @@ void SimCenterJsonWidget::handleListItemSelected(const QModelIndex& index)
         return;
     }
 }
+
+
+
 
 
 int SimCenterJsonWidget::getVarTypes(const QJsonObject& vars, const QJsonObject& origObj, const QString& key, QJsonObject& varTypes)

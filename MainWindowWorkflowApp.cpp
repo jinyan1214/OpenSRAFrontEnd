@@ -89,8 +89,6 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
 
     // place a location for messages;
     QHBoxLayout *layoutMessages = new QHBoxLayout();
-    errorLabel = new QLabel();
-    layoutMessages->addWidget(errorLabel);
     header->appendLayout(layoutMessages);
 
     // place login info
@@ -114,12 +112,12 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
     QHBoxLayout *pushButtonLayout = new QHBoxLayout();
 
     // Create the preprocess button
-    QPushButton *preProcessButton = new QPushButton();
+    preProcessButton = new QPushButton();
     preProcessButton->setText(tr("PREPROCESS"));
     pushButtonLayout->addWidget(preProcessButton);
 
     // Create run and exit buttons
-    QPushButton *runButton = new QPushButton();
+    runButton = new QPushButton();
     runButton->setText(tr("RUN"));
     pushButtonLayout->addWidget(runButton);
 
@@ -129,8 +127,9 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
 
 
     // connect some signals and slots
-    connect(preProcessButton, SIGNAL(clicked(bool)),this,SLOT(onPreprocessButtonClicked()));
     connect(runButton, SIGNAL(clicked(bool)),this,SLOT(onRunButtonClicked()));
+    connect(preProcessButton, SIGNAL(clicked(bool)),this,SLOT(onPreprocessButtonClicked()));
+
     connect(exitButton, SIGNAL(clicked(bool)),this,SLOT(onExitButtonClicked()));
 
     // add button widget to layout
@@ -393,6 +392,18 @@ void MainWindowWorkflowApp::createActions() {
 }
 
 
+QPushButton *MainWindowWorkflowApp::getRunButton() const
+{
+    return runButton;
+}
+
+
+QPushButton *MainWindowWorkflowApp::getPreProcessButton() const
+{
+    return preProcessButton;
+}
+
+
 void MainWindowWorkflowApp::createHelpMenu()
 {
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
@@ -523,15 +534,15 @@ void MainWindowWorkflowApp::setCite(QString &newText)
 }
 
 
-void MainWindowWorkflowApp::onPreprocessButtonClicked()
+void MainWindowWorkflowApp::onRunButtonClicked()
 {
-    inputWidget->onPreprocessButtonClicked();
+    inputWidget->onRunButtonClicked(runButton);
 }
 
 
-void MainWindowWorkflowApp::onRunButtonClicked()
+void MainWindowWorkflowApp::onPreprocessButtonClicked()
 {
-    inputWidget->onRunButtonClicked();
+    inputWidget->onPreprocessButtonClicked(preProcessButton);
 }
 
 

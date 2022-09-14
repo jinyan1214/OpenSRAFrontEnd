@@ -59,15 +59,12 @@ public:
 
     void setMainWidget(JsonWidget *value);
 
-    void setSubWidget(JsonWidget *value);
-
 private:
 
     bool defaultValue;
 
     JsonWidget* mainWidget;
 
-    JsonWidget* subWidget;
 
 };
 

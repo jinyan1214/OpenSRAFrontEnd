@@ -64,11 +64,14 @@ class RunLocalWidget;
 class RunWidget;
 class QGISVisualizationWidget;
 class UncertaintyQuantificationWidget;
+class OpenSRAPreProcessor;
+class LocalApplication;
 
 class QStackedWidget;
 class Application;
 class QNetworkAccessManager;
 class QNetworkReply;
+class QPushButton;
 
 class WorkflowAppOpenSRA : public WorkflowAppWidget
 {
@@ -86,8 +89,8 @@ public:
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
 
-    void onRunButtonClicked();
-    void onPreprocessButtonClicked();
+    void onRunButtonClicked(QPushButton* button);
+    void onPreprocessButtonClicked(QPushButton* button);
 
     void onRemoteRunButtonClicked();
     void onRemoteGetButtonClicked();
@@ -107,12 +110,14 @@ public:
     RandomVariablesWidget *getTheRandomVariableWidget() const;
 
 
-public slots:  
+public slots:
     void clear(void);
 
     void clearWorkDir(void);
 
-    void setUpForApplicationRun(QString &, QString &);
+    void setUpForApplicationRun(QString &workingDir, QString &subDir);
+    void setUpForPreprocessingRun(QString &workingDir, QString &subDir);
+
     void postprocessResults(QString doesNothing1, QString doesNothing2, QString doesNothing3);
 
     int loadFile(QString filename);
@@ -136,12 +141,12 @@ private:
     std::unique_ptr<WidgetFactory> theWidgetFactory;
 
     // sidebar container selection
-    SimCenterComponentSelection *theComponentSelection;
+    SimCenterComponentSelection *theComponentSelection = nullptr;
 
     // objects that go in sidebar
     GeospatialDataWidget* theGISDataWidget = nullptr;
     GeneralInformationWidget* theGenInfoWidget = nullptr;
-    UncertaintyQuantificationWidget* theUQWidget = nullptr;
+//    UncertaintyQuantificationWidget* theUQWidget = nullptr;
     PipelineNetworkWidget* thePipelineNetworkWidget = nullptr;
     IntensityMeasureWidget* theIntensityMeasureWidget = nullptr;
     MultiComponentDVWidget* theDecisionVariableWidget = nullptr;
@@ -153,15 +158,19 @@ private:
     ResultsWidget* theResultsWidget = nullptr;
 
     // objects for running the workflow and obtaining results
-    RunWidget* theRunWidget;
-    Application* localApp;
+    RunWidget* theRunWidget = nullptr;
+    LocalApplication* localApp = nullptr;
 
-    QJsonObject* jsonObjOrig;
+    QJsonObject* jsonObjOrig = nullptr;
 
-    LoadResultsDialog* resultsDialog;
+    LoadResultsDialog* resultsDialog = nullptr;
 
     QJsonObject methodsAndParamsObj;
     QMap<QString, QString> methodsParamsMap;
+
+    OpenSRAPreProcessor* preprocessor = nullptr;
+
+    QString assembleInputFile(QString &workingDir, QString &subDir);
 };
 
 #endif // WORKFLOW_APP_EE_UQ_H

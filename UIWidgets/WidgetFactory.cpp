@@ -123,7 +123,7 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
     JsonComboBox* comboWidget = new JsonComboBox(mainWidget);
     comboWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
     comboWidget->setObjectName(parentKey);
-    comboWidget->setJsonObj(obj);
+    comboWidget->setMethodAndParamJsonObj(obj);
     mainLayout->addWidget(comboWidget);
 
     JsonStackedWidget* comboStackedWidget = new JsonStackedWidget(mainWidget);
@@ -163,7 +163,7 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
             {
                 JsonDefinedWidget* newWidget = new JsonDefinedWidget(mainWidget, itemObj, key);
                 newWidget->setObjectName(key);
-                newWidget->setJsonObj(itemObj);
+                newWidget->setMethodAndParamJsonObj(itemObj);
                 comboStackedWidget->addWidget(newWidget);
             }
             else
@@ -174,7 +174,7 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
                     auto parentName = parent->objectName();
 
                     auto genModelWidget = new GenericModelWidget(parentName);
-                    genModelWidget->setJsonObj(itemObj);
+                    genModelWidget->setMethodAndParamJsonObj(itemObj);
                     comboStackedWidget->addWidget(genModelWidget);
                 }
                 else
@@ -232,7 +232,7 @@ QWidget* WidgetFactory::getLineEditWidget(const QJsonObject& obj, const QString&
 
     JsonLineEdit* lineEditWidget = new JsonLineEdit(parent);
     lineEditWidget->setObjectName(parentKey);
-    lineEditWidget->setJsonObj(obj);
+    lineEditWidget->setMethodAndParamJsonObj(obj);
     lineEditWidget->setDefaultValue(defVal);
 
     return lineEditWidget;
@@ -249,7 +249,7 @@ QWidget* WidgetFactory::getLabelWidget(const QJsonObject& obj, const QString& pa
 
     JsonLabel* labelWidget = new JsonLabel(parent);
     labelWidget->setObjectName(parentKey);
-    labelWidget->setJsonObj(obj);
+    labelWidget->setMethodAndParamJsonObj(obj);
     labelWidget->setDefaultValue(defVal);
 
     return labelWidget;
@@ -269,7 +269,7 @@ QWidget* WidgetFactory::getCheckBoxWidget(const QJsonObject& obj, const QString&
     JsonCheckBox* checkBoxWidget = new JsonCheckBox(parent);
     checkBoxWidget->setMainWidget(mainWidget);
     checkBoxWidget->setObjectName(parentKey);
-    checkBoxWidget->setJsonObj(obj);
+    checkBoxWidget->setMethodAndParamJsonObj(obj);
 
     QHBoxLayout* mainLayout = new QHBoxLayout(mainWidget);
     mainLayout->setMargin(0);
@@ -294,7 +294,6 @@ QWidget* WidgetFactory::getCheckBoxWidget(const QJsonObject& obj, const QString&
         JsonDefinedWidget* newWidget = new JsonDefinedWidget(checkBoxWidget, obj, parentKey);
         newWidget->setObjectName("CheckBoxSubWidget");
         mainLayout->addWidget(newWidget);
-        checkBoxWidget->setSubWidget(newWidget);
 
         connect(checkBoxWidget,&QCheckBox::stateChanged,newWidget,&QWidget::setVisible);
 
@@ -456,7 +455,7 @@ QWidget* WidgetFactory::getBoxWidget(const QJsonObject& obj, const QString& pare
 {
     JsonGroupBoxWidget* newWidget = new JsonGroupBoxWidget(parent, obj, parentKey);
     newWidget->setObjectName(parentKey);
-    newWidget->setJsonObj(obj);
+    newWidget->setMethodAndParamJsonObj(obj);
 
     auto text = obj.value("NameToDisplay").toString();
 

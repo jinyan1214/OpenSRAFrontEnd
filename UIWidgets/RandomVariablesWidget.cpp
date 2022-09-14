@@ -224,7 +224,9 @@ void RandomVariablesWidget::makeRVWidget(void)
 
     verticalLayout->addWidget(theConstantTableView);
 
-    QLabel* instructionsLabel = new QLabel("Instructions for using this tab");
+    QLabel* instructionsLabel = new QLabel();
+
+    instructionsLabel->setText("<html><ul><li>For user-provided GIS Maps, ensure that each GIS map only has one attribute and/or the raster contains a single band. </li><li>Alternatively, users can pick from the columns of the infrastructure table or enter a value in a box.</li><li>Something else</li></ul></html>");
 
     verticalLayout->addWidget(instructionsLabel);
 

@@ -88,7 +88,7 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
 
     theMainLayout->insertLayout(0,theHeaderLayout);
 
-    gasPipelineWidget = new SimCenterAppSelection(QString("Regional Gas Pipelines"), QString("Assets"), QString("NaturalGasPipelines"), this);
+    gasPipelineWidget = new SimCenterAppSelection(QString("Regional Gas Pipelines"), QString("Assets"), QString("NaturalGasPipelines"), QString(), this);
 
 
     csvBelowGroundInputWidget = new LineAssetInputWidget(this, theVisualizationWidget, "Gas Pipelines","Gas Network");
@@ -116,6 +116,9 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     vectorOfComponents.append(csvBelowGroundInputWidget);
     vectorOfComponents.append(theWellsCaprocksWidget);
     vectorOfComponents.append(theAboveGroundInfWidget);
+    vectorOfComponents.append(testInputWidget);
+
+    this->show("Pipelines");
 
     auto colDelegate = WorkflowAppOpenSRA::getInstance()->getTheRandomVariableWidget()->getColDataComboDelegate();
 
@@ -131,7 +134,7 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     //    theAssetInputWidget->loadFileFromPath("/Users/steve/Downloads/10000_random_sites_in_ca.csv");
     //    theAssetInputWidget->selectAllComponents();
 
-    theWellsCaprocksWidget->loadFileFromPath("/Users/steve/Desktop/ExWellCaprock.csv");
+    //    theWellsCaprocksWidget->loadFileFromPath("/Users/steve/Desktop/ExWellCaprock.csv");
 
     // Test to remove end
 
@@ -220,15 +223,33 @@ bool PipelineNetworkWidget::outputToJSON(QJsonObject &jsonObject)
 bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
 {
 
-    auto currCompIndex = this->getCurrentIndex();
+    auto typeOfInf = jsonObject["InfrastructureType"].toString();
 
-    if (currCompIndex < 0 && currCompIndex > vectorOfComponents.size()-1)
+    QString osraType;
+
+    if(typeOfInf.compare("below_ground") == 0)
+        osraType = "Pipelines";
+    else if(typeOfInf.compare("above_ground") == 0)
+        osraType = "Above Ground \nGas Infrastructure";
+    else if(typeOfInf.compare("wells_and_caprocks") == 0)
+        osraType = "Wells and Caprocks";
+
+    auto res = this->show(osraType);
+
+    if(res == false)
+    {
+        this->errorMessage("OpenSRA does not support the infrastructrue type "+ typeOfInf);
         return false;
 
-    auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
+    }
 
-    if(theCurrInputWidget == nullptr)
-        return false;
+    //    auto currCompIndex = this->getCurrentIndex();
+
+    //    if (currCompIndex < 0 && currCompIndex > vectorOfComponents.size()-1)
+    //        return false;
+
+    //    auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
+
 
 
     auto fileName = jsonObject["SiteDataFile"].toString();
@@ -239,18 +260,68 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
-    if(!theCurrInputWidget->loadFileFromPath(fileName))
+    if(!jsonObject.contains("DataType"))
     {
-        errorMessage("Failed to load the 'SiteDataFile': "+fileName);
+        errorMessage("The infrastructure .json input file does not contain the required field 'DataType'");
         return false;
     }
 
-    auto filter = jsonObject["filter"].toString();
+    auto typeOfFile = jsonObject["DataType"].toString();
 
-    if(!filter.isEmpty())
-        theCurrInputWidget->setFilterString(filter);
+    // Get the widget based on the app type
+    auto theCurrInputWidget = this->getComponent(osraType);
 
-    return theCurrInputWidget->inputFromJSON(jsonObject);
+    if(theCurrInputWidget == nullptr)
+    {
+        errorMessage("Error getting the input widget of the type"+osraType);
+        return false;
+    }
+
+
+    auto appSelWidget = dynamic_cast<SimCenterAppSelection*>(theCurrInputWidget);
+
+    if(appSelWidget == nullptr)
+    {
+        errorMessage("Error casting the input widget to SimCenterAppSelection contact dev team");
+        return false;
+    }
+
+
+    QString app;
+
+    if(typeOfInf.compare("below_ground") == 0)
+    {
+        if(typeOfFile.compare("Shapefile") == 0)
+            app = "GIS to Pipeline";
+        else if(typeOfFile.compare("CSV") == 0)
+            app = "CSV to Pipeline";
+    }
+    else if(typeOfInf.compare("above_ground") == 0)
+    {
+        // to do
+    }
+    else if(typeOfInf.compare("wells_and_caprocks") == 0)
+    {
+        // to do
+    }
+
+
+    if(app.isEmpty())
+    {
+        errorMessage("The 'DataType' "+typeOfFile+ " is not supported");
+        return false;
+    }
+
+
+    auto compWidget = appSelWidget->getComponent(app);
+
+    if(compWidget == nullptr)
+    {
+        errorMessage("Error getting the application type "+app+" from the selected widget, contact the developers");
+        return false;
+    }
+
+    return compWidget->inputFromJSON(jsonObject);
 }
 
 
@@ -259,7 +330,7 @@ bool PipelineNetworkWidget::copyFiles(QString &destDir)
 
     auto currCompIndex = this->getCurrentIndex();
 
-    if (currCompIndex < 0 && currCompIndex > vectorOfComponents.size()-1)
+    if (currCompIndex < 0 || currCompIndex > vectorOfComponents.size()-1)
         return false;
 
     auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
@@ -267,9 +338,7 @@ bool PipelineNetworkWidget::copyFiles(QString &destDir)
     if(theCurrInputWidget == nullptr)
         return false;
 
-    theCurrInputWidget->copyFiles(destDir);
-
-    return false;
+    return theCurrInputWidget->copyFiles(destDir);
 }
 
 

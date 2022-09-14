@@ -39,17 +39,22 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterWidget.h"
-#include <QString>
+#include "PythonProcessHandler.h"
 
+class PythonProcessHandler;
 class QGISVisualizationWidget;
 class QgsRasterLayer;
+
+class QPushButton;
 
 class OpenSRAPreProcessor : public SimCenterWidget
 {
 public:
     OpenSRAPreProcessor(QString path, QWidget *parent = nullptr);
 
-    int run();
+public slots:
+
+    int run(void);
 
 private:
 
@@ -58,6 +63,9 @@ private:
     QGISVisualizationWidget * theVisualizationWidget;
 
     QgsRasterLayer*  loadRaster(const QString& rasterFilePath, const QString& rasterName);
+
+    QPushButton* startButton = nullptr;
+
 };
 
 #endif // OPENSRAPREPROCESSOR_H

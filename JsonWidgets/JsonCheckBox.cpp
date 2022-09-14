@@ -43,7 +43,6 @@ JsonCheckBox::JsonCheckBox(QWidget* parent) : QCheckBox(parent)
 {
     defaultValue = false;
     mainWidget = nullptr;
-    subWidget = nullptr;
 }
 
 
@@ -51,18 +50,7 @@ bool JsonCheckBox::outputToJSON(QJsonObject &jsonObject)
 {
     // auto key = this->objectName();
 
-//    QJsonObject outputObj;
-//    if(subWidget != nullptr)
-//        subWidget->outputToJSON(outputObj);
-
-//    if(outputObj.isEmpty())
-//    {
-        jsonObject["ToInclude"] = this->isChecked();
-//    }
-//    else
-//    {
-//        jsonObject[key] = outputObj;
-//    }
+    jsonObject["ToInclude"] = this->isChecked();
 
     return true;
 }
@@ -152,7 +140,4 @@ void JsonCheckBox::setMainWidget(JsonWidget *value)
     mainWidget = value;
 }
 
-void JsonCheckBox::setSubWidget(JsonWidget *value)
-{
-    subWidget = value;
-}
+

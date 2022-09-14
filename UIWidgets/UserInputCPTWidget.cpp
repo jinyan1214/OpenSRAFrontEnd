@@ -77,7 +77,8 @@ UserInputCPTWidget::UserInputCPTWidget(VisualizationWidget* visWidget, QWidget *
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
 
-    theComponentDb = ComponentDatabaseManager::getInstance()->getCPTComponentDb();
+    theComponentDb = ComponentDatabaseManager::getInstance()->createAssetDb("SiteCPTData");
+
     theComponentDb->setOffset(1);
 
     eventFile = "";

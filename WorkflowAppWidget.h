@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 class MainWindowWorkflowApp;
 class PythonProgressDialog;
+class QPushButton;
 
 class WorkflowAppWidget : public QWidget
 {
@@ -58,8 +59,8 @@ public:
     virtual bool outputToJSON(QJsonObject &rvObject) = 0;
     virtual bool inputFromJSON(QJsonObject &rvObject) = 0;
     virtual void clear(void) = 0;
-    virtual void onRunButtonClicked() = 0;
-    virtual void onPreprocessButtonClicked() = 0;
+    virtual void onRunButtonClicked(QPushButton* button) = 0;
+    virtual void onPreprocessButtonClicked(QPushButton* button) = 0;
     virtual void onRemoteRunButtonClicked() = 0;
     virtual void onRemoteGetButtonClicked() = 0;
     virtual void onExitButtonClicked() = 0;
@@ -68,6 +69,8 @@ public:
     
 signals:
     void setUpForApplicationRunDone(QString &tmpDirectory, QString &inputFile, QString runType = QString("run"));
+    void setUpForPreprocessingDone(QString &tmpDirectory, QString &inputFile, QString runType = QString("run"));
+
     void sendLoadFile(QString filename);
     void sendStatusMessage(QString message);
     void sendErrorMessage(QString message);

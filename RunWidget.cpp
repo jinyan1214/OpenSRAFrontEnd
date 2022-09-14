@@ -94,3 +94,10 @@ void RunWidget::setupForRunApplicationDone(QString &tmpDirectory, QString &input
     // qDebug() << "RunWidget::setupForRunApplicationDone";
     theCurrentApplication->setupDoneRunApplication(tmpDirectory, inputFile);
 }
+
+
+void RunWidget::setupForRunPreprocessingDone(QString &tmpDirectory, QString &inputFile)
+{
+    // qDebug() << "RunWidget::setupForRunApplicationDone";
+    theCurrentApplication->setupDoneRunPreprocessing(tmpDirectory, inputFile);
+}

@@ -76,17 +76,19 @@ EngineeringDemandParameterWidget::EngineeringDemandParameterWidget(QJsonObject m
         return;
     }
 
-    // Iterate through the objects to create the widgets
-    foreach(const QJsonValue &value, thisObj)
-    {
-        auto currObj = value.toObject();
+    auto keys = thisObj.keys();
 
-        if(currObj.value("ToDisplay").toBool(false) == false)
+    // Iterate through the objects to create the widgets
+    for(auto&& key : keys)
+    {
+        auto currObj = thisObj[key].toObject();
+
+       if(currObj.value("ToDisplay").toBool(false) == false)
             continue;
 
         auto nameToDisplay = currObj.value("NameToDisplay").toString();
 
-        auto newWidget = new SimCenterJsonWidget(nameToDisplay, currObj, this);
+        auto newWidget = new SimCenterJsonWidget(key, currObj, this);
 
         if(newWidget == nullptr)
         {
@@ -95,6 +97,9 @@ EngineeringDemandParameterWidget::EngineeringDemandParameterWidget(QJsonObject m
         }
 
         theComponentSelection->addComponent(nameToDisplay,newWidget);
+
+        newWidget->setObjectName(key);
+
         vecWidgets.append(newWidget);
     }
 
@@ -142,28 +147,52 @@ bool EngineeringDemandParameterWidget::outputToJSON(QJsonObject &jsonObject)
 
 bool EngineeringDemandParameterWidget::inputFromJSON(QJsonObject &jsonObject)
 {
-    auto typeObj = jsonObject.value("Type").toString();
+    auto typeObj = jsonObject.value("Type").toObject();
 
     if(typeObj.isEmpty())
-        return false;
-
-    auto res = theComponentSelection->displayComponent(typeObj);
-
-    if(!res)
     {
-        this->errorMessage("Error could not find the type in the component selection "+typeObj);
+        this->errorMessage("Could not find the 'Type' keyword in "+QString(__PRETTY_FUNCTION__));
         return false;
     }
 
-    auto thisComponent = this->getComponentFromName(typeObj);
+    auto keys = typeObj.keys();
 
-    if(!thisComponent)
+    for(auto&& key : keys)
     {
-        this->errorMessage("Error could not find the component in the vector with type "+typeObj);
-        return false;
+        auto obj = typeObj[key].toObject();
+
+        auto thisComponent = this->getComponentFromName(key);
+
+        if(!thisComponent)
+        {
+            this->errorMessage("Error could not find the component of the type "+key);
+            return false;
+        }
+
+        auto res = thisComponent->inputFromJSON(obj);
+
+        if(!res )
+            return false;
+
     }
 
-    thisComponent->inputFromJSON(jsonObject);
+//    auto res = theComponentSelection->displayComponent(typeObj);
+
+//    if(!res)
+//    {
+//        this->errorMessage("Error could not find the type in the component selection "+typeObj);
+//        return false;
+//    }
+
+//    auto thisComponent = this->getComponentFromName(typeObj);
+
+//    if(!thisComponent)
+//    {
+//        this->errorMessage("Error could not find the component in the vector with type "+typeObj);
+//        return false;
+//    }
+
+//    thisComponent->inputFromJSON(jsonObject);
 
 
     return true;
@@ -173,7 +202,9 @@ SimCenterAppWidget* EngineeringDemandParameterWidget::getComponentFromName(const
 {
     for(auto&& it : vecWidgets)
     {
-        if(it->objectName().compare(name) == 0)
+        auto objName = it->objectName();
+
+        if(objName.compare(name) == 0)
             return it;
     }
     return nullptr;

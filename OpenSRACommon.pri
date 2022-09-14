@@ -74,6 +74,8 @@ SOURCES +=  $$PATH_TO_R2D/Tools/CSVReaderWriter.cpp \
             $$PATH_TO_COMMON/RandomVariables/LognormalDistribution.cpp \
             $$PATH_TO_COMMON/RandomVariables/ExponentialDistribution.cpp \
             $$PATH_TO_COMMON/RandomVariables/TruncatedExponentialDistribution.cpp \
+            $$PATH_TO_COMMON/RandomVariables/UserDef.cpp \
+            $$PATH_TO_COMMON/RandomVariables/UserDefVec.cpp \
 
 HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
             $$PATH_TO_R2D/Tools/CSVReaderWriter.h \
@@ -135,5 +137,7 @@ HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
             $$PATH_TO_COMMON/RandomVariables/LognormalDistribution.h \
             $$PATH_TO_COMMON/RandomVariables/ExponentialDistribution.h \
             $$PATH_TO_COMMON/RandomVariables/TruncatedExponentialDistribution.h \
+            $$PATH_TO_COMMON/RandomVariables/UserDef.h \
+            $$PATH_TO_COMMON/RandomVariables/UserDefVec.h \
 
 
