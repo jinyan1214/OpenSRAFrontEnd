@@ -77,8 +77,10 @@ DecisionVariableWidget::DecisionVariableWidget(QJsonObject mainObj, QWidget *par
 
 
     // Iterate through the objects to create the widgets
-    foreach(const QJsonValue &value, dvObj)
+    foreach(const QString& key, dvObj.keys())
     {
+        const QJsonValue &value = dvObj.value(key);
+
         auto currObj = value.toObject();
 
         if(currObj.value("ToDisplay").toBool(false) == false)
@@ -86,7 +88,7 @@ DecisionVariableWidget::DecisionVariableWidget(QJsonObject mainObj, QWidget *par
 
         auto nameToDisplay = currObj.value("NameToDisplay").toString();
 
-        auto newWidget = new SimCenterJsonWidget(nameToDisplay, currObj);
+        auto newWidget = new SimCenterJsonWidget(key, currObj);
 
         if(newWidget == nullptr)
         {
@@ -95,6 +97,10 @@ DecisionVariableWidget::DecisionVariableWidget(QJsonObject mainObj, QWidget *par
         }
 
         theComponentSelection->addComponent(nameToDisplay,newWidget);
+
+        // Need to set name again because addComponent renames it
+        newWidget->setObjectName(key);
+
         vecWidgets.append(newWidget);
     }
 
@@ -142,28 +148,27 @@ bool DecisionVariableWidget::outputToJSON(QJsonObject &jsonObject)
 
 bool DecisionVariableWidget::inputFromJSON(QJsonObject &jsonObject)
 {
-    auto typeObj = jsonObject.value("Type").toString();
+
+    auto typeObj = jsonObject["Type"].toObject();
 
     if(typeObj.isEmpty())
         return false;
 
-    auto res = theComponentSelection->displayComponent(typeObj);
+    foreach(const QString& type, typeObj.keys()) {
 
-    if(!res)
-    {
-        this->errorMessage("Error could not find the decision variable type in the component selection "+typeObj);
-        return false;
+        auto theDVType = this->getComponentFromName(type);
+
+        if(!theDVType)
+        {
+            this->errorMessage("Error could not find the Damage Measure widget of the type "+type);
+            return false;
+        }
+
+        auto inputObj = typeObj.value(type).toObject();
+
+        if(!theDVType->inputFromJSON(inputObj))
+            return false;
     }
-
-    auto thisComponent = this->getComponentFromName(typeObj);
-
-    if(!thisComponent)
-    {
-        this->errorMessage("Error could not find the decision variable component in the vector with type "+typeObj);
-        return false;
-    }
-
-    thisComponent->inputFromJSON(jsonObject);
 
 
     return true;

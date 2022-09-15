@@ -107,7 +107,7 @@ JsonDefinedWidget::JsonDefinedWidget(QWidget* parent, const QJsonObject& obj, co
 
     layout->addLayout(paramsLayout);
 
-    layout->addStretch(0);
+    layout->addStretch(1);
 //    layout->setStretch(0,1);
 //    layout->setStretch(1,0);
 

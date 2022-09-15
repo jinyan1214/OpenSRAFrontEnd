@@ -76,8 +76,10 @@ DamageMeasureWidget::DamageMeasureWidget(QJsonObject mainObj, QWidget *parent): 
 
 
     // Iterate through the objects to create the widgets
-    foreach(const QJsonValue &value, thisObj)
+    foreach(const QString& key, thisObj.keys())
     {
+        const QJsonValue &value = thisObj.value(key);
+
         auto currObj = value.toObject();
 
         if(currObj.value("ToDisplay").toBool(false) == false)
@@ -85,7 +87,7 @@ DamageMeasureWidget::DamageMeasureWidget(QJsonObject mainObj, QWidget *parent): 
 
         auto nameToDisplay = currObj.value("NameToDisplay").toString();
 
-        auto newWidget = new SimCenterJsonWidget(nameToDisplay, currObj);
+        auto newWidget = new SimCenterJsonWidget(key, currObj);
 
         if(newWidget == nullptr)
         {
@@ -94,6 +96,10 @@ DamageMeasureWidget::DamageMeasureWidget(QJsonObject mainObj, QWidget *parent): 
         }
 
         theComponentSelection->addComponent(nameToDisplay,newWidget);
+
+        // Need to set name again because addComponent renames it
+        newWidget->setObjectName(key);
+
         vecWidgets.append(newWidget);
     }
 
@@ -141,38 +147,37 @@ bool DamageMeasureWidget::outputToJSON(QJsonObject &jsonObject)
 
 bool DamageMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
 {
-    auto typeObj = jsonObject.value("Type").toString();
+    auto typeObj = jsonObject["Type"].toObject();
 
     if(typeObj.isEmpty())
         return false;
 
-    auto res = theComponentSelection->displayComponent(typeObj);
+    foreach(const QString& type, typeObj.keys()) {
 
-    if(!res)
-    {
-        this->errorMessage("Error could not find the type in the component selection "+typeObj);
-        return false;
+        auto theDMType = this->getComponentFromName(type);
+
+        if(!theDMType)
+        {
+            this->errorMessage("Error could not find the Damage Measure widget of the type "+type);
+            return false;
+        }
+
+        auto inputObj = typeObj.value(type).toObject();
+
+        if(!theDMType->inputFromJSON(inputObj))
+            return false;
     }
-
-    auto thisComponent = this->getComponentFromName(typeObj);
-
-    if(!thisComponent)
-    {
-        this->errorMessage("Error could not find the component in the vector with type "+typeObj);
-        return false;
-    }
-
-    thisComponent->inputFromJSON(jsonObject);
-
 
     return true;
 }
+
 
 SimCenterAppWidget* DamageMeasureWidget::getComponentFromName(const QString& name)
 {
     for(auto&& it : vecWidgets)
     {
-        if(it->objectName().compare(name) == 0)
+        auto widgetName = it->objectName();
+        if(widgetName.compare(name) == 0)
             return it;
     }
     return nullptr;

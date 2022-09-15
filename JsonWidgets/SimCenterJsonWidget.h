@@ -62,6 +62,8 @@ public:
 
     void clear();
 
+    QJsonObject getVars(const QJsonObject& origObj, const QString& key);
+
     // Adds a new parameter to the Input Variables widget
     bool addNewParametersToInputWidget(const QJsonObject& variablesObj, const QJsonObject& variablesTypeObj, const QString& key, QJsonObject& uuidObj);
 

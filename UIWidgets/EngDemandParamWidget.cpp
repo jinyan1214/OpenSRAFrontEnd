@@ -88,10 +88,10 @@ EngDemandParamWidget::EngDemandParamWidget(QJsonObject mainObj, QWidget *parent)
     if(!latSpreadObj.isEmpty() && latSpreadObj.value("ToDisplay").toBool(false) == true)
         EDPLatSpread = new SimCenterJsonWidget("LateralSpread",latSpreadObj,this);
 
-    auto groundSettlementObj = obj.value("GroundSettlement").toObject();
+    auto groundSettlementObj = obj.value("Settlement").toObject();
 
     if(!groundSettlementObj.isEmpty() && groundSettlementObj.value("ToDisplay").toBool(false) == true)
-        EDPGroundSettlement = new SimCenterJsonWidget("GroundSettlement",groundSettlementObj,this);
+        EDPGroundSettlement = new SimCenterJsonWidget("Settlement",groundSettlementObj,this);
 
     auto surfFaultObj = obj.value("SurfaceFaultRupture").toObject();
 
@@ -182,7 +182,7 @@ bool EngDemandParamWidget::inputFromJSON(QJsonObject &jsonObject)
     if(!latSpreadObj.isEmpty())
         EDPLatSpread->inputFromJSON(latSpreadObj);
 
-    auto groundSpreadObj = typeObj.value("GroundSettlement").toObject();
+    auto groundSpreadObj = typeObj.value("Settlement").toObject();
     if(!groundSpreadObj.isEmpty())
         EDPGroundSettlement->inputFromJSON(groundSpreadObj);
 
