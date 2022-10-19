@@ -53,7 +53,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileDialog>
 #include <QPushButton>
 
-MultiComponentEDPWidget::MultiComponentEDPWidget(QWidget *parent) : MultiComponentR2D(parent)
+MultiComponentEDPWidget::MultiComponentEDPWidget(QWidget *parent) : MultiComponentR2D("EngineeringDemandParameter",parent)
 {
     theMainLayout->setMargin(0);
     theMainLayout->setSpacing(0);

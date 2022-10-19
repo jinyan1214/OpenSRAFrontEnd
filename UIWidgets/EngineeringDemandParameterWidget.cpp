@@ -83,7 +83,7 @@ EngineeringDemandParameterWidget::EngineeringDemandParameterWidget(QJsonObject m
     {
         auto currObj = thisObj[key].toObject();
 
-       if(currObj.value("ToDisplay").toBool(false) == false)
+        if(currObj.value("ToDisplay").toBool(false) == false)
             continue;
 
         auto nameToDisplay = currObj.value("NameToDisplay").toString();
@@ -125,17 +125,14 @@ bool EngineeringDemandParameterWidget::outputToJSON(QJsonObject &jsonObject)
 
     QJsonObject typeObj;
 
-    auto currComponent = theComponentSelection->selectedComponentText();
-
-    auto thisComponent = this->getComponentFromName(currComponent);
-
-    if(!thisComponent)
+    for(auto&& component : vecWidgets)
     {
-        this->errorMessage("Error could not find the component in the vector with type "+currComponent);
-        return false;
+        if(!component->outputToJSON(typeObj))
+        {
+            this->errorMessage("Error output to json for EDP "+component->objectName());
+            return false;
+        }
     }
-
-    thisComponent->outputToJSON(typeObj);
 
     outputObj.insert("Type",typeObj);
 
@@ -175,25 +172,6 @@ bool EngineeringDemandParameterWidget::inputFromJSON(QJsonObject &jsonObject)
             return false;
 
     }
-
-//    auto res = theComponentSelection->displayComponent(typeObj);
-
-//    if(!res)
-//    {
-//        this->errorMessage("Error could not find the type in the component selection "+typeObj);
-//        return false;
-//    }
-
-//    auto thisComponent = this->getComponentFromName(typeObj);
-
-//    if(!thisComponent)
-//    {
-//        this->errorMessage("Error could not find the component in the vector with type "+typeObj);
-//        return false;
-//    }
-
-//    thisComponent->inputFromJSON(jsonObject);
-
 
     return true;
 }

@@ -58,7 +58,7 @@ QVariant RV::getValue(const QString paramName)
 
     if(idx == -1)
     {
-        qDebug()<<"Could not find the parameter with the name "+paramName;
+        qDebug()<<"Developer warning, could with the name "+paramName;
 
         return QVariant();
     }
@@ -88,9 +88,39 @@ const QStringList &RV::getFromModelList() const
 }
 
 
-const QString &RV::getDescription() const
+const QString &RV::getDescription(void) const
 {
     return description;
+}
+
+const QVector<QVariant> &RV::getData(void) const
+{
+    return data;
+}
+
+
+const QStringList RV::getDataAsStringList(void) const
+{
+    QStringList result;
+
+    for(auto&& val : data)
+    {
+        if (val.type() == QVariant::Int)
+            result.append(QString::number(val.toInt()));
+        else if (val.type() == QVariant::Double)
+            result.append(QString::number(val.toDouble()));
+        else if (val.type() == QVariant::String)
+             result.append(val.toString());
+        else if (val.type() == QVariant::StringList)
+             result.append(val.toStringList().join(","));
+        else if (val.type() == QVariant::Invalid) // unknown
+             result.append("");
+        else
+             qDebug()<<"Error no support for type "<<val.type()<< "in "<<__PRETTY_FUNCTION__;
+
+    }
+
+    return result;
 }
 
 
@@ -124,9 +154,16 @@ const QStringList &RV::getParamTags() const
 }
 
 
-void RV::setParamTags(const QStringList &newParams)
+bool RV::setParamTags(const QStringList &newParams)
 {
      parameterNames = newParams;
+
+     if(parameterNames.size() != data.size())
+     {
+         qDebug()<<"Developer warning, inconsistency between the number of parameter names and the number of values";
+     }
+
+     return true;
 }
 
 
@@ -181,5 +218,25 @@ int RV::removeModelFromList(const QString& modelName)
     }
 
     return 0;
+}
+
+
+bool RV::updateValue(const QString paramTag, const QVariant value)
+{
+    auto idx = parameterNames.indexOf(paramTag);
+
+    if(idx == -1)
+    {
+        qDebug()<<"Developer warning, could not find the parameter with the name "+paramTag;
+
+        return false;
+    }
+
+    if(value.isNull() || !value.isValid())
+        return true;
+
+    data[idx] = value;
+
+    return true;
 }
 

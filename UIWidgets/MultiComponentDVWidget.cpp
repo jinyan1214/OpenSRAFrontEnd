@@ -52,7 +52,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileDialog>
 #include <QPushButton>
 
-MultiComponentDVWidget::MultiComponentDVWidget(QWidget *parent) : MultiComponentR2D(parent)
+MultiComponentDVWidget::MultiComponentDVWidget(QWidget *parent) : MultiComponentR2D("DecisionVariable",parent)
 {
     theMainLayout->setMargin(0);
     theMainLayout->setSpacing(0);

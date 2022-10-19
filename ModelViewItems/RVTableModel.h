@@ -66,12 +66,12 @@ public:
 
     QVariant item(const int row, const int col) const;
 
-    void addRandomVariable(const RV& newRV);
+    bool addRandomVariable(RV& newRV);
 
     bool removeRandomVariable(const RV& RVRemove, const QString& fromModel);
     bool removeRandomVariable(const QString& rvuuid, const QString& fromModel);
 
-    QVector<RV>& getRandomVariables();
+    QVector<RV>& getParameters();
 
     QStringList getHeaderStringList() const;
 
@@ -80,7 +80,11 @@ public:
     int getNumRVs();
 
     // Call when data changes
-    void update();
+    void update(void);
+
+    QVector<QStringList> getTableData();
+
+    bool updateRV(const QString& name, const QMap<QString, QString>& values);
 
 signals:
 

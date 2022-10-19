@@ -82,11 +82,14 @@ bool LocalApplication::outputToJSON(QJsonObject &jsonObject)
 }
 
 
-void LocalApplication::setupTempDir()
+void LocalApplication::setupTempDir(const QString& subDir)
 {
     statusMessage("Setting up temporary directory");
 
-    QString workingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir();
+    workingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir();
+
+    if(!subDir.isEmpty())
+        workingDir += QDir::separator() + subDir;
 
     QDir dirWork(workingDir);
     if (!dirWork.exists())
@@ -116,7 +119,7 @@ void LocalApplication::onRunButtonPressed(QPushButton* button)
 
     if(setUpForRun == false)
     {
-        this->setupTempDir();
+        this->setupTempDir(QString());
 
         this->runButton = button;
 
@@ -143,19 +146,21 @@ void LocalApplication::onPreprocessButtonPressed(QPushButton* button)
     }
 
 
-    auto pathToPreprocessScript = appDir + QDir::separator() + "Preprocess.py -w";
+//    auto pathToPreprocessScript = appDir + QDir::separator() + "Preprocess.py -w";
 
-    this->statusMessage("onPreprocessButtonPressed "+ pathToPreprocessScript);
+//    this->statusMessage("onPreprocessButtonPressed "+ pathToPreprocessScript);
 
 //    if(setUpForRun == false)
 //    {
-        this->setupTempDir();
+
+        this->setupTempDir("preprocessing");
 
         this->preProcessButton = button;
 
         statusMessage("Gathering Files to local workdir");
 
-        emit setupForPreprocessing(workingDir, workingDir);
+        QString subDir = "Input";
+        emit setupForPreprocessing(workingDir, subDir);
 
 //        setUpForRun = true;
 
@@ -173,7 +178,7 @@ void LocalApplication::clear()
 }
 
 
-bool LocalApplication::setupDoneRunPreprocessing(QString &/*tmpDirectory*/, QString &inputFile)
+bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &inputFile)
 {
 
     QString currentTime = QDateTime::currentDateTime().toString("yyyy-MM-ddTHH:mm:ss");
@@ -233,8 +238,6 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &/*tmpDirectory*/, QStr
             return false;
         }
     }
-
-    statusMessage("Starting the analysis... this may take a while!");
 
     procEnv.insert("PATH", python);
     procEnv.insert("PYTHONPATH", python);
@@ -298,7 +301,7 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &/*tmpDirectory*/, QStr
 
     QString command;
 
-    command = python + " \"" + pySCRIPT + "\"" + " -w " +  "\"" + inputFile + "\"";
+    command = python + " \"" + pySCRIPT + "\"" + " -w " +  "\"" + workingDir + "\"";
 
     // Clean up the command for the debug log
     auto commandClean = command;

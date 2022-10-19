@@ -125,17 +125,14 @@ bool DamageMeasureWidget::outputToJSON(QJsonObject &jsonObject)
 
     QJsonObject typeObj;
 
-    auto currComponent = theComponentSelection->selectedComponentText();
-
-    auto thisComponent = this->getComponentFromName(currComponent);
-
-    if(!thisComponent)
+    for(auto&& component : vecWidgets)
     {
-        this->errorMessage("Error could not find the component in the vector with type "+currComponent);
-        return false;
+        if(!component->outputToJSON(typeObj))
+        {
+            this->errorMessage("Error output to json for DM "+component->objectName());
+            return false;
+        }
     }
-
-    thisComponent->outputToJSON(typeObj);
 
     outputObj.insert("Type",typeObj);
 

@@ -62,8 +62,9 @@ public:
     void setName(const QString &newName);
 
     const QStringList &getParamTags() const;
-    void setParamTags(const QStringList &newParams);
+    bool setParamTags(const QStringList &newParams);
 
+    bool updateValue(const QString paramTag, const QVariant value);
     QVariant getValue(const QString paramTag);
 
     const QString &getUuid() const;
@@ -75,7 +76,11 @@ public:
 
     int removeModelFromList(const QString& modelName);
 
-    const QString &getDescription() const;
+    const QString &getDescription(void) const;
+
+    const QVector<QVariant> &getData(void) const;
+
+    const QStringList getDataAsStringList(void) const;
 
 private:
 

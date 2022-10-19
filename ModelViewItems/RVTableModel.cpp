@@ -167,11 +167,13 @@ QVariant RVTableModel::item(const int row, const int col) const
 }
 
 
-void RVTableModel::addRandomVariable(const RV& newRV)
+bool RVTableModel::addRandomVariable(RV& newRV)
 {
     tableData.push_back(newRV);
 
     this->update();
+
+    return true;
 }
 
 
@@ -229,7 +231,7 @@ bool RVTableModel::removeRandomVariable(const QString& rvuuid, const QString& fr
 }
 
 
-QVector<RV>& RVTableModel::getRandomVariables()
+QVector<RV>& RVTableModel::getParameters()
 {
     return tableData;
 }
@@ -245,4 +247,44 @@ void RVTableModel::setHeaderStringList(const QStringList &newHeaderStringList)
 {
     headerStringList = newHeaderStringList;
     emit layoutChanged();
+}
+
+
+QVector<QStringList> RVTableModel::getTableData(void)
+{
+    QVector<QStringList> results;
+
+    auto params = this->getParameters();
+
+    results.reserve(params.size());
+
+    for(auto&& param : params)
+    {
+        auto data = param.getDataAsStringList();
+
+        results.push_back(data);
+    }
+
+    return results;
+}
+
+
+bool RVTableModel::updateRV(const QString& name, const QMap<QString, QString>& values)
+{
+
+    for(auto&& it: tableData)
+    {
+        if(it.getName().compare(name) == 0)
+        {
+            for(auto&& key : values.keys())
+            {
+                if(!it.updateValue(key,values.value(key)))
+                    return false;
+            }
+
+            break;
+        }
+    }
+
+    return true;
 }

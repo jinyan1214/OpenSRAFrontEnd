@@ -53,7 +53,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileDialog>
 #include <QPushButton>
 
-MultiComponentDMWidget::MultiComponentDMWidget(QWidget *parent) : MultiComponentR2D(parent)
+MultiComponentDMWidget::MultiComponentDMWidget(QWidget *parent) : MultiComponentR2D("DamageMeasure",parent)
 {
     theMainLayout->setMargin(0);
     theMainLayout->setSpacing(0);

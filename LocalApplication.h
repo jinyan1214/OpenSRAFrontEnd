@@ -62,7 +62,7 @@ public:
     bool outputToJSON(QJsonObject &rvObject);
 
     bool setupDoneRunApplication(QString &tmpDirectory, QString &inputFile);
-    bool setupDoneRunPreprocessing(QString &tmpDirectory, QString &inputFile);
+    bool setupDoneRunPreprocessing(QString &workingDir, QString &inputFile);
 
     void clear();
 
@@ -71,8 +71,6 @@ public:
 
 signals:
     void processResults(QString,QString,QString);
-
-    void setupForPreprocessing(QString &, QString &);
 
     void setupForRunDone(QString &, QString &);
     void setupForPreProcessingDone(QString &, QString &);
@@ -84,7 +82,7 @@ private:
 
     QString workingDir;
 
-    void setupTempDir();
+    void setupTempDir(const QString& subDir);
 
     std::unique_ptr<PythonProcessHandler> theProcessHandler = nullptr;
 

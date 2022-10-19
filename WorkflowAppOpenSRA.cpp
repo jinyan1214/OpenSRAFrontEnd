@@ -268,7 +268,7 @@ void WorkflowAppOpenSRA::initialize(void)
 
     preprocessor =  new OpenSRAPreProcessor(backEndFilePath, this);
 
-    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/gui_test_csv_input/Input/SetupConfig.json");
+    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/gui_test_csv_input_clean/Input/SetupConfig.json");
 
     //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex1_OpenSHA_noEDP_noDV/Input/SetupConfig.json");
     //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex2_ShakeMap_noEDP_noDV/Input/SetupConfig.json");
@@ -436,17 +436,17 @@ bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
     if(!res)
         return false;
 
+    res = theEDPWidget->outputToJSON(jsonObjectTop);
+
+    if(!res)
+        return false;
+
     res = theDecisionVariableWidget->outputToJSON(jsonObjectTop);
 
     if(!res)
         return false;
 
     res = theDamageMeasureWidget->outputToJSON(jsonObjectTop);
-
-    if(!res)
-        return false;
-
-    res = theEDPWidget->outputToJSON(jsonObjectTop);
 
     if(!res)
         return false;
@@ -556,6 +556,13 @@ bool WorkflowAppOpenSRA::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
+    auto inputParamObj = jsonObject.value("InputParameters").toObject();
+    if(theRandomVariableWidget->inputFromJSON(inputParamObj) == false)
+    {
+        errorMessage("Error loading .json input file at " + theRandomVariableWidget->objectName() + " panel");
+        return false;
+    }
+
     return true;
 }
 
@@ -603,17 +610,20 @@ int WorkflowAppOpenSRA::getMaxNumParallelTasks()
 
 void WorkflowAppOpenSRA::setUpForPreprocessingRun(QString &workingDir, QString &subDir)
 {
+
     auto tmpDirectory = this->assembleInputFile(workingDir,subDir);
 
     if(tmpDirectory.isEmpty())
     {
-        errorMessage("Error setting up the analysis.  Analysis did not run.");
+        errorMessage("Error setting up the input file for preprocessing.  The preprocessing step did not run.");
         return;
     }
 
     QString inputDirectory = tmpDirectory + QDir::separator();
 
-    emit setUpForPreprocessingDone(tmpDirectory, inputDirectory);
+    statusMessage("Set up Done.  Now starting the preprocessing.");
+
+    emit setUpForPreprocessingDone(workingDir, inputDirectory);
 }
 
 
@@ -629,24 +639,22 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
 
     QString inputDirectory = tmpDirectory + QDir::separator();
 
+    statusMessage("Set up Done.  Now starting the analysis.");
+
     emit setUpForApplicationRunDone(tmpDirectory, inputDirectory);
 }
 
 
 QString WorkflowAppOpenSRA::assembleInputFile(QString &workingDir, QString &subDir)
 {
-    Q_UNUSED(subDir);
-
     //
     // create temporary directory in working dir
     // and copy all files needed to this directory by invoking copyFiles() on app widgets
     //
 
-    QString tmpDirName = QString("Input");
-    qDebug() << "TMP_DIR: " << tmpDirName;
     QDir workDir(workingDir);
 
-    QString tmpDirectory = workDir.absoluteFilePath(tmpDirName);
+    QString tmpDirectory = workDir.absoluteFilePath(subDir);
     QDir destinationDirectory(tmpDirectory);
 
     if(destinationDirectory.exists()) {
@@ -688,6 +696,16 @@ QString WorkflowAppOpenSRA::assembleInputFile(QString &workingDir, QString &subD
         this->errorMessage("Failed to copy files in "+theEDPWidget->objectName());
         return QString();
     }
+
+
+    copyOk = theRandomVariableWidget->outputToCsv(tmpDirectory);
+
+    if(!copyOk)
+    {
+        this->errorMessage("Failed to output csv files in "+theRandomVariableWidget->objectName());
+        return QString();
+    }
+
     //
     // in new templatedir dir save the UI data into dakota.json file (same result as using saveAs)
     // NOTE: we append object workingDir to this which points to template dir
@@ -715,8 +733,6 @@ QString WorkflowAppOpenSRA::assembleInputFile(QString &workingDir, QString &subD
     QJsonDocument doc(json);
     file.write(doc.toJson());
     file.close();
-
-    statusMessage("Set up Done.  Now starting the analysis.");
 
     return tmpDirectory;
 }

@@ -68,7 +68,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 
 PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidget* visWidget)
-    : MultiComponentR2D(parent), theVisualizationWidget(visWidget)
+    : MultiComponentR2D("NaturalGasNetwork",parent), theVisualizationWidget(visWidget)
 {
     this->setContentsMargins(0,0,0,0);
 
@@ -113,10 +113,10 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     auto testInputWidget = new LineAssetInputWidget(this, theVisualizationWidget, "Test","Test");
     this->addComponent("Future Infrastructure", testInputWidget);
 
-    vectorOfComponents.append(csvBelowGroundInputWidget);
-    vectorOfComponents.append(theWellsCaprocksWidget);
-    vectorOfComponents.append(theAboveGroundInfWidget);
-    vectorOfComponents.append(testInputWidget);
+    //    vectorOfComponents.append(gasPipelineWidget);
+    //    vectorOfComponents.append(theWellsCaprocksWidget);
+    //    vectorOfComponents.append(theAboveGroundInfWidget);
+    //    vectorOfComponents.append(testInputWidget);
 
     this->show("Pipelines");
 
@@ -152,69 +152,50 @@ bool PipelineNetworkWidget::outputToJSON(QJsonObject &jsonObject)
 
     auto currCompIndex = this->getCurrentIndex();
 
-    if (currCompIndex < 0 && currCompIndex > vectorOfComponents.size()-1)
+    if (currCompIndex < 0)
         return false;
 
-    auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
+    auto theCurrInputWidget = dynamic_cast<SimCenterAppSelection*>(this->getCurrentComponent());
 
     if(theCurrInputWidget == nullptr)
         return false;
 
-    auto numComponents = theCurrInputWidget->getTableWidget()->rowCount();
+    auto typeOfInf = theCurrInputWidget->property("ComponentText").toString();
 
-    if(numComponents == 0)
+    if(typeOfInf.isEmpty())
     {
-        errorMessage("No components loaded");
+        this->errorMessage("Error getting the type of infrastructure");
         return false;
     }
 
+    QString infraType;
+
+    if(typeOfInf.compare("Pipelines") == 0)
+        infraType = "below_ground";
+    else if(typeOfInf.compare("Above Ground \nGas Infrastructure") == 0)
+        infraType = "above_ground";
+    else if(typeOfInf.compare("Wells and Caprocks") == 0)
+        infraType = "wells_and_caprocks";
+
     QJsonObject infrastructureObj;
 
-    auto siteDataPath = theCurrInputWidget->getPathToComponentFile();
+    infrastructureObj.insert("InfrastructureType",infraType);
 
-    QFileInfo file(siteDataPath);
+    QJsonObject compObj;
 
-    infrastructureObj.insert("SiteDataFile",file.absoluteFilePath());
+    theCurrInputWidget->outputToJSON(compObj);
 
-    QString filterString = theCurrInputWidget->getFilterString();
-    if(filterString.isEmpty())
+    auto assetObj = compObj.value("Assets").toObject();
+
+    foreach (auto&& key, assetObj.keys())
     {
-        statusMessage("Selecting all components for analysis");
+        auto val = assetObj.value(key);
 
-        theCurrInputWidget->selectAllComponents();
-
-        filterString = theCurrInputWidget->getFilterString();
+        infrastructureObj.insert(key,val);
     }
-
-    infrastructureObj.insert("filter",filterString);
-
-    QJsonObject locationParams;
-    theCurrInputWidget->outputToJSON(locationParams);
-
-    QJsonObject siteParamsObj;
-
-    QJsonObject::const_iterator locationObj;
-    for (locationObj = locationParams.begin(); locationObj != locationParams.end(); ++locationObj)
-    {
-        auto locObj = locationObj.value().toObject();
-
-        QJsonObject::const_iterator locationParamObj;
-        for (locationParamObj = locObj.begin(); locationParamObj != locObj.end(); ++locationParamObj)
-        {
-            auto key = locationParamObj.key();
-
-            auto val = locationParamObj.value().toObject().value(key).toString();
-
-            if(val.compare("N/A") == 0)
-                siteParamsObj[key] = QJsonValue::Null;
-            else
-                siteParamsObj[key] = locationParamObj.value().toObject().value(key).toString();
-        }
-    }
-
-    infrastructureObj["SiteLocationParams"] = siteParamsObj;
 
     jsonObject.insert("Infrastructure",infrastructureObj);
+
 
     return true;
 }
@@ -242,15 +223,6 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
         return false;
 
     }
-
-    //    auto currCompIndex = this->getCurrentIndex();
-
-    //    if (currCompIndex < 0 && currCompIndex > vectorOfComponents.size()-1)
-    //        return false;
-
-    //    auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
-
-
 
     auto fileName = jsonObject["SiteDataFile"].toString();
 
@@ -321,6 +293,14 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
+
+    if(!appSelWidget->selectComponent(app))
+    {
+        errorMessage("Error selecting the application type "+app+" from the widget "+ appSelWidget->objectName());
+        return false;
+    }
+
+
     return compWidget->inputFromJSON(jsonObject);
 }
 
@@ -328,12 +308,7 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
 bool PipelineNetworkWidget::copyFiles(QString &destDir)
 {    
 
-    auto currCompIndex = this->getCurrentIndex();
-
-    if (currCompIndex < 0 || currCompIndex > vectorOfComponents.size()-1)
-        return false;
-
-    auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
+    auto theCurrInputWidget = this->getCurrentComponent();
 
     if(theCurrInputWidget == nullptr)
         return false;
@@ -350,30 +325,17 @@ void PipelineNetworkWidget::clear(void)
 }
 
 
-AssetInputWidget* PipelineNetworkWidget::getTheCurrentAssetInputWidget() const
-{
-    auto currCompIndex = this->getCurrentIndex();
+//void PipelineNetworkWidget::handleComponentChanged(QString compName)
+//{
+//    auto currCompIndex = this->getIndexOfComponent(compName);
 
-    if (currCompIndex < 0 && currCompIndex > vectorOfComponents.size()-1)
-        return nullptr;
+//    if (currCompIndex < 0)
+//        emit componentChangedSignal(nullptr);
 
-    auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
+//    auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
 
-    return theCurrInputWidget;
-}
-
-
-void PipelineNetworkWidget::handleComponentChanged(QString compName)
-{
-    auto currCompIndex = this->getIndexOfComponent(compName);
-
-    if (currCompIndex < 0 && currCompIndex > vectorOfComponents.size()-1)
-        emit componentChangedSignal(nullptr);
-
-    auto theCurrInputWidget = vectorOfComponents.at(currCompIndex);
-
-    emit componentChangedSignal(theCurrInputWidget);
-}
+//    emit componentChangedSignal(theCurrInputWidget);
+//}
 
 
 LineAssetInputWidget *PipelineNetworkWidget::getTheBelowGroundInputWidget() const

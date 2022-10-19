@@ -57,12 +57,14 @@ public:
     explicit RandomVariablesWidget(QWidget *parent = 0);
     ~RandomVariablesWidget();
 
-    bool inputFromJSON(QJsonObject &rvObject);
-    bool outputToJSON(QJsonObject &rvObject);
+    bool inputFromJSON(QJsonObject &jsonObject);
+    bool outputToJSON(QJsonObject &jsonObject);
 
     void addRVs(QVector<RV>& RVs);
 
     QStringList getRandomVariableNames(void);
+
+    bool outputToCsv(const QString& path);
 
     MixedDelegate *getGisMapsComboDelegate() const;
     MixedDelegate *getColDataComboDelegate() const;
@@ -86,15 +88,17 @@ public slots:
 private:
 
     bool addRandomVariable(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid);
-    bool addRandomVariable(const RV& newRV);
+    bool addRandomVariable(RV& newRV);
 
     bool addNewModelToExistingParameter(const RV& rv, const QStringList& fromModel, RVTableView* database);
 
-    bool addConstant(const RV& newConstant);
+    bool addConstant(RV& newConstant);
     bool addConstant(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid);
 
     bool removeRandomVariable(const QString &uuid, const QString &fromModel);
     bool removeConstant(const QString &uuid, const QString &fromModel);
+
+    bool handleLoadVars(const QString& filePath, RVTableView* parameterTable);
 
     int addRVsType;
     void makeRVWidget(void);

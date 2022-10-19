@@ -38,6 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "WorkflowAppOpenSRA.h"
 #include "PipelineNetworkWidget.h"
 #include "LineAssetInputWidget.h"
+#include "CSVReaderWriter.h"
 
 #include "RVTableView.h"
 #include "RVTableModel.h"
@@ -253,7 +254,7 @@ bool RandomVariablesWidget::addNewModelToExistingParameter(const RV& rv, const Q
 
     auto model = database->getTableModel();
 
-    auto& RVs = model->getRandomVariables();
+    auto& RVs = model->getParameters();
 
     for(auto& it: RVs)
     {
@@ -270,7 +271,7 @@ bool RandomVariablesWidget::addNewModelToExistingParameter(const RV& rv, const Q
 
 
 
-bool RandomVariablesWidget::addRandomVariable(const RV& newRV)
+bool RandomVariablesWidget::addRandomVariable(RV& newRV)
 {
 
     auto rvName = newRV.getName();
@@ -287,7 +288,11 @@ bool RandomVariablesWidget::addRandomVariable(const RV& newRV)
     if(RVtableModel == nullptr)
         return false;
 
-    RVtableModel->addRandomVariable(newRV);
+    if(!RVtableModel->addRandomVariable(newRV))
+    {
+        this->errorMessage("Error adding a new random variable "+newRV.getName()+" to the random parameters table");
+        return false;
+    }
 
     // Set the default source value to "Preferred"
     auto rowRV = RVtableModel->rowCount() - 1;
@@ -304,7 +309,7 @@ bool RandomVariablesWidget::addRandomVariable(const RV& newRV)
 }
 
 
-bool RandomVariablesWidget::addConstant(const RV& newConstant)
+bool RandomVariablesWidget::addConstant(RV& newConstant)
 {
 
     auto paramName = newConstant.getName();
@@ -320,7 +325,11 @@ bool RandomVariablesWidget::addConstant(const RV& newConstant)
     if(tableModel == nullptr)
         return false;
 
-    tableModel->addRandomVariable(newConstant);
+    if(!tableModel->addRandomVariable(newConstant))
+    {
+        this->errorMessage("Error adding a new fixed variable "+newConstant.getName()+" to the fixed variable table");
+        return false;
+    }
 
     auto constanTableModel = theConstantTableView->getTableModel();
 
@@ -361,9 +370,9 @@ void RandomVariablesWidget::clear(void)
 }
 
 
-bool RandomVariablesWidget::outputToJSON(QJsonObject &rvObject) {
+bool RandomVariablesWidget::outputToJSON(QJsonObject &jsonObject) {
 
-    Q_UNUSED(rvObject);
+    Q_UNUSED(jsonObject);
 
     //    bool result = true;
     //    QJsonArray rvArray;
@@ -386,7 +395,7 @@ bool RandomVariablesWidget::outputToJSON(QJsonObject &rvObject) {
 QStringList RandomVariablesWidget::getRandomVariableNames(void)
 {
 
-    auto RVs = theRVTableView->getTableModel()->getRandomVariables();
+    auto RVs = theRVTableView->getTableModel()->getParameters();
 
     QStringList results;
 
@@ -419,38 +428,72 @@ void RandomVariablesWidget::handleCellChanged(int row, int col)
 }
 
 
-bool RandomVariablesWidget::inputFromJSON(QJsonObject &rvObject)
+bool RandomVariablesWidget::inputFromJSON(QJsonObject &jsonObject)
 {
 
-    Q_UNUSED(rvObject);
+    auto rvFileName = jsonObject["RandomVariablesFileName"].toString();
 
-    bool result = true;
+    if(rvFileName.isEmpty())
+    {
+        this->errorMessage("Error, could not find the 'RandomVariablesFileName' key to input the random variables table");
+        return false;
+    }
 
-    //    theRVTableView->show();
 
-    //    QJsonObject paramsObject = rvObject["EngineeringDemandParameter"].toObject()["Landslide"].toObject()["Params"].toObject()["YieldAcceleration"].toObject()["Params"].toObject();
+    auto fixedFileName = jsonObject["FixedVariablesFileName"].toString();
 
-    //    auto objKeys = paramsObject.keys();
+    if(fixedFileName.isEmpty())
+    {
+        this->errorMessage("Error, could not find the 'FixedVariablesFileName' key to input the fixed variables table");
+        return false;
+    }
 
-    //    RVTableModel* tableModel = theRVTableView->getTableModel();
+    QString pathToRvFile = rvFileName;
 
-    //    QVector<RV> data;
+    if (!QFileInfo::exists(pathToRvFile))
+    {
+        pathToRvFile=QDir::currentPath();
+        pathToRvFile += QDir::separator() + rvFileName;
 
-    //    for(auto&& it : objKeys)
-    //    {
-    //        if(it == "MethodForKy")
-    //            continue;
+        if(!QFileInfo::exists(pathToRvFile))
+        {
+            this->errorMessage("Error, could not find the file "+pathToRvFile);
+            return false;
+        }
 
-    //        RV row = this->createNewRV(it,"EngineeringDemandParameter-Landslide-YieldAcceleration");
-    //        //        row[10] = QVariant();
+    }
 
-    //        // auto itObj = paramsObject.value(it).toObject();
-    //        data.push_back(row);
-    //    }
+    // Load the random variables
+    if(!this->handleLoadVars(pathToRvFile,theRVTableView))
+    {
+        this->errorMessage("Error, in loading the random variables table");
+        return false;
+    }
 
-    //    tableModel->populateData(data);
+    QString pathToFixedFile = fixedFileName;
 
-    return result;
+    if (!QFileInfo::exists(fixedFileName))
+    {
+        fixedFileName = QDir::currentPath();
+        fixedFileName += QDir::separator() + fixedFileName;
+
+        if(!QFileInfo::exists(pathToFixedFile))
+        {
+            this->errorMessage("Error, could not find the file "+pathToFixedFile);
+            return false;
+        }
+
+    }
+
+    // Load the constants
+//    if(!this->handleLoadVars(pathToFixedFile, theConstantTableView))
+//    {
+//        this->errorMessage("Error, in loading the fixed variables table");
+//        return false;
+//    }
+
+
+    return true;
 }
 
 
@@ -480,7 +523,7 @@ QString RandomVariablesWidget::checkIfRVExists(const QString& name)
 {
     auto model = theRVTableView->getTableModel();
 
-    auto RVs = model->getRandomVariables();
+    auto RVs = model->getParameters();
 
     for(auto&& it: RVs)
     {
@@ -496,7 +539,7 @@ QString RandomVariablesWidget::checkIfConstantExists(const QString& name)
 {
     auto model = theConstantTableView->getTableModel();
 
-    auto params = model->getRandomVariables();
+    auto params = model->getParameters();
 
     for(auto&& it: params)
     {
@@ -512,7 +555,7 @@ bool  RandomVariablesWidget::checkIfConstantuuidExists(const QString& uuid)
 {
     auto model = theConstantTableView->getTableModel();
 
-    auto RVs = model->getRandomVariables();
+    auto RVs = model->getParameters();
 
     for(auto&& it: RVs)
     {
@@ -528,7 +571,7 @@ bool RandomVariablesWidget::checkIfRVuuidExists(const QString& uuid)
 {
     auto model = theRVTableView->getTableModel();
 
-    auto RVs = model->getRandomVariables();
+    auto RVs = model->getParameters();
 
     for(auto&& it: RVs)
     {
@@ -560,6 +603,8 @@ RV RandomVariablesWidget::createNewRV(const QString& name, const QString& fromMo
 
     newRV.setName(name);
 
+    newRV.setParamTags(RVTableHeaders);
+
     return newRV;
 }
 
@@ -578,6 +623,8 @@ RV RandomVariablesWidget::createNewConstant(const QString& name, const QString& 
     newRV[4] = QVariant();
 
     newRV.setName(name);
+
+    newRV.setParamTags(constantTableHeaders);
 
     return newRV;
 }
@@ -639,3 +686,119 @@ void RandomVariablesWidget::handleSourceChanged(int val)
         this->errorMessage("Combobox input not handled in RandomVariablesWidget::handleSourceChanged. Please let the developers know");
     }
 }
+
+
+bool RandomVariablesWidget::outputToCsv(const QString& path)
+{
+
+    // theRVTableView
+    // theConstantTableView
+
+    auto RVData = theRVTableView->getTableModel()->getTableData();
+
+    auto RVHeaderValues = theRVTableView->getTableModel()->getHeaderStringList();
+
+    RVData.push_front(RVHeaderValues);
+
+    CSVReaderWriter csvTool;
+
+    auto finalRVPath = path + QDir::separator() + "rvs_input.csv";
+
+    QString err;
+    csvTool.saveCSVFile(RVData,finalRVPath,err);
+
+    if(!err.isEmpty())
+        return false;
+
+    auto FixedData = theConstantTableView->getTableModel()->getTableData();
+
+    auto FixedHeaderValues = theConstantTableView->getTableModel()->getHeaderStringList();
+
+    FixedData.push_front(FixedHeaderValues);
+
+    auto finalFixedPath = path + QDir::separator() + "fixed_input.csv";
+
+    csvTool.saveCSVFile(FixedData,finalFixedPath,err);
+
+    if(!err.isEmpty())
+        return false;
+
+    return true;
+}
+
+
+bool RandomVariablesWidget::handleLoadVars(const QString& filePath, RVTableView* parameterTable)
+{
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    auto paramData = csvTool.parseCSVFile(filePath,err);
+
+    if(paramData.isEmpty() || !err.isEmpty())
+    {
+        this->errorMessage("Error, could not read the input file "+filePath);
+        return false;
+    }
+
+    auto headers = paramData.front();
+
+    auto indexOfName = headers.indexOf("Name");
+
+    if(indexOfName == -1)
+    {
+        this->errorMessage("Error, could not find the required column 'Name' in  provided input file "+filePath);
+        return false;
+    }
+
+    // Pop the front
+    paramData.pop_front();
+
+    auto getMapFromVals = [=](const QStringList& vals){
+
+        QMap<QString, QString> result;
+
+        // Return an empty result if inconsistency in size
+        if(vals.size() != headers.size())
+            return result;
+
+        for(int i = 0; i<vals.size(); ++i)
+        {
+            auto header = headers.at(i);
+            auto val = vals.at(i);
+
+            result.insert(header,val);
+        }
+
+        return result;
+    };
+
+
+    auto numParams = parameterTable->rowCount();
+
+//    if(paramData.size() != numParams)
+//    {
+//        this->errorMessage("Error, the number of parameters loaded " + QString::number(numParams) + " is not equal the number of parameters in the input file " + QString::number(paramData.size()));
+//        return false;
+//    }
+
+
+    for(auto&& param : paramData)
+    {
+        if(param.isEmpty())
+        {
+            this->errorMessage("Error, an empty variable row in the input file "+filePath);
+            return false;
+        }
+
+        auto name = param.at(indexOfName);
+
+        auto vals = getMapFromVals(param);
+
+        parameterTable->updateRV(name,vals);
+    }
+
+    return true;
+}
+
+

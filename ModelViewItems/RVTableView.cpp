@@ -70,17 +70,17 @@ void RVTableView::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event);
 
-//    auto height = this->horizontalHeader()->height();
+    //    auto height = this->horizontalHeader()->height();
 
-//    for(int i = 0; i<this->rowCount(); ++i)
-//    {
-//        height += this->rowHeight(i);
-//    }
+    //    for(int i = 0; i<this->rowCount(); ++i)
+    //    {
+    //        height += this->rowHeight(i);
+    //    }
 
-//    if (this->horizontalScrollBar()->isVisible())
-//        height += this->horizontalScrollBar()->height();
+    //    if (this->horizontalScrollBar()->isVisible())
+    //        height += this->horizontalScrollBar()->height();
 
-//    this->setFixedHeight(height + 2);
+    //    this->setFixedHeight(height + 2);
 }
 
 
@@ -132,4 +132,10 @@ QVariant RVTableView::item(int row, int col)
 void RVTableView::updateTable(void)
 {
     tableModel->update();
+}
+
+
+bool RVTableView::updateRV(const QString& RVName, const QMap<QString, QString>& values)
+{
+   return tableModel->updateRV(RVName,values);
 }

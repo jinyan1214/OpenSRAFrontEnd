@@ -63,17 +63,15 @@ public:
 
     void clear(void);
 
-    AssetInputWidget* getTheCurrentAssetInputWidget() const;
-
     LineAssetInputWidget *getTheBelowGroundInputWidget() const;
 
 signals:
 
-    void componentChangedSignal(AssetInputWidget* widget);
+//    void componentChangedSignal(AssetInputWidget* widget);
 
 public slots:
 
-    void handleComponentChanged(QString compName);
+//    void handleComponentChanged(QString compName);
 
 private:
 
@@ -85,7 +83,7 @@ private:
 
     VisualizationWidget* theVisualizationWidget;
 
-    QVector<AssetInputWidget*> vectorOfComponents;
+//    QVector<AssetInputWidget*> vectorOfComponents;
 };
 
 #endif // WIND_SELECTION_H

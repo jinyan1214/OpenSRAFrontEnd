@@ -67,6 +67,8 @@ public:
 
     void updateTable(void);
 
+    bool updateRV(const QString& RVName, const QMap<QString, QString>& values);
+
 private:
     RVTableModel* tableModel = nullptr;
 };
