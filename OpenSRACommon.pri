@@ -35,6 +35,7 @@ SOURCES +=  $$PATH_TO_R2D/Tools/CSVReaderWriter.cpp \
             $$PATH_TO_R2D/GraphicElements/NodeHandle.cpp \
             $$PATH_TO_R2D/GraphicElements/RectangleGrid.cpp \
             $$PATH_TO_R2D/UIWidgets/LineAssetInputWidget.cpp \
+            $$PATH_TO_R2D/UIWidgets/PointAssetInputWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/QGISWellsCaprocksInputWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/QGISAboveGroundGasNetworkInputWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/AssetInputWidget.cpp \
@@ -98,6 +99,7 @@ HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
             $$PATH_TO_R2D/GraphicElements/NodeHandle.h \
             $$PATH_TO_R2D/GraphicElements/RectangleGrid.h \
             $$PATH_TO_R2D/UIWidgets/LineAssetInputWidget.h \
+            $$PATH_TO_R2D/UIWidgets/PointAssetInputWidget.h \
             $$PATH_TO_R2D/UIWidgets/QGISWellsCaprocksInputWidget.h \
             $$PATH_TO_R2D/UIWidgets/QGISAboveGroundGasNetworkInputWidget.h \
             $$PATH_TO_R2D/UIWidgets/AssetInputWidget.h \

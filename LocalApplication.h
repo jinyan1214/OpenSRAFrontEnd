@@ -69,8 +69,14 @@ public:
     void onRunButtonPressed(QPushButton* button);
     void onPreprocessButtonPressed(QPushButton* button);
 
+public slots:
+
+    int handlePreprocessDone(int res);
+    int handleApplicationRunDone(int res);
+
 signals:
-    void processResults(QString,QString,QString);
+    void processResults(QString doesNothing1, QString doesNothing2, QString doesNothing3);
+    void preprocessingDone();
 
     void setupForRunDone(QString &, QString &);
     void setupForPreProcessingDone(QString &, QString &);
@@ -84,7 +90,8 @@ private:
 
     void setupTempDir(const QString& subDir);
 
-    std::unique_ptr<PythonProcessHandler> theProcessHandler = nullptr;
+    std::unique_ptr<PythonProcessHandler> theMainProcessHandler = nullptr;
+    std::unique_ptr<PythonProcessHandler> thePreprocessHandler = nullptr;
 
     QPushButton* runButton = nullptr;
     QPushButton* preProcessButton = nullptr;

@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "LineAssetInputWidget.h"
 #include "OpenSRAPreProcessor.h"
 #include "ComponentDatabaseManager.h"
+#include "CSVReaderWriter.h"
 
 #include <qgsvectorlayer.h>
 #include <qgsgeometryengine.h>
@@ -49,6 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsrasterlayer.h>
 #include <qgsmapcanvas.h>
 #include <qgsfillsymbol.h>
+#include <qgslinesymbol.h>
 
 #include <QDir>
 #include <QVariant>
@@ -67,244 +69,195 @@ OpenSRAPreProcessor::OpenSRAPreProcessor(QString path, QWidget *parent) : SimCen
 
     // Get the visualization widget
     theVisualizationWidget = workFlowApp->getVisualizationWidget();
-
-//    theProcessHandler = std::make_unique<PythonProcessHandler>("preprocess OpenSRA data", startButton);
-
-//    connect(startButton, &QPushButton::clicked,this,&OpenSRAPreProcessor::run);
-
 }
 
 
-int OpenSRAPreProcessor::run(void)
-{    
+int OpenSRAPreProcessor::loadPreprocessingResults(const QString path)
+{
+    this->statusMessage("Loading preprocessing results: "+path);
+
+    auto processedInputPath = path + QDir::separator() + "Processed_Input";
 
 
-//    // Get the pipeline network widget
-//    // Get the pipelines database
-//    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getAssetDb("GasNetworkPipelines");
+    QDir dirWork(processedInputPath);
+    if (!dirWork.exists())
+    {
+        QString errMsg = "Error, the preprocessing directory: " + processedInputPath + " does not exist" ;
+        this->errorMessage(errMsg);
+        return -1;
+    }
 
-//    if(thePipelineDB == nullptr)
-//    {
-//        this->errorMessage("Error getting the pipeline database from the input widget.");
-//        return -1;
-//    }
+    // Load the workflow json
+    auto workFlowJson = processedInputPath + QDir::separator() + "workflow.json";
 
-//    if(thePipelineDB->isEmpty())
-//    {
-//        this->errorMessage("Pipeline database is empty. No pipelines to preprocess.");
-//        return -1;
-//    }
+    QFile inFile(workFlowJson);
+    inFile.open(QIODevice::ReadOnly|QIODevice::Text);
 
-//    // Check if folder exists
-//    auto externalDataFolder = pathToBackend + QDir::separator() + "lib" + QDir::separator() + "OtherData";
+    QByteArray data = inFile.readAll();
+    inFile.close();
 
-//    if(!QDir(externalDataFolder).exists())
-//    {
-//        this->errorMessage("Error, could not find the folder containing backend data: "+externalDataFolder);
-//        return -1;
-//    }
-
-//    // Get the layer containing the features that are selected for analysis
-//    auto selFeatLayer = thePipelineDB->getSelectedLayer();
-//    if(selFeatLayer == nullptr)
-//    {
-//        this->errorMessage("Error, could not get the selected features layer");
-//        return -1;
-//    }
-
-//    auto numFeat = selFeatLayer->featureCount();
-
-//    if(numFeat == 0)
-//    {
-//        this->errorMessage("Error, the number of features selected for analysis is zero");
-//        return -1;
-//    }
-
-//    // Layer group to hold all of the layers
-//    QVector<QgsMapLayer*> layerGroup;
-
-//    // Need to return the features with ascending ids
-//    QgsFeatureRequest featRequest;
-
-//    QgsFeatureRequest::OrderByClause orderByClause(QString("id"),true);
-//    QList<QgsFeatureRequest::OrderByClause> obcList = {orderByClause};
-//    QgsFeatureRequest::OrderBy orderBy(obcList);
-//    featRequest.setOrderBy(orderBy);
-//    auto pipeFeatures = selFeatLayer->getFeatures(featRequest);
-
-//    // First pull in the geologic soil parameters
-//    auto pathGeoMap = externalDataFolder + QDir::separator() + "CGS_CA_Geologic_Map_2010"+ QDir::separator() +"shapefiles"+ QDir::separator() +"GMC_geo_poly.shp";
-
-//    auto geoMapLayer = theVisualizationWidget->addVectorLayer(pathGeoMap, "CGS CA Geologic Map 2010", "ogr");
-//    if(geoMapLayer == nullptr)
-//    {
-//        this->errorMessage("Error, could not load the geologic map layer");
-//        return -1;
-//    }
-
-//    layerGroup.push_back(geoMapLayer);
-
-//    // Set the crs for the provided layer so that it appears where it should in the map
-//    geoMapLayer->setCrs(QgsCoordinateReferenceSystem(QStringLiteral("EPSG:3310")));
-
-//    QgsFillSymbol* fillSymbol = new QgsFillSymbol();
-
-//    theVisualizationWidget->createCategoryRenderer("PTYPE",geoMapLayer,fillSymbol);
-
-//    // Test to remove start
-//    auto start = high_resolution_clock::now();
-//    // Test to remove end
-
-//    // Coordinate transform to transform into the selected layers coordinate system
-//    QgsCoordinateTransform ct(geoMapLayer->crs(), selFeatLayer->crs(), QgsProject::instance());
-
-//    // The geology layer
-//    std::vector<QgsFeature> geoFeatVec;
-//    geoFeatVec.reserve(geoMapLayer->featureCount());
-//    auto geoMapFeatures = geoMapLayer->getFeatures();
-//    QgsFeature geoMapFeat;
-//    while (geoMapFeatures.nextFeature(geoMapFeat))
-//    {
-//        auto geom = geoMapFeat.geometry();
-//        geom.get()->transform(ct);
-//        geoMapFeat.setGeometry(geom);
-//        geoFeatVec.push_back(geoMapFeat);
-//    }
+    QJsonParseError errorPtr;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &errorPtr);
+    if (doc.isNull()) {
+        this->errorMessage("Parsing to json file "+workFlowJson+" failed");
+        return -1;
+    }
 
 
-//    auto pathSlopeDegrees = externalDataFolder + QDir::separator() + "Slope_Interpretted_From_CA_DEM" + QDir::separator() +"CA_Slope_Degrees_UTM_clip.tif";
+    QString jsonString = doc.toJson(QJsonDocument::Indented);
 
-//    auto slopeDegRasterLayer = this->loadRaster(pathSlopeDegrees, "CA Slope Degrees");
-//    if(slopeDegRasterLayer == nullptr)
-//    {
-//        this->errorMessage("Error, could not load the slope raster map layer");
-//        return -1;
-//    }
+    this->statusMessage("Workflow :");
+    this->statusMessage(jsonString);
 
-//    layerGroup.push_back(slopeDegRasterLayer);
+    // Now load the fault traces
+    auto faultPath = path + QDir::separator() + "IM" + QDir::separator() + "RUPTURE_METADATA.csv";
 
-//    slopeDegRasterLayer->setCrs(QgsCoordinateReferenceSystem(QStringLiteral("EPSG:4326")));
-
-//    // this->statusMessage("Number of geo features="+QString::number(numgeoFeat));
-
-//    QStringList fieldNames = {"PTYPE","Slope Degrees"};
-//    QVector< QgsAttributes > fieldAttributes(numFeat, QgsAttributes(fieldNames.size()));
+    if(!QFile::exists(faultPath))
+    {
+        this->errorMessage("Error, the file containing the fault traces: "+faultPath+" does not exist");
+        return -1;
+    }
 
 
-//    QgsFeature pipeFeat;
-//    int count = 0;
-//    while (pipeFeatures.nextFeature(pipeFeat))
-//    {
-//        // Get the pipe geometry
-//        auto pipeGeom = pipeFeat.geometry();
+    auto res = this->importFaultTraces(faultPath);
 
-//        if(pipeGeom.isNull())
-//        {
-//            this->errorMessage("Error: the pipe feature geometry is null "+QString::number(pipeFeat.id()));
-//            return -1;
-//        }
+    if(res != 0)
+    {
+        this->errorMessage("Error importing the fault traces");
+        return -1;
+    }
 
-//        // Use the midpoint of the pipe
-//        auto pipeMidPoint = pipeGeom.centroid();
-
-//        auto pipeMidPointXY = pipeMidPoint.asPoint();
-
-//        // if(count%10 == 0)
-//        //     statusMessage("For point "+QString::number(count)+" pipe coords are "+pipeMidPoint.asWkt());
-
-//        // if(pipeMidPoint.isGeosValid())
-//        // {
-//        //     this->errorMessage("Error: the pipe feature geometry is not valid "+QString::number(pipeFeat.id()));
-//        //     return -1;
-//        // }
-
-//        std::unique_ptr< QgsGeometryEngine > pipeGeometryEngine(QgsGeometry::createGeometryEngine(pipeMidPoint.constGet()));
-//        pipeGeometryEngine->prepareGeometry();
-
-//        if(!pipeGeometryEngine->isValid())
-//        {
-//            this->errorMessage("Error: the geometry engine is not valid for feature "+QString::number(pipeFeat.id()));
-//            return -1;
-//        }
-
-//        // Did we find the information
-//        bool found = false;
-
-//        for(auto&& it:geoFeatVec)
-//        {
-//            auto g = it.geometry();
-
-//            // Do initial bounding box check which is very fast to exclude points that are far away
-//            auto bb = g.boundingBox();
-
-//            // If bounding box contains the point then do a deeper check
-//            if(bb.contains(pipeMidPointXY))
-//            {
-//                QString errMsg;
-//                const bool intersects = pipeGeometryEngine->intersects(g.constGet(), &errMsg);
-
-//                if(!errMsg.isEmpty())
-//                {
-//                    this->errorMessage("Error: "+errMsg+" for feature "+QString::number(pipeFeat.id()));
-//                    return -1;
-//                }
-
-//                if(intersects)
-//                {
-//                    //auto gMidPoint = g.centroid();
-//                    //statusMessage("For geom "+QString::number(it.id())+" coords are "+gMidPoint.asWkt());
-
-//                    //this->statusMessage("Pipe "+QString::number(pipeFeat.id())+" intersects with "+QString::number(it.id()));
-//                    QVariant ptype = it.attribute("PTYPE");
-
-//                    if(!ptype.isValid())
-//                        this->infoMessage("Warning: could not find the attribute PTYPE for feature "+QString::number(pipeFeat.id()));
-//                    else
-//                        fieldAttributes[count][0] = ptype;
-
-//                    found = true;
-//                    break;
-//                }
-//            }
-//        }
-
-//        if(!found)
-//            this->infoMessage("Warning: could not find data from the CGS_CA_Geologic_Map_2010 for feature: "+QString::number(pipeFeat.id()));
-
-//        found = false;
-
-//        auto midPointX = pipeMidPointXY.x();
-//        auto midPointY = pipeMidPointXY.y();
-
-//        auto val = theVisualizationWidget->sampleRaster(midPointX,midPointY,slopeDegRasterLayer,1);
-
-//        if (isnan(val))
-//            this->infoMessage("Warning: failed to sample raster layer for feature: "+QString::number(pipeFeat.id()));
-
-//        fieldAttributes[count][1] = QVariant(val);
-
-//        ++count;
-//    }
-
-//    // Starting editing
-//    thePipelineDB->startEditing();
-
-//    QString errMsg;
-//    auto res = thePipelineDB->addNewComponentAttributes(fieldNames,fieldAttributes,errMsg);
-//    if(!res)
-//        this->errorMessage(errMsg);
-
-//    // Commit the changes
-//    thePipelineDB->commitChanges();
-
-//    auto stop = high_resolution_clock::now();
-//    auto duration = duration_cast<seconds>(stop - start);
-//    this->statusMessage("Done preprocessing in "+QString::number(duration.count())+ " seconds");
-
-//    theVisualizationWidget->createLayerGroup(layerGroup,"Data Layers");
+    this->statusMessage("Preprocess step complete. Press the 'RUN' button to run the analysis");
 
     return 0;
 }
+
+
+int OpenSRAPreProcessor::importFaultTraces(const QString& pathToFile)
+{
+
+    if(pathToFile.isEmpty())
+        return 0;
+
+    CSVReaderWriter csvTool;
+
+    QString errMsg;
+
+    auto traces = csvTool.parseCSVFile(pathToFile, errMsg);
+    if(!errMsg.isEmpty())
+    {
+        this->errorMessage(errMsg);
+        return -1;
+    }
+
+    if(traces.size() < 2)
+    {
+        this->statusMessage("No fault traces available.");
+        return 0;
+    }
+
+    QgsFields featFields;
+    featFields.append(QgsField("AssetType", QVariant::String));
+    featFields.append(QgsField("TabName", QVariant::String));
+    featFields.append(QgsField("SourceIndex", QVariant::String));
+
+    // Create the pipelines layer
+    auto mainLayer = theVisualizationWidget->addVectorLayer("linestring","Rupture Faults");
+
+    if(mainLayer == nullptr)
+    {
+        this->errorMessage("Error adding a vector layer");
+        return -1;
+    }
+
+    QList<QgsField> attribFields;
+    for(int i = 0; i<featFields.size(); ++i)
+        attribFields.push_back(featFields[i]);
+
+    auto pr = mainLayer->dataProvider();
+
+    mainLayer->startEditing();
+
+    auto res = pr->addAttributes(attribFields);
+
+    if(!res)
+    {
+        this->errorMessage("Error adding attributes to the layer" + mainLayer->name());
+        return -1;
+    }
+
+    mainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+
+    auto headers = traces.front();
+
+    auto indexListofTraces = headers.indexOf("fault_trace");
+
+    if(indexListofTraces == -1)
+    {
+        this->errorMessage("Error could not find the required column header 'fault_trace' in the file "+pathToFile);
+        return -1;
+    }
+
+    traces.pop_front();
+
+    auto numAtrb = attribFields.size();
+
+    for(auto&& it : traces)
+    {
+        auto coordString = it.at(indexListofTraces);
+
+        auto geometry = theVisualizationWidget->getMultilineStringGeometryFromJson(coordString);
+
+        if(geometry.isEmpty())
+        {
+            QString msg ="Error getting the feature geometry for scenario faults layer";
+            this->errorMessage(msg);
+
+            return -1;
+        }
+
+        // create the feature attributes
+        QgsAttributes featureAttributes(numAtrb);
+
+        featureAttributes[0] = QVariant("fault_trace");
+        featureAttributes[1] = QVariant("Fault Traces");
+        featureAttributes[2] = QVariant(it.at(0));
+
+
+        QgsFeature feature;
+        feature.setFields(featFields);
+
+        feature.setGeometry(geometry);
+
+        feature.setAttributes(featureAttributes);
+
+        if(!feature.isValid())
+            return -1;
+
+        auto res = pr->addFeature(feature, QgsFeatureSink::FastInsert);
+        if(!res)
+        {
+            this->errorMessage("Error adding the feature to the layer");
+            return -1;
+        }
+    }
+
+    mainLayer->commitChanges(true);
+    mainLayer->updateExtents();
+
+    QgsLineSymbol* markerSymbol = new QgsLineSymbol();
+
+    QColor featureColor = QColor(0,0,0,200);
+    auto weight = 1.0;
+
+    markerSymbol->setWidth(weight);
+    markerSymbol->setColor(featureColor);
+    theVisualizationWidget->createSimpleRenderer(markerSymbol,mainLayer);
+
+
+    return 0;
+}
+
 
 
 QgsRasterLayer* OpenSRAPreProcessor::loadRaster(const QString& rasterFilePath, const QString& rasterName)

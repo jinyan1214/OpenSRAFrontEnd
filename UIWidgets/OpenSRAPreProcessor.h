@@ -45,7 +45,6 @@ class PythonProcessHandler;
 class QGISVisualizationWidget;
 class QgsRasterLayer;
 
-class QPushButton;
 
 class OpenSRAPreProcessor : public SimCenterWidget
 {
@@ -54,7 +53,7 @@ public:
 
 public slots:
 
-    int run(void);
+    int loadPreprocessingResults(const QString path);
 
 private:
 
@@ -64,7 +63,7 @@ private:
 
     QgsRasterLayer*  loadRaster(const QString& rasterFilePath, const QString& rasterName);
 
-    QPushButton* startButton = nullptr;
+    int importFaultTraces(const QString& pathToFile);
 
 };
 

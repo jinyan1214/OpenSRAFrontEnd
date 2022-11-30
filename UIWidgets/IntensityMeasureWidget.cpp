@@ -72,7 +72,7 @@ IntensityMeasureWidget::IntensityMeasureWidget(VisualizationWidget* visWidget, Q
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     IMSelectCombo = new QComboBox(this);
-    IMSelectCombo->addItem("UCERF3 (Preferred)","OpenSHA");
+    IMSelectCombo->addItem("UCERF3 (Preferred)","UCERF");
     IMSelectCombo->addItem("ShakeMap","ShakeMap");
     IMSelectCombo->addItem("User-defined Rupture","UserDefinedRupture");
 
@@ -156,7 +156,7 @@ bool IntensityMeasureWidget::outputToJSON(QJsonObject &jsonObject)
             return false;
         }
 
-        sourceIM["OpenSHA"] = outObject;
+        sourceIM["UCERF"] = outObject;
     }
     else if(index == 1)
     {
@@ -263,7 +263,7 @@ bool IntensityMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
         IMSelectCombo->setCurrentIndex(index);
     }
 
-    if(IMSourceType == "OpenSHA")
+    if(IMSourceType == "UCERF")
     {
         auto res = openSHA->inputFromJSON(IMSourceObject);
         if(res == false)

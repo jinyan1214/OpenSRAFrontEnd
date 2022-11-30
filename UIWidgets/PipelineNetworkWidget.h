@@ -78,8 +78,8 @@ private:
     SimCenterAppSelection* gasPipelineWidget = nullptr;
 
     LineAssetInputWidget* csvBelowGroundInputWidget = nullptr;
-    QGISWellsCaprocksInputWidget* theWellsCaprocksWidget = nullptr;
-    QGISAboveGroundGasNetworkInputWidget* theAboveGroundInfWidget = nullptr;
+    SimCenterAppSelection* theWellsCaprocksWidget = nullptr;
+    SimCenterAppSelection* theAboveGroundInfWidget = nullptr;
 
     VisualizationWidget* theVisualizationWidget;
 

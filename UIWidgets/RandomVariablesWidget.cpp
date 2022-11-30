@@ -362,6 +362,9 @@ bool RandomVariablesWidget::addConstant(const QString& name, const QString& from
 
 void RandomVariablesWidget::clear(void)
 {
+    pathToRvFile.clear();
+    pathToFixedFile.clear();
+
     theConstantTableView->clear();
     theRVTableView->clear();
 
@@ -374,19 +377,15 @@ bool RandomVariablesWidget::outputToJSON(QJsonObject &jsonObject) {
 
     Q_UNUSED(jsonObject);
 
-    //    bool result = true;
-    //    QJsonArray rvArray;
-    //    for (int i = 0; i <theRandomVariables.size(); ++i) {
-    //        QJsonObject rv;
-    //        if (theRandomVariables.at(i)->outputToJSON(rv)) {
-    //            rvArray.append(rv);
-    //        } else {
-    //            qDebug() << "OUTPUT FAILED" << theRandomVariables.at(i)->variableName->text();
-    //            result = false;
-    //        }
-    //    }
+    auto finalRVPath = pathToRvFile + QDir::separator() + "rvs_input.csv";
+    auto finalFixedPath = pathToFixedFile + QDir::separator() + "fixed_input.csv";
 
-    //    rvObject["randomVariables"]=rvArray;
+    QJsonObject inputParamObj;
+
+    inputParamObj["RandomVariablesFileName"] = finalRVPath;
+    inputParamObj["FixedVariablesFileName"] = finalFixedPath;
+
+    jsonObject["InputParameters"] = inputParamObj;
 
     return true;
 }
@@ -448,11 +447,11 @@ bool RandomVariablesWidget::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
-    QString pathToRvFile = rvFileName;
+    pathToRvFile = rvFileName;
 
     if (!QFileInfo::exists(pathToRvFile))
     {
-        pathToRvFile=QDir::currentPath();
+        pathToRvFile = QDir::currentPath();
         pathToRvFile += QDir::separator() + rvFileName;
 
         if(!QFileInfo::exists(pathToRvFile))
@@ -470,12 +469,12 @@ bool RandomVariablesWidget::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
-    QString pathToFixedFile = fixedFileName;
+    pathToFixedFile = fixedFileName;
 
     if (!QFileInfo::exists(fixedFileName))
     {
-        fixedFileName = QDir::currentPath();
-        fixedFileName += QDir::separator() + fixedFileName;
+        pathToFixedFile = QDir::currentPath();
+        pathToFixedFile += QDir::separator() + fixedFileName;
 
         if(!QFileInfo::exists(pathToFixedFile))
         {
@@ -486,12 +485,11 @@ bool RandomVariablesWidget::inputFromJSON(QJsonObject &jsonObject)
     }
 
     // Load the constants
-//    if(!this->handleLoadVars(pathToFixedFile, theConstantTableView))
-//    {
-//        this->errorMessage("Error, in loading the fixed variables table");
-//        return false;
-//    }
-
+    if(!this->handleLoadVars(pathToFixedFile, theConstantTableView))
+    {
+        this->errorMessage("Error, in loading the fixed variables table");
+        return false;
+    }
 
     return true;
 }
@@ -795,7 +793,13 @@ bool RandomVariablesWidget::handleLoadVars(const QString& filePath, RVTableView*
 
         auto vals = getMapFromVals(param);
 
-        parameterTable->updateRV(name,vals);
+        auto res = parameterTable->updateRV(name,vals);
+
+        if(!res)
+        {
+            this->errorMessage("Error updating parameters "+name);
+            return false;
+        }
     }
 
     return true;

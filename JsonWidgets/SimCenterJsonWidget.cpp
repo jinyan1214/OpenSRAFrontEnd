@@ -326,6 +326,19 @@ bool SimCenterJsonWidget::addNewParametersToInputWidget(const QJsonObject& varia
     auto paramsKeys = variablesObj.keys();
     for(auto&& it : paramsKeys)
     {
+
+        // Get the type of variable, e.g., random or constant
+        auto varType = variablesTypeObj[it].toString();
+
+        if(varType.isEmpty())
+        {
+            this->errorMessage("Error getting the variable type for "+theInputParamsWidget->objectName());
+            return false;
+        }
+
+        if(varType.compare("UserInput") == 0)
+            continue;
+
         // If the parameter already exists, get its UID
         bool ok = true;
         auto uid = theInputParamsWidget->checkIfParameterExists(it,ok);
@@ -348,15 +361,6 @@ bool SimCenterJsonWidget::addNewParametersToInputWidget(const QJsonObject& varia
 
         // Generate the from model string
         auto fromModel = methodKey+"-"+key;
-
-        // Get the type of variable, e.g., random or constant
-        auto varType = variablesTypeObj[it].toString();
-
-        if(varType.isEmpty())
-        {
-            this->errorMessage("Error getting the variable type for "+theInputParamsWidget->objectName());
-            return false;
-        }
 
         // Get the description of the input variable
         QString desc = variablesObj.value(it).toString();

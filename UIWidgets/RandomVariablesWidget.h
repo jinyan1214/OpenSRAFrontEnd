@@ -127,6 +127,10 @@ private:
 
     RV createNewRV(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid);
     RV createNewConstant(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid);
+
+    QString pathToRvFile;
+    QString pathToFixedFile;
+
 };
 
 #endif // RANDOM_VARIABLES_CONTAINER_H

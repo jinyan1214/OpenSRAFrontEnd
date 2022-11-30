@@ -58,20 +58,25 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileDialog>
 #include <QProcessEnvironment>
 #include <QCoreApplication>
+#include <QFuture>
+#include <QtConcurrent>
 
 LocalApplication::LocalApplication(QString workflowScriptName, QWidget *parent) : Application(parent)
 {
     this->workflowScript = workflowScriptName;
 
-    theProcessHandler = std::make_unique<PythonProcessHandler>();
+    theMainProcessHandler = std::make_unique<PythonProcessHandler>();
+    thePreprocessHandler = std::make_unique<PythonProcessHandler>();
+
+    connect(thePreprocessHandler.get(),&PythonProcessHandler::processFinished,this,&LocalApplication::handlePreprocessDone);
+
+    connect(theMainProcessHandler.get(),&PythonProcessHandler::processFinished,this,&LocalApplication::handleApplicationRunDone);
+
 }
 
 
 bool LocalApplication::outputToJSON(QJsonObject &jsonObject)
 {
-    //    jsonObject["localAppDir"]=appDirName->text();
-    //    jsonObject["remoteAppDir"]=appDirName->text();
-    //    jsonObject["workingDir"]=workingDirName->text();
     jsonObject["localAppDir"]=OpenSRAPreferences::getInstance()->getAppDir();
     jsonObject["remoteAppDir"]=OpenSRAPreferences::getInstance()->getAppDir();
     jsonObject["workingDir"]=OpenSRAPreferences::getInstance()->getLocalWorkDir();
@@ -146,28 +151,14 @@ void LocalApplication::onPreprocessButtonPressed(QPushButton* button)
     }
 
 
-//    auto pathToPreprocessScript = appDir + QDir::separator() + "Preprocess.py -w";
+    this->setupTempDir("preprocessing");
 
-//    this->statusMessage("onPreprocessButtonPressed "+ pathToPreprocessScript);
+    this->preProcessButton = button;
 
-//    if(setUpForRun == false)
-//    {
+    statusMessage("Gathering Files to local workdir");
 
-        this->setupTempDir("preprocessing");
-
-        this->preProcessButton = button;
-
-        statusMessage("Gathering Files to local workdir");
-
-        QString subDir = "Input";
-        emit setupForPreprocessing(workingDir, subDir);
-
-//        setUpForRun = true;
-
-        return;
-//    }
-
-//    emit setupForPreProcessingDone(workingDir, workingDir);
+    QString subDir = "Input";
+    emit setupForPreprocessing(workingDir, subDir);
 }
 
 
@@ -178,7 +169,7 @@ void LocalApplication::clear()
 }
 
 
-bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &inputFile)
+bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &/*inputFile*/)
 {
 
     QString currentTime = QDateTime::currentDateTime().toString("yyyy-MM-ddTHH:mm:ss");
@@ -242,21 +233,22 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &i
     procEnv.insert("PATH", python);
     procEnv.insert("PYTHONPATH", python);
 
-    theProcessHandler->setProcessEnv(procEnv);
+    thePreprocessHandler->setProcessEnv(procEnv);
 
     qDebug() << "Env: "<< procEnv.toStringList();
     qDebug() << "PATH: " << python;
 
+
 #ifdef Q_OS_WIN
 
-    QStringList args{pySCRIPT,"-i",inputFile};
+    QStringList args{pySCRIPT,"-w",inputFile};
 
     python = QString("\"") + python + QString("\"");
 
     qDebug() << python;
     qDebug() << args;
 
-    theProcessHandler->startProcess(python,args);
+    thePreprocessHandler->startProcess(python,args);
 
     //    bool failed = false;
     //    if (!proc->waitForStarted())
@@ -299,9 +291,7 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &i
 
 #else
 
-    QString command;
-
-    command = python + " \"" + pySCRIPT + "\"" + " -w " +  "\"" + workingDir + "\"";
+    QString command = python + " \"" + pySCRIPT + "\"" + " -w " +  "\"" + workingDir + "\"";
 
     // Clean up the command for the debug log
     auto commandClean = command;
@@ -311,7 +301,17 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &i
     debugHelper.noquote();
     debugHelper << "PYTHON COMMAND: " << commandClean;
 
-    theProcessHandler->startProcess("bash", QStringList() << "-c" <<  command, "preprocessing", runButton);
+    //    QFuture<void> future = QtConcurrent::run([=]() {
+
+    //        QStringList cmdList = {"-c",command};
+
+    //        thePreprocessHandler->startProcess("bash", cmdList, "preprocessing", runButton);
+
+    //    });
+
+    QStringList cmdList = {"-c",command};
+    thePreprocessHandler->startProcess("bash", cmdList, "preprocessing", preProcessButton);
+
 #endif
 
     return 0;
@@ -383,14 +383,14 @@ bool LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &i
     procEnv.insert("PATH", python);
     procEnv.insert("PYTHONPATH", python);
 
-    theProcessHandler->setProcessEnv(procEnv);
+    theMainProcessHandler->setProcessEnv(procEnv);
 
     qDebug() << "Env: "<< procEnv.toStringList();
     qDebug() << "PATH: " << python;
 
 #ifdef Q_OS_WIN
 
-    QStringList args{pySCRIPT,"-i",inputFile};
+    QStringList args{pySCRIPT,"-w",inputFile};
 
     python = QString("\"") + python + QString("\"");
 
@@ -442,7 +442,7 @@ bool LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &i
 
     QString command;
 
-    command = python + " \"" + pySCRIPT + "\"" + " -i " +  "\"" + inputFile + "\"";
+    command = python + " \"" + pySCRIPT + "\"" + " -w " +  "\"" + inputFile + "\"";
 
     // Clean up the command for the debug log
     auto commandClean = command;
@@ -452,14 +452,34 @@ bool LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &i
     debugHelper.noquote();
     debugHelper << "PYTHON COMMAND: " << commandClean;
 
-    theProcessHandler->startProcess("bash", QStringList() << "-c" <<  command, "backend ", preProcessButton);
+    QStringList cmdList = {"-c",command};
+    theMainProcessHandler->startProcess("bash", cmdList, "backend", runButton);
 #endif
 }
 
 
+int LocalApplication::handlePreprocessDone(int res)
+{
+
+    if(res ==0)
+        emit preprocessingDone();
+    else
+        this->errorMessage("Error at the preprocessing step with result "+QString(res));
+
+    return 0;
+}
 
 
 
+int LocalApplication::handleApplicationRunDone(int res)
+{
 
+    if(res ==0)
+        emit processResults(QString(),QString(),QString());
+    else
+        this->errorMessage("Error at the preprocessing step with result "+QString(res));
+
+    return 0;
+}
 
 

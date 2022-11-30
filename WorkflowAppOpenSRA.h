@@ -118,7 +118,11 @@ public slots:
     void setUpForApplicationRun(QString &workingDir, QString &subDir);
     void setUpForPreprocessingRun(QString &workingDir, QString &subDir);
 
+    // Processing the results from the main script run (Preprocess.py)
     void postprocessResults(QString doesNothing1, QString doesNothing2, QString doesNothing3);
+
+    // Processing of the intermediate results from the preprocess step (Preprocess.py)
+    void postprocessingDone(void);
 
     int loadFile(QString filename);
     void replyFinished(QNetworkReply*);

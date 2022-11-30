@@ -55,7 +55,7 @@ include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 # Specify the path to R2D and common
 PATH_TO_R2D=../../R2DTool/R2DTool
 PATH_TO_COMMON=../../SimCenterCommon
-PATH_TO_BACKEND=../../OpenSRA_dev
+PATH_TO_BACKEND=../../OpenSRA
 
 # To avoid code copying, include the common SimCenter code
 include(OpenSRACommon.pri)

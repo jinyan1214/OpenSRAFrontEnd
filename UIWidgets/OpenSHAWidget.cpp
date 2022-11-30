@@ -42,8 +42,9 @@ bool OpenSHAWidget::inputFromJSON(QJsonObject &jsonObject)
 {
     auto thisObj = jsonObject.value(this->objectName()).toObject();
 
+    // Nothing to change, use default
     if(thisObj.empty())
-        return false;
+        return true;
 
     return mainWidget->inputFromJSON(thisObj);
 }

@@ -59,6 +59,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "OpenSRAPreferences.h"
 #include "LoadResultsDialog.h"
 #include "Utils/PythonProgressDialog.h"
+#include "Utils/FileOperations.h"
+
 #include "OpenSRAPreProcessor.h"
 
 #include <QApplication>
@@ -128,11 +130,25 @@ void WorkflowAppOpenSRA::initialize(void)
 
     methodsAndParamsObj = getMethodAndParamsObj(commonPath);
 
+    if(methodsAndParamsObj.empty())
+    {
+        this->errorMessage("Error loading the methods and params file!");
+        return;
+    }
+
 
     // Load the below ground methods and params json file
     QString belowGroundPath = backEndFilePath + QDir::separator() + "methods_params_doc" + QDir::separator() + "below_ground.json";
 
     auto belowGroundObj = getMethodAndParamsObj(belowGroundPath);
+
+
+    if(belowGroundObj.empty())
+    {
+        this->errorMessage("Error loading the below ground object file!");
+        return;
+    }
+
 
     methodsAndParamsObj.insert("BelowGround",belowGroundObj);
 
@@ -141,12 +157,25 @@ void WorkflowAppOpenSRA::initialize(void)
 
     auto aboveGroundObj = getMethodAndParamsObj(aboveGroundPath);
 
+    if(aboveGroundObj.empty())
+    {
+        this->errorMessage("Error loading the above ground object file!");
+        return;
+    }
+
     methodsAndParamsObj.insert("AboveGround",aboveGroundObj);
 
     // Load the wells and caprocks methods and params
     QString wellsAndCaprocksPath = backEndFilePath + QDir::separator() + "methods_params_doc" + QDir::separator() + "wells_caprocks.json";
 
     auto wellsCaprocksObj = getMethodAndParamsObj(wellsAndCaprocksPath);
+
+
+    if(wellsCaprocksObj.empty())
+    {
+        this->errorMessage("Error loading the wells and caprocks object file!");
+        return;
+    }
 
     methodsAndParamsObj.insert("WellsCaprocks",wellsCaprocksObj);
 
@@ -239,6 +268,10 @@ void WorkflowAppOpenSRA::initialize(void)
     connect(this, SIGNAL(setUpForApplicationRunDone(QString&, QString&)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString&)));
     connect(this, SIGNAL(setUpForPreprocessingDone(QString&, QString&)), theRunWidget, SLOT(setupForRunPreprocessingDone(QString&, QString&)));
 
+    connect(localApp, SIGNAL(preprocessingDone()), this, SLOT(postprocessingDone()));
+    connect(localApp, SIGNAL(processResults(QString&, QString&, QString&)), this, SLOT(postprocessResults(QString&, QString&, QString&)));
+
+
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
     horizontalLayout->setSpacing(0);
@@ -268,14 +301,10 @@ void WorkflowAppOpenSRA::initialize(void)
 
     preprocessor =  new OpenSRAPreProcessor(backEndFilePath, this);
 
-    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/gui_test_csv_input_clean/Input/SetupConfig.json");
 
-    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex1_OpenSHA_noEDP_noDV/Input/SetupConfig.json");
-    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex2_ShakeMap_noEDP_noDV/Input/SetupConfig.json");
-    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex3_IMCorr_RepairRatePGV/Input/SetupConfig.json");
-    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex4_EDPs_and_RepairRatePGD/Input/SetupConfig.json");
-    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex5_MultipleMethods/Input/SetupConfig.json");
-    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRABackEnd/examples/Ex6_UserInputModelParams/Input/SetupConfig.json");
+//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_shakemap_clean/Input/SetupConfig.json");
+    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_ucerf_clean/Input/SetupConfig.json");
+//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/wells_caprocks_ucerf_clean/Input/SetupConfig.json");
 
     //    theResultsWidget->processResults("/Users/steve/Desktop/ResToDelete/");
 }
@@ -286,6 +315,7 @@ QJsonObject WorkflowAppOpenSRA::getMethodAndParamsObj(const QString& path)
     QFileInfo fileInfo(path);
     if (!fileInfo.exists()){
         this->errorMessage(QString("The methods and params file does not exist! ") + path);
+        return QJsonObject();
     }
 
     QString dirPath = fileInfo.absoluteDir().absolutePath();
@@ -294,6 +324,7 @@ QJsonObject WorkflowAppOpenSRA::getMethodAndParamsObj(const QString& path)
     QFile file(path);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         this->errorMessage(QString("Could Not Open File: ") + path);
+        return QJsonObject();
     }
 
     //
@@ -451,16 +482,40 @@ bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
     if(!res)
         return false;
 
+    res = theRandomVariableWidget->outputToJSON(jsonObjectTop);
+
+    if(!res)
+        return false;
+
     return true;
 }
 
 
-void WorkflowAppOpenSRA::postprocessResults(QString resultsDirectory, QString /*doesNothing2*/, QString /*doesNothing3*/)
+void WorkflowAppOpenSRA::postprocessResults(QString /*doesNothing1*/, QString /*doesNothing2*/, QString /*doesNothing3*/)
 {
+    auto  resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "preprocessing";
+
     theResultsWidget->processResults(resultsDirectory);
     theRunWidget->hide();
     theComponentSelection->displayComponent("Results");
 }
+
+
+void WorkflowAppOpenSRA::postprocessingDone(void)
+{
+    auto  preprocessingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "preprocessing";
+
+    QDir dirWork(preprocessingDir);
+    if (!dirWork.exists())
+    {
+        QString errMsg = "Error, the preprocessing directory: " + preprocessingDir + " does not exist" ;
+        this->errorMessage(errMsg);
+        return;
+    }
+
+    preprocessor->loadPreprocessingResults(preprocessingDir);
+}
+
 
 
 void WorkflowAppOpenSRA::clear(void)
@@ -629,19 +684,34 @@ void WorkflowAppOpenSRA::setUpForPreprocessingRun(QString &workingDir, QString &
 
 void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &subDir)
 {
-    auto tmpDirectory = this->assembleInputFile(workingDir,subDir);
+    auto preprocessdir = workingDir + QDir::separator() + "preprocessing";
 
-    if(tmpDirectory.isEmpty())
+    auto runDir = workingDir + QDir::separator() + "run";
+
+    QDir dir(runDir);
+    if(!dir.mkpath("."))
     {
-        errorMessage("Error setting up the analysis.  Analysis did not run.");
+        this->errorMessage("Failed to make the directory "+runDir);
         return;
     }
 
-    QString inputDirectory = tmpDirectory + QDir::separator();
+
+    statusMessage("Copying files from preprocess directory to run directory.");
+
+    // Copy everything from the preprocess dir to the run dir
+    auto res = SCUtils::recursiveCopy(preprocessdir, runDir);
+
+    if(!res)
+    {
+        QString msg = "Error copying files over to the directory " + runDir;
+        this->errorMessage(msg);
+
+        return;
+    }
 
     statusMessage("Set up Done.  Now starting the analysis.");
 
-    emit setUpForApplicationRunDone(tmpDirectory, inputDirectory);
+    emit setUpForApplicationRunDone(runDir, runDir);
 }
 
 
@@ -777,7 +847,7 @@ int WorkflowAppOpenSRA::loadFile(const QString fileName)
     //
 
     this->clear();
-    this->clearWorkDir();
+    //this->clearWorkDir();
 
     // Set the current dir to the input file
     QFileInfo fileinfo( file );
