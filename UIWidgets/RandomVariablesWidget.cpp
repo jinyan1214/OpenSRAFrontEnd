@@ -190,7 +190,7 @@ void RandomVariablesWidget::makeRVWidget(void)
     theRVTableView->setItemDelegateForColumn(9, LEDelegate);
 
     theRVTableView->setEditTriggers(QAbstractItemView::AllEditTriggers);
-    theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+//    theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
 
     // The constant table

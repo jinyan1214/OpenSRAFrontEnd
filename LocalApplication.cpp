@@ -241,14 +241,14 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &/
 
 #ifdef Q_OS_WIN
 
-    QStringList args{pySCRIPT,"-w",inputFile};
+    QStringList args{pySCRIPT,"-w",workingDir};
 
     python = QString("\"") + python + QString("\"");
 
     qDebug() << python;
     qDebug() << args;
 
-    thePreprocessHandler->startProcess(python,args);
+    thePreprocessHandler->startProcess(python,args,"preprocessing",preProcessButton);
 
     //    bool failed = false;
     //    if (!proc->waitForStarted())
@@ -397,7 +397,7 @@ bool LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &i
     qDebug() << python;
     qDebug() << args;
 
-    theProcessHandler->startProcess(python,args);
+    theMainProcessHandler->startProcess(python,args,"backend", runButton);
 
     //    bool failed = false;
     //    if (!proc->waitForStarted())
