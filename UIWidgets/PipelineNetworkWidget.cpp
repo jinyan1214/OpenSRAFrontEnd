@@ -231,7 +231,7 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
 
     if(res == false)
     {
-        this->errorMessage("OpenSRA does not support the infrastructrue type "+ typeOfInf);
+        this->errorMessage("OpenSRA does not support the infrastructure type "+ typeOfInf);
         return false;
 
     }

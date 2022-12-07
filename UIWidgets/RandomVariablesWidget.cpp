@@ -129,7 +129,7 @@ void RandomVariablesWidget::makeRVWidget(void)
 
     // Source type
     sourceComboDelegate = new ComboBoxDelegate(this);
-    QStringList sourceTypes = {"Preferred","From Infrastructure Table or Enter Value","From user-provided GIS maps"};
+    QStringList sourceTypes = {"Preferred","From infrastructure table or enter value","From user-provided GIS maps"};
     sourceComboDelegate->setItems(sourceTypes);
 
     connect(sourceComboDelegate,&ComboBoxDelegate::currentIndexChanged,this,&RandomVariablesWidget::handleSourceChanged);
@@ -377,8 +377,11 @@ bool RandomVariablesWidget::outputToJSON(QJsonObject &jsonObject) {
 
     Q_UNUSED(jsonObject);
 
-    auto finalRVPath = pathToRvFile + QDir::separator() + "rvs_input.csv";
-    auto finalFixedPath = pathToFixedFile + QDir::separator() + "fixed_input.csv";
+    //auto finalRVPath = pathToRvFile + QDir::separator() + "rvs_input.csv";
+    //auto finalFixedPath = pathToFixedFile + QDir::separator() + "fixed_input.csv";
+
+    auto finalRVPath = jsonObject["runDir"].toString() + QDir::separator() + "rvs_input.csv";
+    auto finalFixedPath = jsonObject["runDir"].toString() + QDir::separator() + "fixed_input.csv";
 
     QJsonObject inputParamObj;
 

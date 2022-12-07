@@ -128,7 +128,7 @@ void LocalApplication::onRunButtonPressed(QPushButton* button)
 
         this->runButton = button;
 
-        statusMessage("Gathering Files to local workdir");
+        //statusMessage("Gathering Files to local workdir");
 
         emit setupForRun(workingDir, workingDir);
 
@@ -151,7 +151,8 @@ void LocalApplication::onPreprocessButtonPressed(QPushButton* button)
     }
 
 
-    this->setupTempDir("preprocessing");
+    //this->setupTempDir("preprocessing");
+    this->setupTempDir("analysis");
 
     this->preProcessButton = button;
 
@@ -232,6 +233,7 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &/
 
     procEnv.insert("PATH", python);
     procEnv.insert("PYTHONPATH", python);
+    procEnv.insert("USERNAME", "opensra_user");
 
     thePreprocessHandler->setProcessEnv(procEnv);
 
@@ -248,7 +250,8 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &/
     qDebug() << python;
     qDebug() << args;
 
-    thePreprocessHandler->startProcess(python,args,"preprocessing",preProcessButton);
+    //thePreprocessHandler->startProcess(python,args,"preprocessing",preProcessButton);
+    thePreprocessHandler->startProcess(python,args,"analysis",preProcessButton);
 
     //    bool failed = false;
     //    if (!proc->waitForStarted())

@@ -303,9 +303,9 @@ void WorkflowAppOpenSRA::initialize(void)
 
 
 //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_shakemap_clean/Input/SetupConfig.json");
-    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_ucerf_clean/Input/SetupConfig.json");
+//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_ucerf_clean/Input/SetupConfig.json");
 //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/wells_caprocks_ucerf_clean/Input/SetupConfig.json");
-//    loadFile("C:/Users/barry/Desktop/OneDrive - SlateGeotech/CEC/OpenSRA/examples/above_ground_ucerf_clean/Input/SetupConfig.json");
+    loadFile("C:/Users/barry/Desktop/OneDrive - SlateGeotech/CEC/OpenSRA/examples/above_ground_ucerf_clean/Input/SetupConfig.json");
 
     //    theResultsWidget->processResults("/Users/steve/Desktop/ResToDelete/");
 }
@@ -494,7 +494,8 @@ bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
 
 void WorkflowAppOpenSRA::postprocessResults(QString /*doesNothing1*/, QString /*doesNothing2*/, QString /*doesNothing3*/)
 {
-    auto  resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "preprocessing";
+    //auto  resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "preprocessing";
+    auto  resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "analysis";
 
     theResultsWidget->processResults(resultsDirectory);
     theRunWidget->hide();
@@ -504,7 +505,8 @@ void WorkflowAppOpenSRA::postprocessResults(QString /*doesNothing1*/, QString /*
 
 void WorkflowAppOpenSRA::postprocessingDone(void)
 {
-    auto  preprocessingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "preprocessing";
+    //auto  preprocessingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "preprocessing";
+    auto  preprocessingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "analysis";
 
     QDir dirWork(preprocessingDir);
     if (!dirWork.exists())
@@ -685,34 +687,36 @@ void WorkflowAppOpenSRA::setUpForPreprocessingRun(QString &workingDir, QString &
 
 void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &subDir)
 {
-    auto preprocessdir = workingDir + QDir::separator() + "preprocessing";
+    //auto preprocessdir = workingDir + QDir::separator() + "preprocessing";
+    auto analysisdir = workingDir + QDir::separator() + "analysis";
 
-    auto runDir = workingDir + QDir::separator() + "run";
+//    auto runDir = workingDir + QDir::separator() + "run";
 
-    QDir dir(runDir);
-    if(!dir.mkpath("."))
-    {
-        this->errorMessage("Failed to make the directory "+runDir);
-        return;
-    }
+//    QDir dir(runDir);
+//    if(!dir.mkpath("."))
+//    {
+//        this->errorMessage("Failed to make the directory "+runDir);
+//        return;
+//    }
 
 
-    statusMessage("Copying files from preprocess directory to run directory.");
+//    statusMessage("Copying files from preprocess directory to run directory.");
 
-    // Copy everything from the preprocess dir to the run dir
-    auto res = SCUtils::recursiveCopy(preprocessdir, runDir);
+//    // Copy everything from the preprocess dir to the run dir
+//    auto res = SCUtils::recursiveCopy(preprocessdir, runDir);
 
-    if(!res)
-    {
-        QString msg = "Error copying files over to the directory " + runDir;
-        this->errorMessage(msg);
+//    if(!res)
+//    {
+//        QString msg = "Error copying files over to the directory " + runDir;
+//        this->errorMessage(msg);
 
-        return;
-    }
+//        return;
+//    }
 
     statusMessage("Set up Done.  Now starting the analysis.");
 
-    emit setUpForApplicationRunDone(runDir, runDir);
+//    emit setUpForApplicationRunDone(runDir, runDir);
+      emit setUpForApplicationRunDone(analysisdir, analysisdir);
 }
 
 
@@ -791,6 +795,8 @@ QString WorkflowAppOpenSRA::assembleInputFile(QString &workingDir, QString &subD
     }
 
     QJsonObject json;
+    // moved assigning of runDir here to allow access to this attribute in outputToJSON
+    json["runDir"]=tmpDirectory;
     auto res = this->outputToJSON(json);
     if(!res)
     {
@@ -798,7 +804,7 @@ QString WorkflowAppOpenSRA::assembleInputFile(QString &workingDir, QString &subD
         return QString();
     }
 
-    json["runDir"]=tmpDirectory;
+//    json["runDir"]=tmpDirectory;
     json["WorkflowType"]="OpenSRA Simulation";
 
     QJsonDocument doc(json);

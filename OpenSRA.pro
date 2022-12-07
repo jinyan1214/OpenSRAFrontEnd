@@ -55,12 +55,12 @@ include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 # Specify the path to R2D and common
 PATH_TO_R2D=../../R2DTool/R2DTool
 PATH_TO_COMMON=../../SimCenterCommon
-PATH_TO_BACKEND=../../OpenSRA
+#PATH_TO_BACKEND=../../OpenSRA
+PATH_TO_BACKEND=../../../OneDrive - SlateGeotech/CEC/OpenSRA
 
 # To avoid code copying, include the common SimCenter code
 include(OpenSRACommon.pri)
 include($$PATH_TO_COMMON/Common/Common.pri)
-
 
 SOURCES += main.cpp \
     JsonWidgets/JsonDefinedWidget.cpp \
@@ -215,3 +215,10 @@ INCLUDEPATH += $$PWD/Utils \
 #export(copyBackEnd.commands)
 
 #QMAKE_EXTRA_TARGETS += first copyExamples copyBackEnd
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/'../../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/'../../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
+else:unix: LIBS += -L$$PWD/'../../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
+
+INCLUDEPATH += $$PWD/'../../../../../../../Program Files (x86)/GnuWin32/include'
+DEPENDPATH += $$PWD/'../../../../../../../Program Files (x86)/GnuWin32/include'
