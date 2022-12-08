@@ -1,8 +1,7 @@
-﻿#ifndef SIMCENTER_PREFERENCES_H
-#define SIMCENTER_PREFERENCES_H
-
+#ifndef StateWidePipelineWidget_H
+#define StateWidePipelineWidget_H
 /* *****************************************************************************
-Copyright (c) 2016-2017, The Regents of the University of California (Regents).
+Copyright (c) 2016-2021, The Regents of the University of California (Regents).
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -37,55 +36,53 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
 
-// Written: Stevan Gavrilovic
+// Written by: Dr. Stevan Gavrilovic
 
-#include <QDialog>
-#include <QCheckBox>
+// Use this class when your asset geometry is represented as a line, i.e., pipelines
+// The input file must be in .csv format
+// The loadAssetVisualization function is specialized for line geometry rendering
 
-class QLineEdit;
-class QVBoxLayout;
+#include "AssetInputWidget.h"
 
-extern QString logFilePath;
+class PointAssetInputWidget;
 
-class OpenSRAPreferences : public QDialog
+class QgsVectorLayer;
+class QgsFeature;
+class QgsGeometry;
+
+#ifdef OpenSRA
+class JsonGroupBoxWidget;
+#endif
+
+class StateWidePipelineWidget : public AssetInputWidget
 {
-    Q_OBJECT
-
-private:
-    explicit OpenSRAPreferences(QWidget *parent = nullptr);
-    ~OpenSRAPreferences();
-    static OpenSRAPreferences *theInstance;
-
 public:
-    static OpenSRAPreferences *getInstance(QWidget *parent = nullptr);
-    QString getPython(void);
-    QString getAppDir(void);
-    QString getLocalWorkDir(void);
-    QString getAppDataDir(void);
+    StateWidePipelineWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
+    ~StateWidePipelineWidget();
 
-    void setLocalWorkDir(const QString &value);
+#ifdef OpenSRA
+    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &rvObject) override;
+
+    void createComponentsBox(void) override;
+#endif
+
+    int loadAssetVisualization(void) override;
+
+    void clear() override;
+
+    void setTheNodesWidget(PointAssetInputWidget *newTheNodesWidget);
 
 public slots:
-    void savePreferences(bool);
-    void resetPreferences(bool);
-    void quitPreferences(bool);
-    void loadPreferences(void);
-    void handleBrowseButtonClicked(void);
 
-signals:
+    void handleLoadStateData(void);
 
 private:
 
-    QLineEdit *appDataDirLineEdit;
+    PointAssetInputWidget* theNodesWidget = nullptr;
 
-    QLineEdit *customPythonLineEdit;
-    QLineEdit *customAppDirLineEdit;
-    QCheckBox* customAppDirCheckBox;
-    QCheckBox* customPythonCheckBox;
+    bool isLoaded = false;
 
-    QVBoxLayout *layout;
-    QString localWorkDir;
 };
 
-
-#endif // SIMCENTER_PREFERENCES_H
+#endif // StateWidePipelineWidget_H

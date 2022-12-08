@@ -105,15 +105,15 @@ UserInputCPTWidget::~UserInputCPTWidget()
 }
 
 
-bool UserInputCPTWidget::outputAppDataToJSON(QJsonObject &jsonObject) {
+bool UserInputCPTWidget::outputAppDataToJSON(QJsonObject &/*jsonObject*/) {
 
-    emit eventTypeChangedSignal("Earthquake");
+//    emit eventTypeChangedSignal("Earthquake");
 
-    jsonObject["Application"] = "UserInputGM";
+//    jsonObject["Application"] = "UserInputGM";
 
-    QJsonObject appData;
+//    QJsonObject appData;
 
-    jsonObject["ApplicationData"]=appData;
+//    jsonObject["ApplicationData"]=appData;
 
     return true;
 }
@@ -226,6 +226,7 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
     //
 
     fileInputWidget = new QWidget();
+
     QGridLayout *fileLayout = new QGridLayout(fileInputWidget);
 
     QLabel* selectComponentsText = new QLabel("File Containing CPT Locations");
@@ -234,15 +235,16 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
 
     connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseEventFileDialog()));
 
+    // Grid layout is specified with row/col integers
     fileLayout->addWidget(selectComponentsText, 0,0);
-    fileLayout->addWidget(CPTSitesFileLineEdit,    0,1);
-    fileLayout->addWidget(browseFileButton,     0,2);
+    fileLayout->addWidget(CPTSitesFileLineEdit, 0,1);
+    fileLayout->addWidget(browseFileButton, 0,2);
 
     QLabel* selectFolderText = new QLabel("Folder Containing CPT Site Data");
     CPTDirLineEdit = new QLineEdit();
     QPushButton *browseFolderButton = new QPushButton("Browse");
 
-    connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseMotionDirDialog()));
+    connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseCPTDirDialog()));
     
     QGroupBox* unitsWidget = new QGroupBox("Parameters");
     QGridLayout* vboxLayout = new QGridLayout(unitsWidget);
@@ -279,7 +281,14 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
     fileLayout->addWidget(CPTDirLineEdit, 1,1);
     fileLayout->addWidget(browseFolderButton, 1,2);
 
-    fileLayout->addWidget(unitsWidget,2,0,1,3);
+    auto mwtLabel = new QLabel("Freeface text:");
+    mwtOption = new QComboBox();
+    mwtOption->addItem("N/A");
+
+    fileLayout->addWidget(mwtLabel,2,0,1,1);
+    fileLayout->addWidget(mwtOption,2,1,1,2);
+
+    fileLayout->addWidget(unitsWidget,3,0,1,3);
 
     selectComponentsLineEdit = new AssetInputDelegate();
     connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&UserInputCPTWidget::handleComponentSelection);
@@ -304,7 +313,7 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
     selectComponentsLayout->addWidget(selectComponentsButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
 
-    fileLayout->addLayout(selectComponentsLayout,3,0,1,3);
+    fileLayout->addLayout(selectComponentsLayout,4,0,1,3);
 
     siteListTableWidget = new ComponentTableView();
     siteListTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -334,7 +343,7 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
     fileLayout->addWidget(tableHeader,5,0,1,3, Qt::AlignCenter);
 
     fileLayout->addWidget(tableSplitter,6,0,1,3);
-    fileLayout->setRowStretch(7,1);
+//    fileLayout->setRowStretch(7,1);
 
     //
     // progress bar
@@ -469,13 +478,13 @@ void UserInputCPTWidget::chooseEventFileDialog(void)
 }
 
 
-void UserInputCPTWidget::chooseMotionDirDialog(void)
+void UserInputCPTWidget::chooseCPTDirDialog(void)
 {
 
     QFileDialog dialog(this);
 
     dialog.setFileMode(QFileDialog::Directory);
-    QString newPath = dialog.getExistingDirectory(this, tr("Dir containing specified motions"));
+    QString newPath = dialog.getExistingDirectory(this, tr("Dir containing CPT files"));
     dialog.close();
 
     // Return if the user cancels or enters same dir
@@ -487,12 +496,12 @@ void UserInputCPTWidget::chooseMotionDirDialog(void)
     cptDataDir = newPath;
     CPTDirLineEdit->setText(cptDataDir);
 
-    // check if dir contains EventGrid.csv file, if it does set the file
-    QFileInfo eventFileInfo(newPath, "EventGrid.csv");
-    if (eventFileInfo.exists()) {
-        eventFile = newPath + "/EventGrid.csv";
-        CPTSitesFileLineEdit->setText(eventFile);
-    }
+//    // check if dir contains EventGrid.csv file, if it does set the file
+//    QFileInfo eventFileInfo(newPath, "EventGrid.csv");
+//    if (eventFileInfo.exists()) {
+//        eventFile = newPath + "/EventGrid.csv";
+//        CPTSitesFileLineEdit->setText(eventFile);
+//    }
 
     // could check files exist if eventFile set, but need something to give an error if not all there
     this->loadUserCPTData();
@@ -519,6 +528,10 @@ void UserInputCPTWidget::clear(void)
     CPTSitesFileLineEdit->clear();
     CPTDirLineEdit->clear();
     stationMap.clear();
+
+    mwtOption->clear();
+    mwtOption->addItem("N/A");
+
 }
 
 
@@ -579,6 +592,11 @@ void UserInputCPTWidget::loadUserCPTData(void)
 
     // Get the header file
     auto stationDataHeadings = sampleStationData.first();
+
+
+    // Add headers as options
+    mwtOption->addItems(stationDataHeadings);
+
 
     // Create the fields
     QList<QgsField> attribFields;

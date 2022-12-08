@@ -44,10 +44,12 @@ class VisualizationWidget;
 class AssetInputWidget;
 class SimCenterAppSelection;
 
-class QGroupBox;
+class StateWidePipelineWidget;
 class LineAssetInputWidget;
 class QGISWellsCaprocksInputWidget;
 class QGISAboveGroundGasNetworkInputWidget;
+
+class QGroupBox;
 
 class PipelineNetworkWidget : public  MultiComponentR2D
 {
@@ -78,6 +80,9 @@ private:
     SimCenterAppSelection* gasPipelineWidget = nullptr;
 
     LineAssetInputWidget* csvBelowGroundInputWidget = nullptr;
+
+    StateWidePipelineWidget* statewideBelowGroundInputWidget = nullptr;
+
     SimCenterAppSelection* theWellsCaprocksWidget = nullptr;
     SimCenterAppSelection* theAboveGroundInfWidget = nullptr;
 

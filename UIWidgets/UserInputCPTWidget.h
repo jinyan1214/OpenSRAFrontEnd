@@ -55,6 +55,7 @@ class ComponentTableView;
 class AssetInputDelegate;
 class ComponentDatabase;
 
+class QComboBox;
 class QStackedWidget;
 class QLineEdit;
 class QProgressBar;
@@ -88,7 +89,7 @@ private slots:
 
     void loadUserCPTData(void);
     void chooseEventFileDialog(void);
-    void chooseMotionDirDialog(void);
+    void chooseCPTDirDialog(void);
     void handleRowSelect(const QModelIndex &index);
 
 signals:
@@ -128,6 +129,8 @@ private:
     QWidget* progressBarWidget = nullptr;
     QWidget* fileInputWidget = nullptr;
     QProgressBar* progressBar = nullptr;
+
+    QComboBox* mwtOption = nullptr;
 
     QMap<QString,QVector<QStringList>> stationMap;
 

@@ -188,6 +188,19 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent) : QDialog(parent)
     appDirButton->setToolTip(tr("Select Directory containing the Backend directory named applications"));
     appDirLayout->addWidget(appDirButton);
 
+
+    appDataDirLineEdit = new QLineEdit();
+    QHBoxLayout *appDataLayout = new QHBoxLayout();
+    QPushButton *appDataButton = new QPushButton();
+    appDataButton->setText("Browse");
+    appDataButton->setToolTip(tr("Select Directory containing the Backend directory named applications"));
+    auto appDataLabel = new QLabel("Application Data:");
+    appDataLayout->addWidget(appDataLabel);
+    appDataLayout->addWidget(appDataDirLineEdit);
+    appDataLayout->addWidget(appDataButton);
+
+    connect(appDataButton,&QPushButton::clicked, this, &OpenSRAPreferences::handleBrowseButtonClicked);
+
     customAppDirCheckBox = new QCheckBox("Custom Local Applications:");
     customAppDirCheckBox->setChecked(false);
     customAppDirLineEdit->setEnabled(false);
@@ -196,6 +209,9 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent) : QDialog(parent)
     locationDirectoriesLayout->setAlignment(Qt::AlignLeft);
     locationDirectoriesLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
     locationDirectoriesLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
+
+    locationDirectoriesLayout->addRow(appDataLayout);
+
 
     connect(appDirButton, &QPushButton::clicked, this, [this](){
         QSettings settings("SimCenter", QCoreApplication::applicationName());
@@ -417,6 +433,12 @@ QString OpenSRAPreferences::getAppDir(void) {
 }
 
 
+QString OpenSRAPreferences::getAppDataDir(void)
+{
+    return appDataDirLineEdit->text();
+}
+
+
 QString OpenSRAPreferences::getLocalWorkDir(void) {
 
     QSettings settingsApplication("SimCenter", QCoreApplication::applicationName());
@@ -435,3 +457,17 @@ QString OpenSRAPreferences::getLocalWorkDir(void) {
     return localWorkDirVariant.toString();
 }
 
+
+void OpenSRAPreferences::handleBrowseButtonClicked(void)
+{
+
+    auto existingDir = appDataDirLineEdit->text();
+
+    QString selectedDir = QFileDialog::getExistingDirectory(this,
+                                                            tr("Select the OpenSRA application data directory"),
+                                                            existingDir,
+                                                            QFileDialog::ShowDirsOnly);
+    if(!selectedDir.isEmpty()) {
+        appDataDirLineEdit->setText(selectedDir);
+    }
+}

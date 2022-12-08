@@ -46,6 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "SimCenterAppSelection.h"
 #include "GISGasNetworkInputWidget.h"
 
+#include "StateWidePipelineWidget.h"
 #include "LineAssetInputWidget.h"
 #include "PointAssetInputWidget.h"
 #include "QGISWellsCaprocksInputWidget.h"
@@ -92,16 +93,30 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     // Gas pipelines
     gasPipelineWidget = new SimCenterAppSelection(QString("Regional Gas Pipelines"), QString("Assets"), QString("NaturalGasPipelines"), QString(), this);
 
+    // CSV pipelines
     csvBelowGroundInputWidget = new LineAssetInputWidget(this, theVisualizationWidget, "Gas Pipelines","Gas Network");
     csvBelowGroundInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
 
     csvBelowGroundInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
     csvBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
 
+
+    // Statewide
+    statewideBelowGroundInputWidget = new StateWidePipelineWidget(this, theVisualizationWidget, "Gas Pipelines","Gas Network");
+//    statewideBelowGroundInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
+
+//    statewideBelowGroundInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
+    statewideBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
+
+
+    // GIS pipelines
     GISGasNetworkInputWidget *gisGasNetworkInventory = new GISGasNetworkInputWidget(this, theVisualizationWidget);
 
+
+    // Add the pipeline widgets to the selection widget
     gasPipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvBelowGroundInputWidget);
     gasPipelineWidget->addComponent(QString("GIS to Pipeline"), QString("GIS_to_PIPELINE"), gisGasNetworkInventory);
+    gasPipelineWidget->addComponent(QString("State Pipeline"), QString("STATE_PIPELINE"), statewideBelowGroundInputWidget);
 
 
     // Above ground widget
@@ -279,6 +294,9 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
             app = "GIS to Pipeline";
         else if(typeOfFile.compare("CSV") == 0)
             app = "CSV to Pipeline";
+        else if(typeOfFile.compare("STATE_CSV") == 0)
+            app = "State Pipeline";
+
     }
     else if(typeOfInf.compare("above_ground") == 0)
     {

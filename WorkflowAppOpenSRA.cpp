@@ -302,11 +302,12 @@ void WorkflowAppOpenSRA::initialize(void)
     preprocessor =  new OpenSRAPreProcessor(backEndFilePath, this);
 
 
-//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_shakemap_clean/Input/SetupConfig.json");
-    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_ucerf_clean/Input/SetupConfig.json");
-//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/wells_caprocks_ucerf_clean/Input/SetupConfig.json");
-
+    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_shakemap_clean/Input/SetupConfig.json");
+    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_ucerf_clean/Input/SetupConfig.json");
+    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/below_ground_landslide_statewide-subset_level1_shakemap_clean/Input/SetupConfig.json");
+    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/wells_caprocks_ucerf_clean/Input/SetupConfig.json");
     //    theResultsWidget->processResults("/Users/steve/Desktop/ResToDelete/");
+
 }
 
 
@@ -569,12 +570,12 @@ bool WorkflowAppOpenSRA::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
-//    auto UQJsonObj = jsonObject.value("SamplingMethod").toObject();
-//    if(theUQWidget->inputFromJSON(UQJsonObj) == false)
-//    {
-//        errorMessage("Error loading .json input file at " + theUQWidget->objectName() + " panel");
-//        return false;
-//    }
+    //    auto UQJsonObj = jsonObject.value("SamplingMethod").toObject();
+    //    if(theUQWidget->inputFromJSON(UQJsonObj) == false)
+    //    {
+    //        errorMessage("Error loading .json input file at " + theUQWidget->objectName() + " panel");
+    //        return false;
+    //    }
 
     auto InfraJsonObj = jsonObject.value("Infrastructure").toObject();
     if(thePipelineNetworkWidget->inputFromJSON(InfraJsonObj) == false)
