@@ -604,6 +604,19 @@ void UserInputCPTWidget::loadUserCPTData(void)
     int count = 0;
 
     auto maxToDisp = 20;
+    auto indexCPTName = listHeadings.indexOf("CPT_FileName");
+    auto indexLon = listHeadings.indexOf("Longitude");
+    auto indexLat = listHeadings.indexOf("Latitude");
+
+    if (indexCPTName == -1) {
+        this->errorMessage("Error: cannot find column with CPT file name in CPT summary file.");
+        return;
+    }
+
+    if (indexLon == -1 || indexLat == -1) {
+        this->errorMessage("Error: cannot find columns with longitude and/or latitutde in CPT summary file.");
+        return;
+    }
 
     QgsFeatureList featureList;
     // Get the data
@@ -611,13 +624,13 @@ void UserInputCPTWidget::loadUserCPTData(void)
     {
         QStringList& rowStr = data[i];
 
-        auto stationName = rowStr[0];
+        auto stationName = rowStr[indexCPTName];
 
         // Path to station files, e.g., site0.csv
         auto stationPath = cptDataDir + QDir::separator() + stationName;
 
         bool ok;
-        auto longitude = rowStr[1].toDouble(&ok);
+        auto longitude = rowStr[indexLon].toDouble(&ok);
 
         if(!ok)
         {
@@ -629,7 +642,7 @@ void UserInputCPTWidget::loadUserCPTData(void)
             return;
         }
 
-        auto latitude = rowStr[2].toDouble(&ok);
+        auto latitude = rowStr[indexLat].toDouble(&ok);
 
         if(!ok)
         {
