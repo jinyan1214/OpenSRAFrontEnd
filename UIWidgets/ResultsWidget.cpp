@@ -100,58 +100,59 @@ ResultsWidget::ResultsWidget(QWidget *parent, QGISVisualizationWidget* visWidget
 
     mainStackedWidget->addWidget(theOpenSRAPostProcessor.get());
 
-    //    // Export layout and objects
-    //    QGridLayout *theExportLayout = new QGridLayout();
+//    // Export layout and objects
+//    QGridLayout *theExportLayout = new QGridLayout();
 
-    //    exportLabel = new QLabel("Export folder:", this);
-    //    exportPathLineEdit = new QLineEdit(this);
-    //    //exportPathLineEdit->setMaximumWidth(1000);
-    //    //exportPathLineEdit->setMinimumWidth(400);
-    //    exportPathLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+//    exportLabel = new QLabel("Export folder:", this);
+//    exportPathLineEdit = new QLineEdit(this);
+//    //exportPathLineEdit->setMaximumWidth(1000);
+//    //exportPathLineEdit->setMinimumWidth(400);
+//    exportPathLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-    //    QString defaultOutput = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QDir::separator() + QString("Results.pdf");
-    //    exportPathLineEdit->setText(defaultOutput);
+//    QString defaultOutput = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QDir::separator() + QString("Results.pdf");
+//    exportPathLineEdit->setText(defaultOutput);
 
-    //    exportBrowseFileButton = new QPushButton(this);
-    //    exportBrowseFileButton->setText(tr("Browse"));
-    //    exportBrowseFileButton->setMaximumWidth(150);
+//    exportBrowseFileButton = new QPushButton(this);
+//    exportBrowseFileButton->setText(tr("Browse"));
+//    exportBrowseFileButton->setMaximumWidth(150);
 
-    //    connect(exportBrowseFileButton,&QPushButton::clicked,this,&ResultsWidget::chooseResultsDirDialog);
+//    connect(exportBrowseFileButton,&QPushButton::clicked,this,&ResultsWidget::chooseResultsDirDialog);
 
-    //    exportPDFFileButton = new QPushButton(this);
-    //    exportPDFFileButton->setText(tr("Export to PDF"));
+//    exportPDFFileButton = new QPushButton(this);
+//    exportPDFFileButton->setText(tr("Export to PDF"));
 
-    //    connect(exportPDFFileButton,&QPushButton::clicked,this,&ResultsWidget::printToPDF);
+//    connect(exportPDFFileButton,&QPushButton::clicked,this,&ResultsWidget::printToPDF);
 
-    //    selectComponentsText = new QLabel("Select a subset of components to display the results:",this);
-    //    selectComponentsLineEdit = new AssetInputDelegate();
+//    selectComponentsText = new QLabel("Select a subset of components to display the results:",this);
+//    selectComponentsLineEdit = new AssetInputDelegate();
 
-    //    connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ResultsWidget::handleComponentSelection);
+//    connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&ResultsWidget::handleComponentSelection);
 
-    //    selectComponentsButton = new QPushButton();
-    //    selectComponentsButton->setText(tr("Select"));
-    //    selectComponentsButton->setMaximumWidth(150);
+//    selectComponentsButton = new QPushButton();
+//    selectComponentsButton->setText(tr("Select"));
+//    selectComponentsButton->setMaximumWidth(150);
 
-    //    connect(selectComponentsButton,SIGNAL(clicked()),this,SLOT(selectComponents()));
+//    connect(selectComponentsButton,SIGNAL(clicked()),this,SLOT(selectComponents()));
 
-    // theExportLayout->addStretch();
-    //    theExportLayout->addWidget(selectComponentsText,     0,0);
-    //    theExportLayout->addWidget(selectComponentsLineEdit, 0,1);
-    //    theExportLayout->addWidget(selectComponentsButton,   0,2);
-    // theExportLayout->addStretch();
-    //    theExportLayout->addWidget(exportLabel,            1,0);
-    //    theExportLayout->addWidget(exportPathLineEdit,     1,1);
-    //    theExportLayout->addWidget(exportBrowseFileButton, 1,2);
-    //    theExportLayout->addWidget(exportPDFFileButton,    2,0,1,3);
+    ////    theExportLayout->addStretch();
+    ////       theExportLayout->addWidget(selectComponentsText,     0,0);
+    ////       theExportLayout->addWidget(selectComponentsLineEdit, 0,1);
+    ////       theExportLayout->addWidget(selectComponentsButton,   0,2);
+    ////    theExportLayout->addStretch();
+    ////       theExportLayout->addWidget(exportLabel,            1,0);
+    ////       theExportLayout->addWidget(exportPathLineEdit,     1,1);
+    ////       theExportLayout->addWidget(exportBrowseFileButton, 1,2);
+    ////       theExportLayout->addWidget(exportPDFFileButton,    2,0,1,3);
 
-    // theExportLayout->addStretch();
-    //    theExportLayout->setRowStretch(3,1);
+    ////    theExportLayout->addStretch();
+    ////       theExportLayout->setRowStretch(3,1);
 
     mainLayout->addLayout(theHeaderLayout);
     mainLayout->addWidget(mainStackedWidget,1);
     //    mainLayout->addLayout(theExportLayout);
 
     this->resultsShow(false);
+//    this->resultsShow(true);
 
 }
 
@@ -167,24 +168,24 @@ void ResultsWidget::resultsShow(bool value)
     if(!value)
     {
         mainStackedWidget->setCurrentWidget(resultsPageWidget);
-        //        selectComponentsButton->hide();
-        //        selectComponentsLineEdit->hide();
-        //        selectComponentsText->hide();
-        //        exportPDFFileButton->hide();
-        //        exportBrowseFileButton->hide();
-        //        exportPathLineEdit->hide();
-        //        exportLabel->hide();
+//                selectComponentsButton->hide();
+//                selectComponentsLineEdit->hide();
+//                selectComponentsText->hide();
+//                exportPDFFileButton->hide();
+//                exportBrowseFileButton->hide();
+//                exportPathLineEdit->hide();
+//                exportLabel->hide();
     }
     else
     {
         mainStackedWidget->setCurrentWidget(theOpenSRAPostProcessor.get());
-        //        selectComponentsButton->show();
-        //        selectComponentsLineEdit->show();
-        //        selectComponentsText->show();
-        //        exportPDFFileButton->show();
-        //        exportBrowseFileButton->show();
-        //        exportPathLineEdit->show();
-        //        exportLabel->show();
+//                selectComponentsButton->show();
+//                selectComponentsLineEdit->show();
+//                selectComponentsText->show();
+//                exportPDFFileButton->show();
+//                exportBrowseFileButton->show();
+//                exportPathLineEdit->show();
+//                exportLabel->show();
     }
 }
 
