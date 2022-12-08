@@ -116,7 +116,7 @@ const QStringList RV::getDataAsStringList(void) const
         else if (val.type() == QVariant::Invalid) // unknown
              result.append("");
         else
-             qDebug()<<"Error no support for type "<<val.type()<< "in "<<__PRETTY_FUNCTION__;
+             qDebug()<<"Error no support for type "<<val.type()<< "in "<<__FUNCTION__;
 
     }
 

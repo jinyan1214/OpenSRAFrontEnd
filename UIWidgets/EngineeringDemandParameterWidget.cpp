@@ -148,7 +148,7 @@ bool EngineeringDemandParameterWidget::inputFromJSON(QJsonObject &jsonObject)
 
     if(typeObj.isEmpty())
     {
-        this->errorMessage("Could not find the 'Type' keyword in "+QString(__PRETTY_FUNCTION__));
+        this->errorMessage("Could not find the 'Type' keyword in "+QString(__FUNCTION__));
         return false;
     }
 
