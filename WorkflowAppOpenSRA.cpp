@@ -310,6 +310,7 @@ void WorkflowAppOpenSRA::initialize(void)
 //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_ucerf_clean/Input/SetupConfig.json");
 //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/wells_caprocks_ucerf_clean/Input/SetupConfig.json");
 //    loadFile("C:/Users/barry/Desktop/OneDrive - SlateGeotech/CEC/OpenSRA/examples/above_ground_ucerf_clean/Input/SetupConfig.json");
+    loadFile("C:\\Users\\barry\\OneDrive - SlateGeotech\\CEC\\OpenSRA\\examples\\wells_caprocks\\userdef_rupture\\Input\\SetupConfig.json");
 
     //    theResultsWidget->processResults("/Users/steve/Desktop/ResToDelete/");
 
