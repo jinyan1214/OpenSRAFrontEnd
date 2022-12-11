@@ -91,6 +91,7 @@ private slots:
     void chooseEventFileDialog(void);
     void chooseCPTDirDialog(void);
     void handleRowSelect(const QModelIndex &index);
+    void chooseFreefaceDirDialog(void);
 
 signals:
     void outputDirectoryPathChanged(QString motionDir, QString eventFile);
@@ -122,7 +123,7 @@ private:
 
     AssetInputDelegate* selectComponentsLineEdit = nullptr;
 
-    QLineEdit *CPTSitesFileLineEdit = nullptr;
+    QLineEdit *CPTSummaryFileLineEdit = nullptr;
     QLineEdit *CPTDirLineEdit = nullptr;
 
     QLabel* progressLabel = nullptr;
@@ -130,7 +131,11 @@ private:
     QWidget* fileInputWidget = nullptr;
     QProgressBar* progressBar = nullptr;
 
-    QComboBox* mwtOption = nullptr;
+    QComboBox* gwtMeanOption = nullptr;
+    QLineEdit *weightR09LineEdit = nullptr;
+    QLineEdit *weightZ04LineEdit = nullptr;
+
+    QLineEdit *FreefaceDirLineEdit = nullptr;
 
     QMap<QString,QVector<QStringList>> stationMap;
 

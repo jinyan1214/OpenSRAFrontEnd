@@ -285,7 +285,7 @@ void WorkflowAppOpenSRA::initialize(void)
 
     theComponentSelection->addComponent(QString("Visualization"), theCustomVisualizationWidget);
     theComponentSelection->addComponent(QString("General\nInformation"), theGenInfoWidget);
-    theComponentSelection->addComponent(QString("GIS Data"), theGISDataWidget);
+    theComponentSelection->addComponent(QString("GIS and CPT Data"), theGISDataWidget);
     //    theComponentSelection->addComponent(QString("Sampling\nMethod"), theUQWidget);
     theComponentSelection->addComponent(QString("Infrastructure"), thePipelineNetworkWidget);
     theComponentSelection->addComponent(QString("Decision\nVariable"), theDecisionVariableWidget);
@@ -310,7 +310,7 @@ void WorkflowAppOpenSRA::initialize(void)
 //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_ucerf_clean/Input/SetupConfig.json");
 //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/wells_caprocks_ucerf_clean/Input/SetupConfig.json");
 //    loadFile("C:/Users/barry/Desktop/OneDrive - SlateGeotech/CEC/OpenSRA/examples/above_ground_ucerf_clean/Input/SetupConfig.json");
-    loadFile("C:\\Users\\barry\\OneDrive - SlateGeotech\\CEC\\OpenSRA\\examples\\wells_caprocks\\userdef_rupture\\Input\\SetupConfig.json");
+//    loadFile("C:\\Users\\barry\\OneDrive - SlateGeotech\\CEC\\OpenSRA\\examples\\wells_caprocks\\userdef_rupture\\Input\\SetupConfig.json");
 
     //    theResultsWidget->processResults("/Users/steve/Desktop/ResToDelete/");
 
@@ -494,6 +494,11 @@ bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
     if(!res)
         return false;
 
+    res = theGISDataWidget->outputToJSON(jsonObjectTop);
+
+    if(!res)
+        return false;
+
     return true;
 }
 
@@ -626,6 +631,14 @@ bool WorkflowAppOpenSRA::inputFromJSON(QJsonObject &jsonObject)
         errorMessage("Error loading .json input file at " + theRandomVariableWidget->objectName() + " panel");
         return false;
     }
+
+    auto GISandCPTParamObj = jsonObject.value("UserSpecifiedGISandCPTData").toObject();
+    if(theGISDataWidget->inputFromJSON(GISandCPTParamObj) == false)
+    {
+        errorMessage("Error loading .json input file at " + theGISDataWidget->objectName() + " panel");
+        return false;
+    }
+
 
     return true;
 }

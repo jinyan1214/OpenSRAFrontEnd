@@ -40,7 +40,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "sectiontitle.h"
 #include "OpenSHAWidget.h"
 #include "ShakeMapWidget.h"
-#include "SourceCharacterizationWidget.h"
 #include "WorkflowAppOpenSRA.h"
 #include "JsonDefinedWidget.h"
 #include "UserInputFaultWidget.h"

@@ -116,7 +116,7 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     // Add the pipeline widgets to the selection widget
     gasPipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvBelowGroundInputWidget);
     gasPipelineWidget->addComponent(QString("GIS to Pipeline"), QString("GIS_to_PIPELINE"), gisGasNetworkInventory);
-    gasPipelineWidget->addComponent(QString("State Pipeline"), QString("STATE_PIPELINE"), statewideBelowGroundInputWidget);
+    gasPipelineWidget->addComponent(QString("Use Prepackaged State Pipeline Network"), QString("STATE_PIPELINE"), statewideBelowGroundInputWidget);
 
 
     // Above ground widget
@@ -295,7 +295,7 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
         else if(typeOfFile.compare("CSV") == 0)
             app = "CSV to Pipeline";
         else if(typeOfFile.compare("STATE_CSV") == 0)
-            app = "State Pipeline";
+            app = "Use Prepackaged State Pipeline Network";
 
     }
     else if(typeOfInf.compare("above_ground") == 0)
@@ -332,8 +332,8 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
-
     return compWidget->inputFromJSON(jsonObject);
+
 }
 
 

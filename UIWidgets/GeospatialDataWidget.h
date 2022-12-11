@@ -52,6 +52,8 @@ public:
     explicit GeospatialDataWidget(QWidget *parent, VisualizationWidget* visWidget);
     ~GeospatialDataWidget();
 
+    bool inputFromJSON(QJsonObject &rvObject);
+
     void clear(void);
 
 private:

@@ -42,14 +42,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "UserInputCPTWidget.h"
 
-GeospatialDataWidget::GeospatialDataWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppSelection(QString("Geospatial Data"),QString("Data"), parent), visualizationWidget(visWidget)
+GeospatialDataWidget::GeospatialDataWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppSelection(QString("Geospatial Data"),QString("UserSpecifiedGISandCPTData"), parent), visualizationWidget(visWidget)
 {
     cptInputWidget = new UserInputCPTWidget(visualizationWidget, this);
 
     GISMapInputWidget = new GISMapWidget(visualizationWidget,this);
 
     this->addComponent("GIS Map Input Widget", "GISMaps", GISMapInputWidget);
-    this->addComponent("CPT Borehole Input", "CPTs", cptInputWidget);
+    this->addComponent("CPT Borehole Input", "CPTParameters", cptInputWidget);
 }
 
 
@@ -62,9 +62,34 @@ GeospatialDataWidget::~GeospatialDataWidget()
 void GeospatialDataWidget::clear(void)
 {
     cptInputWidget->clear();
+    //GISMapInputWidget->clear();
 }
 
 
+bool GeospatialDataWidget::inputFromJSON(QJsonObject &jsonObject)
+{
+
+    auto GISObject = jsonObject.value("GISMaps").toObject();
+    auto CPTObject = jsonObject.value("CPTParameters").toObject();
+
+//    if(GISObject.isEmpty())
+//        return false;
+
+    /*
+    To add asection for importing GIS objects
+    */
+
+    auto CPTParams = CPTObject.keys();
+
+    if(!CPTParams.isEmpty())
+    {
+        auto res =  cptInputWidget->inputFromJSON(CPTObject);
+        if(res == false)
+            return false;
+    }
+
+    return true;
+}
 
 
 
