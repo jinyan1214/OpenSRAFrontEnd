@@ -393,6 +393,7 @@ bool SimCenterJsonWidget::outputToJSON(QJsonObject &jsonObj)
 
     outputObj["Method"] = methodsObj;
 
+    // landslide only
     if(this->nameToDisplay == "Landslide")
     {
         QJsonObject defPolyObj;
@@ -557,6 +558,25 @@ bool SimCenterJsonWidget::inputFromJSON(QJsonObject &jsonObject)
         {
             this->errorMessage("Error, failed to add the model "+name+" in "+methodKey);
             return false;
+        }
+    }
+
+    // landslide only
+    if(this->nameToDisplay == "Landslide")
+    {
+        if (jsonObject.contains("OtherParameters"))
+        {
+            QJsonObject landslideParams = jsonObject["OtherParameters"].toObject();
+            if (landslideParams.contains("UseDeformationGeometry"))
+            {
+                auto defPolyCheckState = landslideParams["UseDeformationGeometry"].toBool();
+                defPolyCheckBox->setChecked(defPolyCheckState);
+            }
+            if (landslideParams.contains("SourceForDeformationGeometry"))
+            {
+                auto defPolyPath = landslideParams["SourceForDeformationGeometry"].toString();
+                defPolyLineEdit->setText(defPolyPath);
+            }
         }
     }
 
