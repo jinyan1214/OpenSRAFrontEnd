@@ -52,11 +52,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLabel>
 #include <QPushButton>
 #include <QLineEdit>
+#include <QSettings>
 #include <QComboBox>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QScrollArea>
+#include <QCoreApplication>
 
 
 EDPLandslideWidget::EDPLandslideWidget(QJsonObject obj, QWidget* parent) : SimCenterAppWidget(parent)
@@ -92,6 +94,59 @@ EDPLandslideWidget::EDPLandslideWidget(QJsonObject obj, QWidget* parent) : SimCe
     boxWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     inputLayout->addWidget(boxWidget);
+
+    //-----
+    // widget for additional landslide parameters for deformation polygons to use
+    defPolyLineEdit = new QLineEdit();
+    QHBoxLayout *defPolyLayout = new QHBoxLayout();
+    defPolyLayout->addWidget(defPolyLineEdit);
+    QPushButton *defPolyButton = new QPushButton();
+    defPolyButton->setText("Browse");
+    defPolyButton->setToolTip(tr("Select path to shapefile with landslide deformation polygon"));
+    defPolyLayout->addWidget(defPolyButton);
+
+
+    defPolyCheckBox = new QCheckBox("Use any deformation polygon:");
+    defPolyCheckBox->setChecked(false);
+    defPolyLineEdit->setEnabled(false);
+    defPolyLayout->setEnabled(false);
+
+
+    inputLayout->addLayout(defPolyLayout);
+//    inputLayout->addRow(defPolyCheckBox, defPolyLayout);
+//    inputLayout->setAlignment(Qt::AlignLeft);
+//    inputLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+//    inputLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
+
+    // connect the pushbutton with code to open file selection and update python preferences with selected file
+//    connect(defPolyButton, &QPushButton::clicked, this, [this](){
+//        QSettings settings("SimCenter", QCoreApplication::applicationName()); //These names will need to be constants to be shared
+//        QVariant  defPolyPathVariant = settings.value("appDir");
+//        QString existingDir = QCoreApplication::applicationDirPath();
+//        if (pythonPathVariant.isValid()) {
+//            QString existingF = pythonPathVariant.toString();
+//        }
+
+//        QString selectedFile = QFileDialog::getOpenFileName(this,
+//                                                            tr("Select Python Interpreter"),
+//                                                            existingDir,
+//                                                            "All files (*.*)");
+
+//        if(!selectedFile.isEmpty()) {
+//            customPythonLineEdit->setText(selectedFile);
+//        }
+//    }
+//    );
+
+//    connect(defPolyCheckBox, &QCheckBox::toggled, this, [this, defPolyButton](bool checked)
+//    {
+//        this->defPolyLineEdit->setEnabled(checked);
+//        defPolyButton->setEnabled(checked);
+//        defPolyButton->setFlat(!checked);
+//        this->customAppDirLineEdit->setText(this->getAppDir());
+//    });
+    //-----
+
 
     // Add the weight and add to run list button at the bottom
     addRunListWidget = new AddToRunListWidget();
@@ -454,4 +509,3 @@ void EDPLandslideWidget::handleListItemSelected(const QModelIndex& index)
     }
 
 }
-

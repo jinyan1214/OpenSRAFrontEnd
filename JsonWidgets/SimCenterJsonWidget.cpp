@@ -55,8 +55,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 #include <QLineEdit>
 #include <QGroupBox>
+#include <QCheckBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QCoreApplication>
+#include <QFileInfo>
+#include <QFileDialog>
+#include <QSettings>
+#include <QSpacerItem>
+
 
 
 SimCenterJsonWidget::SimCenterJsonWidget(QString methodName, QJsonObject jsonObj, QWidget* parent) : SimCenterAppWidget(parent)
@@ -126,10 +133,82 @@ QGroupBox* SimCenterJsonWidget::getWidgetBox(const QJsonObject jsonObj)
 
     groupBoxLayout->addWidget(scrollWidget);
 
+    //
+    //-----
+    // widget for additional landslide parameters for deformation polygons to use
+    nameToDisplay = jsonObj.value("NameToDisplay").toString();
+    if(nameToDisplay == "Landslide")
+    {
+
+        QVBoxLayout* inputLayout = new QVBoxLayout();
+        inputLayout->setMargin(0);
+
+        // widget for additional landslide parameters for deformation polygons to use
+        defPolyLineEdit = new QLineEdit();
+        QHBoxLayout *defPolyLayout = new QHBoxLayout();
+        defPolyCheckBox = new QCheckBox("First check box, then leave as \"CA_LandslideInventory_WGS84\" or browse for path to shapefile");
+        defPolyCheckBox->setChecked(false);
+        defPolyLineEdit->setEnabled(false);
+        defPolyLineEdit->setText("CA_LandslideInventory_WGS84");
+        defPolyLayout->setEnabled(false);
+
+
+        QPushButton *defPolyButton = new QPushButton();
+        defPolyButton->setText("Browse");
+        //defPolyButton->setToolTip(tr("Select path to shapefile with landslide deformation polygon"));
+
+        defPolyLayout->addWidget(defPolyCheckBox);
+        defPolyLayout->addWidget(defPolyLineEdit);
+        defPolyLayout->addWidget(defPolyButton);
+        defPolyLayout->setAlignment(Qt::AlignLeft);
+
+        // connect the pushbutton with code to open file selection and update path to def polygon
+        connect(defPolyButton, &QPushButton::clicked, this, [this](){
+            QSettings settings("SimCenter", QCoreApplication::applicationName()); //These names will need to be constants to be shared
+            QVariant defPolyPathVariant = settings.value("appDir");
+            QString existingDir = QCoreApplication::applicationDirPath();
+            if (defPolyPathVariant.isValid()) {
+                QString existingF = defPolyPathVariant.toString();
+                QFileInfo existingFile(existingF);
+                if (existingFile.exists())
+                    existingDir = existingFile.absolutePath();
+            }
+
+            QString selectedFile = QFileDialog::getOpenFileName(this,
+                                                                tr("Select path to shapefile with landslide deformation polygon"),
+                                                                existingDir,
+                                                                "All files (*.*)");
+
+            if(!selectedFile.isEmpty()) {
+                defPolyLineEdit->setText(selectedFile);
+            }
+        }
+        );
+
+        connect(defPolyCheckBox, &QCheckBox::toggled, this, [this, defPolyButton](bool checked)
+        {
+            this->defPolyLineEdit->setEnabled(checked);
+            defPolyButton->setEnabled(checked);
+            defPolyButton->setFlat(!checked);
+//            this->defPolyLineEdit->setText(this->getDefPolyDir());
+            this->defPolyLineEdit->setText("CA_LandslideInventory_WGS84");
+        });
+
+
+        auto defPolyLabel = new QLabel("Use Any Deformation Polygon?");
+
+        inputLayout->addWidget(defPolyLabel);
+        inputLayout->addLayout(defPolyLayout);
+        groupBoxLayout->addLayout(inputLayout,Qt::AlignCenter);
+
+    }
+    //
+
     groupBoxLayout->addWidget(addRunListWidget,Qt::AlignCenter);
 
-    groupBoxLayout->setStretch(0,1);
-    groupBoxLayout->setStretch(1,0);
+    groupBoxLayout->setStretch(0,1); // scroll widget
+    groupBoxLayout->setStretch(1,0); // def poly widget if landslide or add to list widget
+    groupBoxLayout->setStretch(2,0); // add to list widget if landslide or null
 
     // Add a vertical spacer at the bottom to push everything up
     //    auto vspacer = new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding);
@@ -313,6 +392,14 @@ bool SimCenterJsonWidget::outputToJSON(QJsonObject &jsonObj)
     outputObj.insert("ToInclude", true);
 
     outputObj["Method"] = methodsObj;
+
+    if(this->nameToDisplay == "Landslide")
+    {
+        QJsonObject defPolyObj;
+        defPolyObj["UseDeformationGeometry"] = defPolyCheckBox->isChecked();
+        defPolyObj["SourceForDeformationGeometry"] = defPolyLineEdit->text();
+        outputObj["OtherParameters"] = defPolyObj;
+    }
 
     jsonObj.insert(methodKey,outputObj);
 

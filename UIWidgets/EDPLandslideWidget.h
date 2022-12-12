@@ -57,6 +57,7 @@ public:
     EDPLandslideWidget(QJsonObject obj, QWidget* parent = nullptr);
 
     QWidget* getWidgetBox(QJsonObject& obj);
+    QString getAppDir(void);
 
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
@@ -81,6 +82,11 @@ private:
     CustomListWidget* listWidget = nullptr;
 
     AddToRunListWidget* addRunListWidget = nullptr;
+
+    QLineEdit *defPolyLineEdit;
+    QLineEdit *customAppDirLineEdit;
+    QCheckBox* customAppDirCheckBox;
+    QCheckBox* defPolyCheckBox;
 
 };
 
