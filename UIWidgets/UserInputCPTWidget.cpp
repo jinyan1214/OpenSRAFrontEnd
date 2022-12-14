@@ -92,7 +92,7 @@ UserInputCPTWidget::UserInputCPTWidget(VisualizationWidget* visWidget, QWidget *
     // Test Start
 //    eventFile = "/Users/steve/Desktop/SimCenter/Examples/CPTs/CPTSites.csv";
 //    cptDataDir = "/Users/steve/Desktop/SimCenter/Examples/CPTs/CPTs";
-//    CPTSitesFileLineEdit->setText(eventFile);
+//    CPTSummaryFileLineEdit->setText(eventFile);
 //    CPTDirLineEdit->setText(cptDataDir);
 //    this->loadUserCPTData();
     // Test end
@@ -121,26 +121,38 @@ bool UserInputCPTWidget::outputAppDataToJSON(QJsonObject &/*jsonObject*/) {
 
 bool UserInputCPTWidget::outputToJSON(QJsonObject &jsonObj)
 {
-    QFileInfo theFile(eventFile);
-    if (theFile.exists()) {
-        jsonObj["eventFile"]=theFile.fileName();
-        jsonObj["eventFilePath"]=theFile.path();
-    } else {
-        jsonObj["eventFile"]=eventFile; // may be valid on others computer
-        jsonObj["eventFilePath"]=QString("");
-    }
+    QJsonObject outputObj;
 
-    // output motionDir if not same as eventFile's path
-    QString eventFilePath = QFileInfo(eventFile).absolutePath();
-    if (eventFilePath != cptDataDir) {
+    outputObj.insert("PathToCPTSummaryCSV",CPTSummaryFileLineEdit->text());
+    outputObj.insert("PathToCPTDataFolder",CPTDirLineEdit->text());
+    outputObj.insert("ColumnInCPTSummaryWithGWTable",gwtMeanOption->currentText());
+    outputObj.insert("WeightRobertson09",weightR09LineEdit->text().toDouble());
+    outputObj.insert("WeightZhang04",weightZ04LineEdit->text().toDouble());
+    outputObj.insert("PathToFreefaceDir",FreefaceDirLineEdit->text());
 
-        QFileInfo theDir(cptDataDir);
-        if (theDir.exists()) {
-            jsonObj["motionDir"]=theDir.absoluteFilePath();
-        } else {
-            jsonObj["motionDir"]=QString("None");
-        }
-    }
+
+//    QFileInfo theFile(eventFile);
+//    if (theFile.exists()) {
+//        jsonObj["eventFile"]=theFile.fileName();
+//        jsonObj["eventFilePath"]=theFile.path();
+//    } else {
+//        jsonObj["eventFile"]=eventFile; // may be valid on others computer
+//        jsonObj["eventFilePath"]=QString("");
+//    }
+
+//    // output motionDir if not same as eventFile's path
+//    QString eventFilePath = QFileInfo(eventFile).absolutePath();
+//    if (eventFilePath != cptDataDir) {
+
+//        QFileInfo theDir(cptDataDir);
+//        if (theDir.exists()) {
+//            jsonObj["motionDir"]=theDir.absoluteFilePath();
+//        } else {
+//            jsonObj["motionDir"]=QString("None");
+//        }
+//    }
+
+    jsonObj.insert("CPTParameters",outputObj);
 
     return true;
 }
@@ -155,60 +167,100 @@ bool UserInputCPTWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 
 bool UserInputCPTWidget::inputFromJSON(QJsonObject &jsonObject)
 {
-    QString fileName;
-    QString pathToFile;
+//    QString fileName;
+//    QString pathToFile;
 
-    if (jsonObject.contains("eventFile"))
-        fileName = jsonObject["eventFile"].toString();
-    if (jsonObject.contains("eventFilePath"))
-        pathToFile = jsonObject["eventFilePath"].toString();
-    else
-        pathToFile=QDir::currentPath();
+//    if (jsonObject.contains("eventFile"))
+//        fileName = jsonObject["eventFile"].toString();
+//    if (jsonObject.contains("eventFilePath"))
+//        pathToFile = jsonObject["eventFilePath"].toString();
+//    else
+//        pathToFile=QDir::currentPath();
 
-    QString fullFilePath= pathToFile + QDir::separator() + fileName;
+//    QString fullFilePath= pathToFile + QDir::separator() + fileName;
 
-    // adam .. adam .. adam .. ADAM .. ADAM
-    if (!QFileInfo::exists(fullFilePath)){
+//    // adam .. adam .. adam .. ADAM .. ADAM
+//    if (!QFileInfo::exists(fullFilePath)){
 
-        fullFilePath = pathToFile + QDir::separator()
-                + "input_data" + QDir::separator() + fileName;
+//        fullFilePath = pathToFile + QDir::separator()
+//                + "input_data" + QDir::separator() + fileName;
 
-        if (!QFile::exists(fullFilePath)) {
-            this->errorMessage("UserInputGM - could not find event file");
-            return false;
-        }
+//        if (!QFile::exists(fullFilePath)) {
+//            this->errorMessage("UserInputGM - could not find event file");
+//            return false;
+//        }
+//    }
+
+//    CPTSummaryFileLineEdit->setText(fullFilePath);
+//    eventFile = fullFilePath;
+
+//    if (jsonObject.contains("motionDir")) {
+//        cptDataDir = jsonObject["motionDir"].toString();
+
+//        QDir motionD(cptDataDir);
+
+//        if (!motionD.exists()){
+
+//            QString trialDir = QDir::currentPath() +
+//                    QDir::separator() + "input_data" + cptDataDir;
+//            if (motionD.exists(trialDir)) {
+//                cptDataDir = trialDir;
+//                CPTDirLineEdit->setText(trialDir);
+//            } else {
+//                this->errorMessage("UserInputGM - could not find motion dir" + cptDataDir + " " + trialDir);
+//                return false;
+//            }
+//        }
+//    } else {
+//        cptDataDir = QFileInfo(fullFilePath).absolutePath();
+//    }
+
+    // set the line
+    if (jsonObject.contains("PathToCPTSummaryCSV"))
+    {
+        auto sum_path = jsonObject["PathToCPTSummaryCSV"].toString();
+        CPTSummaryFileLineEdit->setText(sum_path);
+        eventFile = sum_path;
     }
 
-    CPTSitesFileLineEdit->setText(fullFilePath);
-    eventFile = fullFilePath;
-
-    if (jsonObject.contains("motionDir")) {
-        cptDataDir = jsonObject["motionDir"].toString();
-
-        QDir motionD(cptDataDir);
-
-        if (!motionD.exists()){
-
-            QString trialDir = QDir::currentPath() +
-                    QDir::separator() + "input_data" + cptDataDir;
-            if (motionD.exists(trialDir)) {
-                cptDataDir = trialDir;
-                CPTDirLineEdit->setText(trialDir);
-            } else {
-                this->errorMessage("UserInputGM - could not find motion dir" + cptDataDir + " " + trialDir);
-                return false;
-            }
-        }
-    } else {
-        cptDataDir = QFileInfo(fullFilePath).absolutePath();
+    // set the line
+    if (jsonObject.contains("PathToCPTDataFolder"))
+    {
+        auto cpt_dir = jsonObject["PathToCPTDataFolder"].toString();
+        CPTDirLineEdit->setText(cpt_dir);
+        cptDataDir = cpt_dir;
     }
 
-    // set the line dit
-    CPTDirLineEdit->setText(cptDataDir);
+    // set the line
+    if (jsonObject.contains("WeightRobertson09"))
+    {
+        auto wr09 = jsonObject["WeightRobertson09"].toDouble();
+        weightR09LineEdit->setText(QString::number(wr09));
+    }
 
+    // set the line
+    if (jsonObject.contains("WeightZhang04"))
+    {
+        auto wz04 = jsonObject["WeightZhang04"].toDouble();
+        weightZ04LineEdit->setText(QString::number(wz04));
+    }
+
+    // set the line
+    if (jsonObject.contains("PathToFreefaceDir"))
+    {
+        auto ff_dir = jsonObject["PathToFreefaceDir"].toString();
+        FreefaceDirLineEdit->setText(ff_dir);
+    }
 
     // load the motions
     this->loadUserCPTData();
+
+    // set the QComboBox, valid after table has been loaded
+    if (jsonObject.contains("ColumnInCPTSummaryWithGWTable"))
+    {
+        auto gwt_input = jsonObject["ColumnInCPTSummaryWithGWTable"].toString();
+        gwtMeanOption->setCurrentText(gwt_input);
+    }
 
     return true;
 }
@@ -229,67 +281,109 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
 
     QGridLayout *fileLayout = new QGridLayout(fileInputWidget);
 
-    QLabel* selectComponentsText = new QLabel("File Containing CPT Locations");
-    CPTSitesFileLineEdit = new QLineEdit();
-    QPushButton *browseFileButton = new QPushButton("Browse");
+    int count = 0;
 
-    connect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseEventFileDialog()));
+    // CPT Summary file
+//    QLabel* selectComponentsHeader = new QLabel("1. CPT Summary file in csv format - must contain the columns \"CPT_FileName\", \"Longitude\", and \"Latitude\"");
+//    QFont fontCompHeader = selectComponentsHeader->font();
+//    fontCompHeader.setWeight(QFont::Bold);
+//    selectComponentsHeader->setFont(fontCompHeader);
+//    QLabel* selectSummaryText = new QLabel("Path to summary CSV file:");
+    QLabel* selectSummaryText = new QLabel("1. CPT Summary file in csv format - must contain the columns \"CPT_FileName\", \"Longitude\", and \"Latitude\":");
+    QFont fontSummaryText = selectSummaryText->font();
+    fontSummaryText.setWeight(QFont::Bold);
+    selectSummaryText->setFont(fontSummaryText);
+    CPTSummaryFileLineEdit = new QLineEdit();
+    QPushButton *browseSummaryButton = new QPushButton("Browse");
+
+    connect(browseSummaryButton,SIGNAL(clicked()),this,SLOT(chooseEventFileDialog()));
 
     // Grid layout is specified with row/col integers
-    fileLayout->addWidget(selectComponentsText, 0,0);
-    fileLayout->addWidget(CPTSitesFileLineEdit, 0,1);
-    fileLayout->addWidget(browseFileButton, 0,2);
+//    fileLayout->addWidget(selectComponentsHeader, count,0);
+//    count ++;
+    fileLayout->addWidget(selectSummaryText, count,0, Qt::AlignLeft);
+    fileLayout->addWidget(CPTSummaryFileLineEdit, count,1);
+    fileLayout->addWidget(browseSummaryButton, count,2);
+    count ++;
 
-    QLabel* selectFolderText = new QLabel("Folder Containing CPT Site Data");
+    // CPT folder with data
+//    QLabel* selectFolderHeader = new QLabel("2. Folder containing CPT files in csv format - file names must match those in the \"CPT_FileName\" column above");
+//    QFont fontFolderHeader = selectFolderHeader->font();
+//    fontFolderHeader.setWeight(QFont::Bold);
+//    selectFolderHeader->setFont(fontFolderHeader);
+//    QLabel* selectFolderText = new QLabel("Path to folder with CPT data:");
+    QLabel* selectFolderText = new QLabel("2. Folder containing CPT files in csv format - file names must match those in the \"CPT_FileName\" column above:");
+    QFont fontFolderText = selectFolderText->font();
+    fontFolderText.setWeight(QFont::Bold);
+    selectFolderText->setFont(fontFolderText);
     CPTDirLineEdit = new QLineEdit();
     QPushButton *browseFolderButton = new QPushButton("Browse");
 
     connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseCPTDirDialog()));
-    
-    QGroupBox* unitsWidget = new QGroupBox("Parameters");
+
+//    fileLayout->addWidget(selectFolderHeader, count,0);
+//    count ++;
+    fileLayout->addWidget(selectFolderText, count,0, Qt::AlignLeft);
+    fileLayout->addWidget(CPTDirLineEdit, count,1);
+    fileLayout->addWidget(browseFolderButton, count,2);
+    count ++;
+
+    // CPT data columns
+    QGroupBox* unitsWidget = new QGroupBox("Note: each CPT datafile must contain the following columns");
     QGridLayout* vboxLayout = new QGridLayout(unitsWidget);
 
-    QLabel* zLabel = new QLabel("Z [placeholder]");
-    ClickableLabel* helpLabelz = new ClickableLabel("?");
-    helpLabelz->setToolTip("Description of z, units, etc.");
+    QLabel* zLabel = new QLabel("Column 1 label: z");
+    QFont fontZLabel = zLabel->font();
+    fontZLabel.setWeight(QFont::Bold);
+    zLabel->setFont(fontZLabel);
+    QLabel* zDesc = new QLabel("Desc: depth (m)");
+    //ClickableLabel* helpLabelz = new ClickableLabel("?");
+    //helpLabelz->setToolTip("Description of z, units, etc.");
 
-    QLabel* qtLabel = new QLabel("qt [placeholder]");
-    ClickableLabel* helpLabelqt = new ClickableLabel("?");
-    helpLabelqt->setToolTip("Description of qt, units, etc.");
+    QLabel* qtLabel = new QLabel("Column 2 label: qt");
+    QFont fontQtLabel = qtLabel->font();
+    fontQtLabel.setWeight(QFont::Bold);
+    qtLabel->setFont(fontQtLabel);
+    QLabel* qtDesc = new QLabel("Desc: tip resistance (MPa)");
+//    ClickableLabel* helpLabelqt = new ClickableLabel("?");
+//    helpLabelqt->setToolTip("Description of qt, units, etc.");
 
-    QLabel* fsLabel = new QLabel("fs [placeholder]");
-    ClickableLabel* helpLabelfs = new ClickableLabel("?");
-    helpLabelfs->setToolTip("Description of fs, units, etc.");
+    QLabel* fsLabel = new QLabel("Column 3 label: fs");
+    QFont fontFsLabel = fsLabel->font();
+    fontFsLabel.setWeight(QFont::Bold);
+    fsLabel->setFont(fontFsLabel);
+    QLabel* fsDesc = new QLabel("Desc: sleeve friction (MPa)");
+//    ClickableLabel* helpLabelfs = new ClickableLabel("?");
+//    helpLabelfs->setToolTip("Description of fs, units, etc.");
 
-    QLabel* u2Label = new QLabel("u2 [placeholder]");
-    ClickableLabel* helpLabelu2 = new ClickableLabel("?");
-    helpLabelu2->setToolTip("Description of u2, units, etc.");
+    QLabel* u2Label = new QLabel("Column 4 label: u2");
+    QFont fontU2Label = u2Label->font();
+    fontU2Label.setWeight(QFont::Bold);
+    u2Label->setFont(fontU2Label);
+    QLabel* u2Desc = new QLabel("Desc: pore pressure (MPa)");
+//    ClickableLabel* helpLabelu2 = new ClickableLabel("?");
+//    helpLabelu2->setToolTip("Description of u2, units, etc.");
 
-    vboxLayout->addWidget(zLabel,0,0,Qt::AlignRight);
-    vboxLayout->addWidget(helpLabelz,0,1,Qt::AlignLeft);
+    vboxLayout->addWidget(zLabel,0,0,Qt::AlignCenter);
+    vboxLayout->addWidget(zDesc,1,0,Qt::AlignCenter);
+//    vboxLayout->addWidget(helpLabelz,0,1,Qt::AlignLeft);
 
-    vboxLayout->addWidget(qtLabel,0,2,Qt::AlignRight);
-    vboxLayout->addWidget(helpLabelqt,0,3,Qt::AlignLeft);
+    vboxLayout->addWidget(qtLabel,0,1,Qt::AlignCenter);
+    vboxLayout->addWidget(qtDesc,1,1,Qt::AlignCenter);
+//    vboxLayout->addWidget(helpLabelqt,0,3,Qt::AlignLeft);
 
-    vboxLayout->addWidget(fsLabel,1,0,Qt::AlignRight);
-    vboxLayout->addWidget(helpLabelfs,1,1,Qt::AlignLeft);
+    vboxLayout->addWidget(fsLabel,0,2,Qt::AlignCenter);
+    vboxLayout->addWidget(fsDesc,1,2,Qt::AlignCenter);
+//    vboxLayout->addWidget(helpLabelfs,1,1,Qt::AlignLeft);
 
-    vboxLayout->addWidget(u2Label,1,2,Qt::AlignRight);
-    vboxLayout->addWidget(helpLabelu2,1,3,Qt::AlignLeft);
+    vboxLayout->addWidget(u2Label,0,3,Qt::AlignCenter);
+    vboxLayout->addWidget(u2Desc,1,3,Qt::AlignCenter);
+//    vboxLayout->addWidget(helpLabelu2,1,3,Qt::AlignLeft);
 
-    fileLayout->addWidget(selectFolderText,   1,0);
-    fileLayout->addWidget(CPTDirLineEdit, 1,1);
-    fileLayout->addWidget(browseFolderButton, 1,2);
+    fileLayout->addWidget(unitsWidget,count,0,1,3);
+    count ++;
 
-    auto mwtLabel = new QLabel("Freeface text:");
-    mwtOption = new QComboBox();
-    mwtOption->addItem("N/A");
-
-    fileLayout->addWidget(mwtLabel,2,0,1,1);
-    fileLayout->addWidget(mwtOption,2,1,1,2);
-
-    fileLayout->addWidget(unitsWidget,3,0,1,3);
-
+    // Component selection
     selectComponentsLineEdit = new AssetInputDelegate();
     connect(selectComponentsLineEdit,&AssetInputDelegate::componentSelectionComplete,this,&UserInputCPTWidget::handleComponentSelection);
 
@@ -305,7 +399,10 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
 
     connect(clearSelectionButton,SIGNAL(clicked()),this,SLOT(clearComponentSelection()));
 
-    auto selectedLabel = new QLabel("Enter the IDs of one or more CPT sites to analyze.  Define a range of sites with a dash and separate multiple sites with a comma.");
+    auto selectedLabel = new QLabel("(Currently unused) 3. Enter the IDs of one or more CPT sites to analyze.  Define a range of sites with a dash and separate multiple sites with a comma.");
+    QFont fontSelectedLabel = selectedLabel->font();
+    fontSelectedLabel.setWeight(QFont::Bold);
+    selectedLabel->setFont(fontSelectedLabel);
 
     QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
     selectComponentsLayout->addWidget(selectedLabel);
@@ -313,7 +410,8 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
     selectComponentsLayout->addWidget(selectComponentsButton);
     selectComponentsLayout->addWidget(clearSelectionButton);
 
-    fileLayout->addLayout(selectComponentsLayout,4,0,1,3);
+    fileLayout->addLayout(selectComponentsLayout,count,0,1,3);
+    count ++;
 
     siteListTableWidget = new ComponentTableView();
     siteListTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -340,10 +438,81 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
     tableHeader = new QLabel("CPT Site List. Click on a row in the table to view the CPT values at that site.");
     tableHeader->hide();
 
-    fileLayout->addWidget(tableHeader,5,0,1,3, Qt::AlignCenter);
+    fileLayout->addWidget(tableHeader,count,0,1,3, Qt::AlignCenter);
+    count ++;
 
-    fileLayout->addWidget(tableSplitter,6,0,1,3);
-//    fileLayout->setRowStretch(7,1);
+    fileLayout->addWidget(tableSplitter,count,0,1,3);
+    count ++;
+    fileLayout->setRowStretch(count,1);
+    count ++;
+
+    // select column to use for mean groundwater table depth
+    auto gwtMeanLabel = new QLabel("4. Column in summary file with mean groundwater depth in meters:");
+    QFont fontGwtMeanLabel = gwtMeanLabel->font();
+    fontGwtMeanLabel.setWeight(QFont::Bold);
+    gwtMeanLabel->setFont(fontGwtMeanLabel);
+    gwtMeanOption = new QComboBox();
+    gwtMeanOption->addItem("N/A");
+    gwtMeanOption->setMaximumWidth(300);
+
+    fileLayout->addWidget(gwtMeanLabel,count,0,1,1);
+    fileLayout->addWidget(gwtMeanOption,count,1,1,2);
+    count ++;
+
+    // Weights for CPT liquefaction and lateral spread models
+    auto methodLabel = new QLabel("5. Assign weights to use for \"liquefaction\" and \"lateral spread\" analysis of CPTs:");
+    QFont methodFont = methodLabel->font();
+    methodFont.setWeight(QFont::Bold);
+    methodLabel->setFont(methodFont);
+    fileLayout->addWidget(methodLabel,count,0);
+    count ++;
+
+    // weight to use for WeightRobertson09 for liquefaction
+    auto weightR09Label = new QLabel("Liquefaction: weight for Robertson (2009):");
+    weightR09LineEdit = new QLineEdit();
+    weightR09LineEdit->setText("0.5");
+    weightR09LineEdit->setMaximumWidth(150);
+    auto weightR09Desc = new QLabel(", weight for Boulanger & Idriss (2016) = 1 - weight for Robertson (2009)");
+
+    QHBoxLayout* selectWeightR09 = new QHBoxLayout();
+    selectWeightR09->addWidget(weightR09LineEdit);
+    selectWeightR09->addWidget(weightR09Desc);
+
+    fileLayout->addWidget(weightR09Label,count,0,1,1,Qt::AlignRight);
+    fileLayout->addLayout(selectWeightR09,count,1,1,2);
+    count ++;
+
+    // weight to use for WeightRobertson09 for lateral spread
+    auto weightZ04Label = new QLabel("Lateral spread: weight for Zhang et al. (2004):");
+    weightZ04LineEdit = new QLineEdit();
+    weightZ04LineEdit->setText("0.5");
+    weightZ04LineEdit->setMaximumWidth(150);
+    auto weightZ04Desc = new QLabel(", weight for Idriss & Boulanger (2008) = 1 - weight for Zhang et al. (2004)");
+
+    QHBoxLayout* selectWeightZ04 = new QHBoxLayout();
+    selectWeightZ04->addWidget(weightZ04LineEdit);
+    selectWeightZ04->addWidget(weightZ04Desc);
+
+    fileLayout->addWidget(weightZ04Label,count,0,1,1,Qt::AlignRight);
+    fileLayout->addLayout(selectWeightZ04,count,1,1,2);
+    count ++;
+
+    // path to free face feature
+    QLabel* selectFreefaceText = new QLabel("6. (Optional) Path to folder with shapefile for free-face feature (must contain the attribute \"Height_m\"):");
+    QFont fontFreefaceText = selectFreefaceText->font();
+    fontFreefaceText.setWeight(QFont::Bold);
+    selectFreefaceText->setFont(fontFreefaceText);
+    FreefaceDirLineEdit = new QLineEdit();
+    QPushButton *browseFreefaceButton = new QPushButton("Browse");
+
+    connect(browseFreefaceButton,SIGNAL(clicked()),this,SLOT(chooseFreefaceDirDialog()));
+
+//    fileLayout->addWidget(selectFolderHeader, count,0);
+//    count ++;
+    fileLayout->addWidget(selectFreefaceText, count,0, Qt::AlignLeft);
+    fileLayout->addWidget(FreefaceDirLineEdit, count,1);
+    fileLayout->addWidget(browseFreefaceButton, count,2);
+    count ++;
 
     //
     // progress bar
@@ -430,7 +599,7 @@ void UserInputCPTWidget::chooseEventFileDialog(void)
         return;
 
     eventFile = newEventFile;
-    CPTSitesFileLineEdit->setText(eventFile);
+    CPTSummaryFileLineEdit->setText(eventFile);
 
     // check if file in dir with all CPTs
     // Pop off the row that contains the header information
@@ -500,11 +669,33 @@ void UserInputCPTWidget::chooseCPTDirDialog(void)
 //    QFileInfo eventFileInfo(newPath, "EventGrid.csv");
 //    if (eventFileInfo.exists()) {
 //        eventFile = newPath + "/EventGrid.csv";
-//        CPTSitesFileLineEdit->setText(eventFile);
+//        CPTSummaryFileLineEdit->setText(eventFile);
 //    }
 
     // could check files exist if eventFile set, but need something to give an error if not all there
     this->loadUserCPTData();
+
+    return;
+}
+
+
+void UserInputCPTWidget::chooseFreefaceDirDialog(void)
+{
+
+    QFileDialog dialog(this);
+
+    dialog.setFileMode(QFileDialog::Directory);
+    QString newPath = dialog.getExistingDirectory(this, tr("Path to directory with freeface feature shapefile"));
+    dialog.close();
+
+    // Return if the user cancels or enters same dir
+    if(newPath.isEmpty() || newPath == cptDataDir)
+    {
+        return;
+    }
+
+    cptDataDir = newPath;
+    FreefaceDirLineEdit->setText(cptDataDir);
 
     return;
 }
@@ -525,12 +716,19 @@ void UserInputCPTWidget::clear(void)
     siteDataTableWidget->hide();
     tableHeader->hide();
 
-    CPTSitesFileLineEdit->clear();
+    CPTSummaryFileLineEdit->clear();
     CPTDirLineEdit->clear();
     stationMap.clear();
 
-    mwtOption->clear();
-    mwtOption->addItem("N/A");
+    gwtMeanOption->clear();
+    gwtMeanOption->addItem("N/A");
+
+    weightR09LineEdit->clear();
+    weightR09LineEdit->setText("0.5");
+    weightZ04LineEdit->clear();
+    weightZ04LineEdit->setText("0.5");
+
+    FreefaceDirLineEdit->clear();
 
 }
 
@@ -594,10 +792,6 @@ void UserInputCPTWidget::loadUserCPTData(void)
     auto stationDataHeadings = sampleStationData.first();
 
 
-    // Add headers as options
-    mwtOption->addItems(stationDataHeadings);
-
-
     // Create the fields
     QList<QgsField> attribFields;
     attribFields.push_back(QgsField("ID", QVariant::Int));
@@ -613,6 +807,10 @@ void UserInputCPTWidget::loadUserCPTData(void)
 
     // Get the headings from the list before you pop it off
     auto listHeadings = data.first();
+
+    // Add headers as options
+//    gwtMeanOption->addItems(stationDataHeadings);
+    gwtMeanOption->addItems(listHeadings);
 
     // Pop off the row that contains the header information
     data.pop_front();

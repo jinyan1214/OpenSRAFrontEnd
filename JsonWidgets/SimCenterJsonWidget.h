@@ -49,6 +49,7 @@ class RandomVariablesWidget;
 
 class QGroupBox;
 class QLineEdit;
+class QCheckBox;
 
 class SimCenterJsonWidget : public SimCenterAppWidget
 {
@@ -78,6 +79,7 @@ public slots:
 private:
 
     QString methodKey;
+    QString nameToDisplay;
 
     RandomVariablesWidget* theInputParamsWidget = nullptr;
     JsonDefinedWidget* methodWidget = nullptr;
@@ -85,6 +87,10 @@ private:
     AddToRunListWidget* addRunListWidget = nullptr;
 
     int getVarTypes(const QJsonObject& vars, const QJsonObject& origObj, const QString& key, QJsonObject& varTypes);
+
+    QLineEdit *defPolyLineEdit;
+    QCheckBox* defPolyCheckBox;
+
 };
 
 #endif // SimCenterJsonWidget_H
