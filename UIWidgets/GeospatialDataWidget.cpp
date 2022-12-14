@@ -93,5 +93,30 @@ bool GeospatialDataWidget::inputFromJSON(QJsonObject &jsonObject)
 
 
 
+bool GeospatialDataWidget::outputToJSON(QJsonObject &rvObject)
+{
+
+    QJsonObject GISCPTObj;
+    auto res = cptInputWidget->outputToJSON(GISCPTObj);
+
+    if(!res)
+    {
+        this->errorMessage("Error in json output for CPT widget");
+        return false;
+    }
+
+    res = GISMapInputWidget->outputToJSON(GISCPTObj);
+
+    if(!res)
+    {
+        this->errorMessage("Error in json output for GIS map widget");
+        return false;
+    }
+
+    rvObject["UserSpecifiedGISandCPTData"] = GISCPTObj;
+
+    return true;
+}
+
 
 

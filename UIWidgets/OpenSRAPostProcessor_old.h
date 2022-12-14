@@ -47,7 +47,32 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <memory>
 #include <set>
 
+class TreeItem;
+class REmpiricalProbabilityDistribution;
 class QGISVisualizationWidget;
+class MutuallyExclusiveListWidget;
+
+class QSplitter;
+class QTableWidget;
+class QGridLayout;
+class QLabel;
+class QComboBox;
+
+namespace QtCharts
+{
+class QChartView;
+class QBarSet;
+class QChart;
+}
+
+namespace Esri
+{
+namespace ArcGISRuntime
+{
+class Map;
+class MapGraphicsView;
+}
+}
 
 
 class OpenSRAPostProcessor : public SimCenterAppWidget
@@ -60,22 +85,109 @@ public:
 
     void importResults(const QString& pathToResults);
 
+    int importDVresults(const QString& pathToResults);
+
+    int printToPDF(const QString& outputPath);
+
+    // Function to convert a QString and QVariant to double
+    // Throws an error exception if conversion fails
+    template <typename T>
+    auto objectToDouble(T obj)
+    {
+        // Assume a zero value if the string is empty
+        if(obj.isNull())
+            return 0.0;
+
+        bool OK;
+        auto val = obj.toDouble(&OK);
+
+        if(!OK)
+            throw QString("Could not convert the object to a double");
+
+        return val;
+    }
+
+
+    template <typename T>
+    auto objectToInt(T obj)
+    {
+        // Assume a zero value if the string is empty
+        if(obj.isNull())
+            return 0;
+
+        bool OK;
+        auto val = obj.toInt(&OK);
+
+        if(!OK)
+            throw QString("Could not convert the object to an integer");
+
+        return val;
+    }
+
+    void processResultsSubset(const std::set<int>& selectedComponentIDs);
+
     void clear(void);
 
 protected:
 
     void showEvent(QShowEvent *e);
 
+private slots:
+
+    int assemblePDF(QImage screenShot);
+
+    void sortTable(int index);
+
+    void handleListSelection(const TreeItem* itemSelected);
+
+    void clearAll(void);
+
+    void handleModifyLegend(void);
+
 private:
+
+    int processPGVResults(const QVector<QStringList>& DVResults, QStringList& fieldNames, QVector<QgsAttributes>& fieldAttributes);
+
+    int processPGDResults(const QVector<QStringList>& DVResults, QStringList& fieldNames, QVector<QgsAttributes>& fieldAttributes);
+
+    int processTotalResults(const QVector<QStringList>& DVResults, QStringList& fieldNames, QVector<QgsAttributes>& fieldAttributes);
 
     int importResultVisuals(const QString& pathToResults);
     int importFaultCrossings(const QString& pathToFile);
     int importScenarioTraces(const QString& pathToFile);
 
+
+    QVector<QStringList> RepairRatePGD;
+    QVector<QStringList> RepairRatePGV;
+    QVector<QStringList> RepairRateAll;
+
+    TreeItem* PGVTreeItem;
+    TreeItem* PGDTreeItem;
+    TreeItem* totalTreeItem;
+
+    TreeItem* defaultItem;
+
+    QString outputFilePath;
+
+    QSplitter* mainWidget;
+
+    MutuallyExclusiveListWidget* listWidget;
+
+    QWidget *tableWidget;
+    QTableWidget* PGVResultsTableWidget;
+    QTableWidget* PGDResultsTableWidget;
+
     QGISVisualizationWidget* theVisualizationWidget;
+
     std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
 
-    ComponentDatabase* thePipelineDb = nullptr;
+    //The number of header rows in the results file
+    int numHeaderRows;
+
+    // The number of columns that contain component information
+    int numInfoCols;
+
+    ComponentDatabase* thePipelineDb;
 };
 
 #endif // OpenSRAPostProcessor_H

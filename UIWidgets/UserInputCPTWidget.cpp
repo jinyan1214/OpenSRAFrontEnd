@@ -107,14 +107,6 @@ UserInputCPTWidget::~UserInputCPTWidget()
 
 bool UserInputCPTWidget::outputAppDataToJSON(QJsonObject &/*jsonObject*/) {
 
-//    emit eventTypeChangedSignal("Earthquake");
-
-//    jsonObject["Application"] = "UserInputGM";
-
-//    QJsonObject appData;
-
-//    jsonObject["ApplicationData"]=appData;
-
     return true;
 }
 
@@ -129,28 +121,6 @@ bool UserInputCPTWidget::outputToJSON(QJsonObject &jsonObj)
     outputObj.insert("WeightRobertson09",weightR09LineEdit->text().toDouble());
     outputObj.insert("WeightZhang04",weightZ04LineEdit->text().toDouble());
     outputObj.insert("PathToFreefaceDir",FreefaceDirLineEdit->text());
-
-
-//    QFileInfo theFile(eventFile);
-//    if (theFile.exists()) {
-//        jsonObj["eventFile"]=theFile.fileName();
-//        jsonObj["eventFilePath"]=theFile.path();
-//    } else {
-//        jsonObj["eventFile"]=eventFile; // may be valid on others computer
-//        jsonObj["eventFilePath"]=QString("");
-//    }
-
-//    // output motionDir if not same as eventFile's path
-//    QString eventFilePath = QFileInfo(eventFile).absolutePath();
-//    if (eventFilePath != cptDataDir) {
-
-//        QFileInfo theDir(cptDataDir);
-//        if (theDir.exists()) {
-//            jsonObj["motionDir"]=theDir.absoluteFilePath();
-//        } else {
-//            jsonObj["motionDir"]=QString("None");
-//        }
-//    }
 
     jsonObj.insert("CPTParameters",outputObj);
 

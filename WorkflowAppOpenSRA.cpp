@@ -186,7 +186,8 @@ void WorkflowAppOpenSRA::initialize(void)
     editMenu->addAction("Clear Working Directory", this, &WorkflowAppOpenSRA::clearWorkDir);
 
     // Load the examples
-     auto pathToExamplesJson = QCoreApplication::applicationDirPath() + QDir::separator() + "OpenSRABackEnd" + QDir::separator() + "examples" + QDir::separator() + "Examples.json";
+    auto backendLocation = OpenSRAPreferences::getInstance()->getAppDir();
+    auto pathToExamplesJson = backendLocation + QDir::separator() + "examples" + QDir::separator() + "Examples.json";
 
     QFile jsonFile(pathToExamplesJson);
     jsonFile.open(QFile::ReadOnly);
@@ -194,7 +195,7 @@ void WorkflowAppOpenSRA::initialize(void)
 
     auto docObj = exDoc.object();
 
-    auto exContainerObj = docObj.value("Examples").toObject();
+    auto exContainerObj = docObj.value("Examples").toArray();
 
     auto numEx = exContainerObj.count();
 
@@ -205,15 +206,17 @@ void WorkflowAppOpenSRA::initialize(void)
 
         for(auto it = exContainerObj.begin(); it!=exContainerObj.end(); ++it)
         {
-            auto name = it.key();
 
-            auto exObj = exContainerObj.value(name).toObject();
+            QJsonObject exObj = it->toObject();
 
-            auto inputFile = exObj.value("InputFile").toString();
+            auto name = exObj.value("name").toString();
+
+            auto inputFile = exObj.value("inputFile").toString();
 
             // Set the path to the input file
             auto action = exampleMenu->addAction(name, this, &WorkflowAppOpenSRA::loadExamples);
             action->setProperty("InputFile",inputFile);
+            action->setProperty("description",inputFile);
         }
     }
 
@@ -395,7 +398,9 @@ void WorkflowAppOpenSRA::loadExamples()
     if(senderObj == nullptr)
         return;
 
-    QString pathToExample = QCoreApplication::applicationDirPath() + QDir::separator() + "OpenSRABackEnd" + QDir::separator() + "examples" + QDir::separator();
+    auto backendLocation = OpenSRAPreferences::getInstance()->getAppDir();
+
+    QString pathToExample = backendLocation + QDir::separator() + "examples" + QDir::separator();
 
     pathToExample += QObject::sender()->property("InputFile").toString();
 

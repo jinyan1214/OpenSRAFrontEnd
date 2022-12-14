@@ -42,7 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // The input file must be in .csv format
 // The loadAssetVisualization function is specialized for line geometry rendering
 
-#include "AssetInputWidget.h"
+#include "GISAssetInputWidget.h"
 
 class PointAssetInputWidget;
 
@@ -54,7 +54,7 @@ class QgsGeometry;
 class JsonGroupBoxWidget;
 #endif
 
-class StateWidePipelineWidget : public AssetInputWidget
+class StateWidePipelineWidget : public GISAssetInputWidget
 {
 public:
     StateWidePipelineWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
@@ -67,7 +67,7 @@ public:
     void createComponentsBox(void) override;
 #endif
 
-    int loadAssetVisualization(void) override;
+//    int loadAssetVisualization(void) override;
 
     void clear() override;
 

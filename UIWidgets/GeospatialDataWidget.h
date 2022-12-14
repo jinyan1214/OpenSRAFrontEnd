@@ -54,6 +54,8 @@ public:
 
     bool inputFromJSON(QJsonObject &rvObject);
 
+    bool outputToJSON(QJsonObject &rvObject);
+
     void clear(void);
 
 private:

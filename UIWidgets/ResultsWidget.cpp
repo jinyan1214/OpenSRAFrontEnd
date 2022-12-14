@@ -61,7 +61,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <QFileDialog>
 
-using namespace Esri::ArcGISRuntime;
 
 ResultsWidget::ResultsWidget(QWidget *parent, QGISVisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {    
@@ -229,31 +228,6 @@ int ResultsWidget::processResults(const QString& resultsDirectory)
 }
 
 
-int ResultsWidget::printToPDF(void)
-{
-    auto outputFileName = exportPathLineEdit->text();
-
-    if(outputFileName.isEmpty())
-    {
-        QString errMsg = "The file name is empty";
-        this->errorMessage(errMsg);
-        return -1;
-    }
-
-
-    auto res = theOpenSRAPostProcessor->printToPDF(outputFileName);
-
-    if(res != 0)
-    {
-        QString err = "Error printing the PDF";
-        this->errorMessage(err);
-        return -1;
-    }
-
-
-    return 0;
-}
-
 
 void ResultsWidget::selectComponents(void)
 {
@@ -273,15 +247,15 @@ void ResultsWidget::selectComponents(void)
 void ResultsWidget::handleComponentSelection(void)
 {
 
-    try
-    {
-        auto IDSet = selectComponentsLineEdit->getSelectedComponentIDs();
-        theOpenSRAPostProcessor->processResultsSubset(IDSet);
-    }
-    catch (const QString msg)
-    {
-        errorMessage(msg);
-    }
+//    try
+//    {
+//        auto IDSet = selectComponentsLineEdit->getSelectedComponentIDs();
+//        theOpenSRAPostProcessor->processResultsSubset(IDSet);
+//    }
+//    catch (const QString msg)
+//    {
+//        errorMessage(msg);
+//    }
 }
 
 
