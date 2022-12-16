@@ -291,7 +291,7 @@ bool MainWindowWorkflowApp::saveFile(const QString &fileName)
     file.close();
 
     // set current file
-    setCurrentFile(fileName);
+//    setCurrentFile(fileName);
 
     return true;
 }
@@ -299,6 +299,15 @@ bool MainWindowWorkflowApp::saveFile(const QString &fileName)
 
 void MainWindowWorkflowApp::loadFile(const QString &fileName)
 {
+    //
+    // Set current path to dir of fileName for relative pathing used in setup_config.json
+    QFileInfo fileInfo(fileName);
+    QString absPath = fileInfo.absoluteDir().absolutePath();
+    QDir::setCurrent(absPath);
+    //
+
+    QString testPath = QDir::currentPath();
+
     //
     // open file
     //
@@ -326,7 +335,7 @@ void MainWindowWorkflowApp::loadFile(const QString &fileName)
     QJsonObject jsonObj = doc.object();
 
     //
-    QFileInfo fileInfo(fileName);
+//    QFileInfo fileInfo(fileName);
     SCUtils::ResolveAbsolutePaths(jsonObj, fileInfo.dir());
 
     // close file
@@ -338,7 +347,7 @@ void MainWindowWorkflowApp::loadFile(const QString &fileName)
     }
     inputWidget->inputFromJSON(jsonObj);
 
-    setCurrentFile(fileName);
+//    setCurrentFile(fileName);
 }
 
 

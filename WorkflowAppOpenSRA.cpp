@@ -852,6 +852,13 @@ int WorkflowAppOpenSRA::loadFile(const QString fileName)
 {
 
     //
+    // Set current path to abspath of fileName for relative pathing used in setup_config.json
+    QFileInfo fileInfo(fileName);
+    QString absPath = fileInfo.absoluteDir().absolutePath();
+    QDir::setCurrent(absPath);
+    //
+
+    //
     // open file
     //
 
