@@ -194,29 +194,48 @@ void WorkflowAppOpenSRA::initialize(void)
     QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
 
     auto docObj = exDoc.object();
-
     auto exContainerObj = docObj.value("Examples").toArray();
 
-    auto numEx = exContainerObj.count();
+    // Just add "Examples" to menubar, even if it's empty
+    QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
 
-    if(numEx > 0)
+    /*
+    for OpenSRA, look for these 6 example categories:
+    - above ground
+    - wells caprocks
+    - below ground - lateral spread
+    - below ground - settlement
+    - below ground - landslide
+    - below ground - surface fault rupture
+    */
+
+    auto keys = docObj.keys();
+    for(int i = 0; i < keys.size(); ++i)
     {
+        auto key = keys.at(i);
 
-        QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
-
-        for(auto it = exContainerObj.begin(); it!=exContainerObj.end(); ++it)
+        auto currExObj = docObj.value(key).toObject();
+        if(!currExObj.isEmpty())
         {
-
-            QJsonObject exObj = it->toObject();
-
-            auto name = exObj.value("name").toString();
-
-            auto inputFile = exObj.value("inputFile").toString();
-
-            // Set the path to the input file
-            auto action = exampleMenu->addAction(name, this, &WorkflowAppOpenSRA::loadExamples);
-            action->setProperty("InputFile",inputFile);
-            action->setProperty("description",inputFile);
+            QMenu* currExMenu = exampleMenu->addMenu(key);
+            auto exContainerObj = currExObj.value("Examples").toArray();
+            auto numEx = currExObj.count();\
+            if(numEx > 0)
+            {
+                int count = 1;
+                for(auto it = exContainerObj.begin(); it!=exContainerObj.end(); ++it)
+                {
+                    QJsonObject exObj = it->toObject();
+                    auto name = exObj.value("name").toString();
+                    auto fullName = "Example " + QString::number(count) + " - " + name;
+                    auto inputFile = exObj.value("inputFile").toString();
+                    // Set the path to the input file
+                    auto action = currExMenu->addAction(fullName, this, &WorkflowAppOpenSRA::loadExamples);
+                    action->setProperty("InputFile",inputFile);
+                    action->setProperty("description",inputFile);
+                    count ++;
+                }
+            }
         }
     }
 
