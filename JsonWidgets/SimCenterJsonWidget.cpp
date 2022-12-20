@@ -146,7 +146,7 @@ QGroupBox* SimCenterJsonWidget::getWidgetBox(const QJsonObject jsonObj)
         // widget for additional landslide parameters for deformation polygons to use
         defPolyLineEdit = new QLineEdit();
         QHBoxLayout *defPolyLayout = new QHBoxLayout();
-        defPolyCheckBox = new QCheckBox("First check box, then leave as \"CA_LandslideInventory_WGS84\" or browse for path to shapefile");
+        defPolyCheckBox = new QCheckBox("First check the box, then either leave as \"CA_LandslideInventory_WGS84\" or browse and locate the shapefile");
         defPolyCheckBox->setChecked(false);
         defPolyLineEdit->setEnabled(false);
         defPolyLineEdit->setText("CA_LandslideInventory_WGS84");
@@ -195,7 +195,7 @@ QGroupBox* SimCenterJsonWidget::getWidgetBox(const QJsonObject jsonObj)
         });
 
 
-        auto defPolyLabel = new QLabel("Use Any Deformation Polygon?");
+        auto defPolyLabel = new QLabel("Use a shapefile with deformation polygons?");
 
         inputLayout->addWidget(defPolyLabel);
         inputLayout->addLayout(defPolyLayout);

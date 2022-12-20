@@ -134,7 +134,6 @@ void LocalApplication::onRunButtonPressed(QPushButton* button)
 
     }
 
-
     emit setupForRunDone(workingDir, workingDir);
 }
 

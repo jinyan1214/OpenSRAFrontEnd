@@ -67,6 +67,7 @@ AddToRunListWidget::AddToRunListWidget(QWidget* parent) : QWidget(parent)
     aleatoryLE->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     QDoubleValidator* validator2 = new QDoubleValidator(this);
     aleatoryLE->setValidator(validator2);
+    aleatoryLE->setEnabled(false);
 
     // Epistemic uncertainty
     auto episLabel = new QLabel("Epistemic Uncertainty:");
@@ -75,6 +76,7 @@ AddToRunListWidget::AddToRunListWidget(QWidget* parent) : QWidget(parent)
     episLE->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     QDoubleValidator* validator3 = new QDoubleValidator(this);
     episLE->setValidator(validator3);
+    episLE->setEnabled(false);
 
     QHBoxLayout* inputLayout = new QHBoxLayout();
     inputLayout->setMargin(0);

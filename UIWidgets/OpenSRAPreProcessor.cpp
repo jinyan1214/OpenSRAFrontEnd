@@ -55,6 +55,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDir>
 #include <QVariant>
 #include <QPushButton>
+#include <QMessageBox>
 
 // Test to remove
 #include <chrono>
@@ -127,7 +128,12 @@ int OpenSRAPreProcessor::loadPreprocessingResults(const QString path)
         return -1;
     }
 
-    this->statusMessage("Preprocess step complete. Press the 'RUN' button to run the analysis");
+    QString msgText("Preprocess step complete. Click the \"RUN\" button to perform the analysis.");
+    this->statusMessage(msgText);
+
+    QMessageBox msgBox;
+    msgBox.setText(msgText);
+    msgBox.exec();
 
     return 0;
 }

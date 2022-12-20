@@ -79,6 +79,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 #include <QSettings>
 #include <QUuid>
+#include <QMessageBox>
 
 
 // static pointer for global procedure set in constructor
@@ -284,16 +285,29 @@ void WorkflowAppOpenSRA::initialize(void)
 
     connect(this,SIGNAL(sendInfoMessage(QString)),this,SLOT(infoMessage(QString)));
 
-    connect(localApp, SIGNAL(setupForRun(QString&,QString&)), this, SLOT(setUpForApplicationRun(QString&,QString&)));
+    // organized by "preprocess" and "run"
+
+    // this is linked to the clicking of the "Preprocessing" button
     connect(localApp, SIGNAL(setupForPreprocessing(QString&,QString&)), this, SLOT(setUpForPreprocessingRun(QString&,QString&)));
-
-    connect(this, SIGNAL(setUpForApplicationRunDone(QString&, QString&)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString&)));
     connect(this, SIGNAL(setUpForPreprocessingDone(QString&, QString&)), theRunWidget, SLOT(setupForRunPreprocessingDone(QString&, QString&)));
+    connect(localApp, SIGNAL(preprocessingDone()), this, SLOT(preprocessingDone()));
 
-    connect(localApp, SIGNAL(preprocessingDone()), this, SLOT(postprocessingDone()));
+    // this is linked to the clicking of the "Run" button
+    connect(localApp, SIGNAL(setupForRun(QString&,QString&)), this, SLOT(setUpForApplicationRun(QString&,QString&)));
+    connect(this, SIGNAL(setUpForApplicationRunDone(QString&, QString&)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString&)));
     connect(localApp, SIGNAL(processResults(QString&, QString&, QString&)), this, SLOT(postprocessResults(QString&, QString&, QString&)));
 
 
+
+//    QString msgText("Preprocess step complete. Click the \"RUN\" button to perform the analysis.");
+//    this->statusMessage(msgText);
+
+//    QMessageBox msgBox;
+//    msgBox.setText(msgText);
+//    msgBox.exec();
+
+
+    // for left hand side layout
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
     horizontalLayout->setSpacing(0);
@@ -322,17 +336,6 @@ void WorkflowAppOpenSRA::initialize(void)
     theComponentSelection->displayComponent("Visualization");
 
     preprocessor =  new OpenSRAPreProcessor(backEndFilePath, this);
-
-
-    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_shakemap_clean/Input/SetupConfig.json");
-    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_ucerf_clean/Input/SetupConfig.json");
-    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/below_ground_landslide_statewide-subset_level1_shakemap_clean/Input/SetupConfig.json");
-    //    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/wells_caprocks_ucerf_clean/Input/SetupConfig.json");
-//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_shakemap_clean/Input/SetupConfig.json");
-//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/above_ground_ucerf_clean/Input/SetupConfig.json");
-//    loadFile("/Users/steve/Desktop/SimCenter/OpenSRA/examples/wells_caprocks_ucerf_clean/Input/SetupConfig.json");
-//    loadFile("C:/Users/barry/Desktop/OneDrive - SlateGeotech/CEC/OpenSRA/examples/above_ground_ucerf_clean/Input/SetupConfig.json");
-//    loadFile("C:\\Users\\barry\\OneDrive - SlateGeotech\\CEC\\OpenSRA\\examples\\wells_caprocks\\userdef_rupture\\Input\\SetupConfig.json");
 
     //    theResultsWidget->processResults("/Users/steve/Desktop/ResToDelete/");
 
@@ -451,7 +454,12 @@ void WorkflowAppOpenSRA::loadExamples()
     this->loadFile(pathToExample);
     progressDialog->hideProgressBar();
 
-    this->statusMessage("Done loading.  Click on 'Run' button to run the analysis.");
+    QString msgText("Done loading setup configuration for the example. Click the \"PREPROCESS\" button to perform preprocessing on this setup.");
+    this->statusMessage(msgText);
+
+    QMessageBox msgBox;
+    msgBox.setText(msgText);
+    msgBox.exec();
 }
 
 
@@ -538,7 +546,7 @@ void WorkflowAppOpenSRA::postprocessResults(QString /*doesNothing1*/, QString /*
 }
 
 
-void WorkflowAppOpenSRA::postprocessingDone(void)
+void WorkflowAppOpenSRA::preprocessingDone(void)
 {
     //auto  preprocessingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "preprocessing";
     auto  preprocessingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "analysis";
