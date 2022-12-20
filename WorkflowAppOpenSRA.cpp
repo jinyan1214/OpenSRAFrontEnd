@@ -206,7 +206,6 @@ void WorkflowAppOpenSRA::initialize(void)
 
         for(auto it = exContainerObj.begin(); it!=exContainerObj.end(); ++it)
         {
-
             QJsonObject exObj = it->toObject();
 
             auto name = exObj.value("name").toString();
@@ -272,7 +271,7 @@ void WorkflowAppOpenSRA::initialize(void)
     connect(this, SIGNAL(setUpForPreprocessingDone(QString&, QString&)), theRunWidget, SLOT(setupForRunPreprocessingDone(QString&, QString&)));
 
     connect(localApp, SIGNAL(preprocessingDone()), this, SLOT(postprocessingDone()));
-    connect(localApp, SIGNAL(processResults(QString&, QString&, QString&)), this, SLOT(postprocessResults(QString&, QString&, QString&)));
+    connect(localApp, SIGNAL(processResults(QString, QString, QString)), this, SLOT(postprocessResults(QString, QString, QString)));
 
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
@@ -508,14 +507,21 @@ bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
 }
 
 
-void WorkflowAppOpenSRA::postprocessResults(QString /*doesNothing1*/, QString /*doesNothing2*/, QString /*doesNothing3*/)
+void WorkflowAppOpenSRA::postprocessResults(QString resultsDirectory, QString /*doesNothing2*/, QString /*doesNothing3*/)
 {
-    //auto  resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "preprocessing";
-    auto  resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "analysis";
+    if(resultsDirectory.isEmpty())
+        resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "analysis" + QDir::separator() + "Results";
 
-    theResultsWidget->processResults(resultsDirectory);
+    auto res = theResultsWidget->processResults(resultsDirectory);
     theRunWidget->hide();
-    theComponentSelection->displayComponent("Results");
+
+    if(res == 0)
+    {
+        this->infoMessage("Analysis complete. Results loaded.");
+        theComponentSelection->displayComponent("Results");
+    }
+    else
+        this->infoMessage("Analysis Failed.");
 }
 
 

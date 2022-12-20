@@ -119,7 +119,7 @@ public slots:
     void setUpForPreprocessingRun(QString &workingDir, QString &subDir);
 
     // Processing the results from the main script run (Preprocess.py)
-    void postprocessResults(QString doesNothing1, QString doesNothing2, QString doesNothing3);
+    void postprocessResults(QString resultsDirectory = QString(), QString doesNothing2 = QString(), QString doesNothing3 = QString());
 
     // Processing of the intermediate results from the preprocess step (Preprocess.py)
     void postprocessingDone(void);
