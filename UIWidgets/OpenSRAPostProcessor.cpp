@@ -129,31 +129,17 @@ void OpenSRAPostProcessor::showEvent(QShowEvent *e)
 int OpenSRAPostProcessor::importResultVisuals(const QString& pathToResults)
 {
 
-    QDir resultsDir(pathToResults);
+    QFileInfo resultsDir(pathToResults);
 
-    // Get the existing files in the folder
-    QStringList acceptableFileExtensions = {"*.csv"};
-    QStringList existingCSVFiles = resultsDir.entryList(acceptableFileExtensions, QDir::Files);
+    if (!resultsDir.exists())
+        throw QString("Error, could not find the results file 'analysis_summary.gpkg' in the folder: "+pathToResults);
 
-    if(existingCSVFiles.empty())
-    {
-        errorMessage("The results folder is empty. Did you include DV's in the analysis?");
-        return -1;
-    }
+    auto results_layer = theVisualizationWidget->addVectorLayer(pathToResults,"Results", "ogr");
 
-    for(auto&& it : existingCSVFiles)
-    {
-        QString pathToFile = pathToResults+ QDir::separator() + it;
+    if(results_layer == nullptr)
+        throw QString("Error loading the results file 'analysis_summary.gpkg' in "+QString(__FUNCTION__));
 
-        if(it.startsWith("ScenarioTraces"))
-        {
-            this->importScenarioTraces(pathToFile);
-        }
-        else if(it.startsWith("FaultCrossings"))
-        {
-            this->importFaultCrossings(pathToFile);
-        }
-    }
+    theVisualizationWidget->zoomToLayer(results_layer);
 
     return 0;
 }
@@ -287,19 +273,8 @@ void OpenSRAPostProcessor::importResults(const QString& pathToResults)
 {
     qDebug() << "OpenSRAPostProcessor: " << pathToResults;
 
-    QString errMsg;
-
-    // Get the pipelines database
-    thePipelineDb = ComponentDatabaseManager::getInstance()->getAssetDb("GasNetworkPipelines");
-
-    if(thePipelineDb == nullptr)
-    {
-        errMsg = "Could not get the pipeline database";
-        throw errMsg;
-    }
-
-    QString pathToScenarioTraces = pathToResults + QDir::separator() + "IM" + QDir::separator() + "SeismicSource";
-    this->importResultVisuals(pathToScenarioTraces);
+    QString pathToGPKG = pathToResults + QDir::separator() + "analysis_summary.gpkg";
+    this->importResultVisuals(pathToGPKG);
 
 }
 

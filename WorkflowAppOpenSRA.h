@@ -118,8 +118,8 @@ public slots:
     void setUpForApplicationRun(QString &workingDir, QString &subDir);
     void setUpForPreprocessingRun(QString &workingDir, QString &subDir);
 
-    // Processing the results from the main script run (OpenSRA.py)
-    void postprocessResults(QString doesNothing1, QString doesNothing2, QString doesNothing3);
+    // Processing the results from the main script run (Preprocess.py)
+    void postprocessResults(QString resultsDirectory = QString(), QString doesNothing2 = QString(), QString doesNothing3 = QString());
 
     // Processing the results from the preprocess step (Preprocess.py)
     void preprocessingDone(void);

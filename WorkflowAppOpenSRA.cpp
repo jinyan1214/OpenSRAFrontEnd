@@ -220,7 +220,7 @@ void WorkflowAppOpenSRA::initialize(void)
         {
             QMenu* currExMenu = exampleMenu->addMenu(key);
             auto exContainerObj = currExObj.value("Examples").toArray();
-            auto numEx = currExObj.count();\
+            auto numEx = currExObj.count();
             if(numEx > 0)
             {
                 int count = 1;
@@ -234,6 +234,7 @@ void WorkflowAppOpenSRA::initialize(void)
                     auto action = currExMenu->addAction(fullName, this, &WorkflowAppOpenSRA::loadExamples);
                     action->setProperty("InputFile",inputFile);
                     action->setProperty("description",inputFile);
+                    action->setProperty("name",fullName);
                     count ++;
                 }
             }
@@ -295,9 +296,7 @@ void WorkflowAppOpenSRA::initialize(void)
     // this is linked to the clicking of the "Run" button
     connect(localApp, SIGNAL(setupForRun(QString&,QString&)), this, SLOT(setUpForApplicationRun(QString&,QString&)));
     connect(this, SIGNAL(setUpForApplicationRunDone(QString&, QString&)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString&)));
-    connect(localApp, SIGNAL(processResults(QString&, QString&, QString&)), this, SLOT(postprocessResults(QString&, QString&, QString&)));
-
-
+    connect(localApp, SIGNAL(processResults(QString, QString, QString)), this, SLOT(postprocessResults(QString, QString, QString)));
 
 //    QString msgText("Preprocess step complete. Click the \"RUN\" button to perform the analysis.");
 //    this->statusMessage(msgText);
@@ -385,7 +384,7 @@ QJsonObject WorkflowAppOpenSRA::getMethodAndParamsObj(const QString& path)
         {
             auto obj = objIt.value().toObject();
 
-            auto name = obj["NameToDisplay"].toString();
+            auto name = obj[ToDisplay"].toString();
             if(!name.isEmpty())
             {
                 auto key = objIt.key();
@@ -535,14 +534,24 @@ bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
 }
 
 
-void WorkflowAppOpenSRA::postprocessResults(QString /*doesNothing1*/, QString /*doesNothing2*/, QString /*doesNothing3*/)
+void WorkflowAppOpenSRA::postprocessResults(QString resultsDirectory, QString /*doesNothing2*/, QString /*doesNothing3*/)
 {
-    //auto  resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "preprocessing";
-    auto  resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "analysis";
+    if(resultsDirectory.isEmpty())
+        resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "analysis"+ QDir::separator() + "Results";
 
-    theResultsWidget->processResults(resultsDirectory);
+    auto res = theResultsWidget->processResults(resultsDirectory);
     theRunWidget->hide();
-    theComponentSelection->displayComponent("Results");
+
+    if(res == 0)
+    {
+        this->infoMessage("Analysis complete. Results loaded.");
+        theComponentSelection->displayComponent("Results");
+    }
+    else
+    {
+        this->infoMessage("Failed to load the results.");
+    }
+
 }
 
 
