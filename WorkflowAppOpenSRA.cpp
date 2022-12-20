@@ -194,28 +194,48 @@ void WorkflowAppOpenSRA::initialize(void)
     QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
 
     auto docObj = exDoc.object();
-
     auto exContainerObj = docObj.value("Examples").toArray();
 
-    auto numEx = exContainerObj.count();
+    // Just add "Examples" to menubar, even if it's empty
+    QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
 
-    if(numEx > 0)
+    /*
+    for OpenSRA, look for these 6 example categories:
+    - above ground
+    - wells caprocks
+    - below ground - lateral spread
+    - below ground - settlement
+    - below ground - landslide
+    - below ground - surface fault rupture
+    */
+
+    auto keys = docObj.keys();
+    for(int i = 0; i < keys.size(); ++i)
     {
+        auto key = keys.at(i);
 
-        QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
-
-        for(auto it = exContainerObj.begin(); it!=exContainerObj.end(); ++it)
+        auto currExObj = docObj.value(key).toObject();
+        if(!currExObj.isEmpty())
         {
-            QJsonObject exObj = it->toObject();
-
-            auto name = exObj.value("name").toString();
-
-            auto inputFile = exObj.value("inputFile").toString();
-
-            // Set the path to the input file
-            auto action = exampleMenu->addAction(name, this, &WorkflowAppOpenSRA::loadExamples);
-            action->setProperty("InputFile",inputFile);
-            action->setProperty("description",inputFile);
+            QMenu* currExMenu = exampleMenu->addMenu(key);
+            auto exContainerObj = currExObj.value("Examples").toArray();
+            auto numEx = currExObj.count();\
+            if(numEx > 0)
+            {
+                int count = 1;
+                for(auto it = exContainerObj.begin(); it!=exContainerObj.end(); ++it)
+                {
+                    QJsonObject exObj = it->toObject();
+                    auto name = exObj.value("name").toString();
+                    auto fullName = "Example " + QString::number(count) + " - " + name;
+                    auto inputFile = exObj.value("inputFile").toString();
+                    // Set the path to the input file
+                    auto action = currExMenu->addAction(fullName, this, &WorkflowAppOpenSRA::loadExamples);
+                    action->setProperty("InputFile",inputFile);
+                    action->setProperty("description",inputFile);
+                    count ++;
+                }
+            }
         }
     }
 
@@ -271,7 +291,7 @@ void WorkflowAppOpenSRA::initialize(void)
     connect(this, SIGNAL(setUpForPreprocessingDone(QString&, QString&)), theRunWidget, SLOT(setupForRunPreprocessingDone(QString&, QString&)));
 
     connect(localApp, SIGNAL(preprocessingDone()), this, SLOT(postprocessingDone()));
-    connect(localApp, SIGNAL(processResults(QString, QString, QString)), this, SLOT(postprocessResults(QString, QString, QString)));
+    connect(localApp, SIGNAL(processResults(QString&, QString&, QString&)), this, SLOT(postprocessResults(QString&, QString&, QString&)));
 
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
@@ -507,21 +527,14 @@ bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
 }
 
 
-void WorkflowAppOpenSRA::postprocessResults(QString resultsDirectory, QString /*doesNothing2*/, QString /*doesNothing3*/)
+void WorkflowAppOpenSRA::postprocessResults(QString /*doesNothing1*/, QString /*doesNothing2*/, QString /*doesNothing3*/)
 {
-    if(resultsDirectory.isEmpty())
-        resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "analysis" + QDir::separator() + "Results";
+    //auto  resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "preprocessing";
+    auto  resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "analysis";
 
-    auto res = theResultsWidget->processResults(resultsDirectory);
+    theResultsWidget->processResults(resultsDirectory);
     theRunWidget->hide();
-
-    if(res == 0)
-    {
-        this->infoMessage("Analysis complete. Results loaded.");
-        theComponentSelection->displayComponent("Results");
-    }
-    else
-        this->infoMessage("Analysis Failed.");
+    theComponentSelection->displayComponent("Results");
 }
 
 
@@ -856,6 +869,13 @@ void WorkflowAppOpenSRA::loadResults(void)
 
 int WorkflowAppOpenSRA::loadFile(const QString fileName)
 {
+
+    //
+    // Set current path to abspath of fileName for relative pathing used in setup_config.json
+    QFileInfo fileInfo(fileName);
+    QString absPath = fileInfo.absoluteDir().absolutePath();
+    QDir::setCurrent(absPath);
+    //
 
     //
     // open file

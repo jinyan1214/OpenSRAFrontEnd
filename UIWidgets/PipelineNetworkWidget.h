@@ -46,8 +46,10 @@ class SimCenterAppSelection;
 
 class StateWidePipelineWidget;
 class LineAssetInputWidget;
-class QGISWellsCaprocksInputWidget;
-class QGISAboveGroundGasNetworkInputWidget;
+class CSVWellsCaprocksInputWidget;
+class GISWellsCaprocksInputWidget;
+class CSVAboveGroundGasComponentInputWidget;
+class GISAboveGroundGasComponentInputWidget;
 
 class QGroupBox;
 

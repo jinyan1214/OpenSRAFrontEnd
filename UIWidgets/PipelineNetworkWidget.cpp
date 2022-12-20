@@ -49,8 +49,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "StateWidePipelineWidget.h"
 #include "LineAssetInputWidget.h"
 #include "PointAssetInputWidget.h"
-#include "QGISWellsCaprocksInputWidget.h"
-#include "QGISAboveGroundGasNetworkInputWidget.h"
+#include "CSVWellsCaprocksInputWidget.h"
+#include "GISWellsCaprocksInputWidget.h"
+#include "CSVAboveGroundGasComponentInputWidget.h"
+#include "GISAboveGroundGasComponentInputWidget.h"
 
 #include "VisualizationWidget.h"
 
@@ -83,7 +85,7 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     theHeaderLayout->setMargin(0);
     theHeaderLayout->setSpacing(0);
     SectionTitle *label = new SectionTitle();
-    label->setText(QString("Infrastructure (Limited to a maximum of 1,000 sites)"));
+    label->setText(QString("Infrastructure"));
     label->setMinimumWidth(150);
     theHeaderLayout->addWidget(label);
     theHeaderLayout->addStretch(1);
@@ -97,9 +99,8 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     csvBelowGroundInputWidget = new LineAssetInputWidget(this, theVisualizationWidget, "Gas Pipelines","Gas Network");
     csvBelowGroundInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
 
-    csvBelowGroundInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
+    csvBelowGroundInputWidget->setLabel1("Load segment information from a CSV File and pick the columns with the start, mid, and end points of segments");
     csvBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
-
 
     // Statewide
     statewideBelowGroundInputWidget = new StateWidePipelineWidget(this, theVisualizationWidget, "Gas Pipelines","Gas Network");
@@ -122,16 +123,20 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     // Above ground widget
     theAboveGroundInfWidget = new SimCenterAppSelection(QString("Above Ground Gas Infrastructure"), QString("Assets"), QString("Above ground infrastructure"), QString(), this);
 
-    auto csvAboveGroundInventory = new PointAssetInputWidget(this, theVisualizationWidget, "Above Ground Gas Infrastructures","Above ground infrastructure");
+    // auto csvAboveGroundInventory = new PointAssetInputWidget(this, theVisualizationWidget, "Above Ground Gas Infrastructures","Above ground infrastructure");
+    auto csvAboveGroundInventory = new CSVAboveGroundGasComponentInputWidget(this, theVisualizationWidget, "Above Ground Gas Infrastructures","Above ground infrastructure");
     theAboveGroundInfWidget->addComponent(QString("CSV to Above Ground Infrastructure"), QString("CSV_to_ABOVE_GROUND"), csvAboveGroundInventory);
-
+    auto gisAboveGroundInventory = new GISAboveGroundGasComponentInputWidget(this, theVisualizationWidget);
+    theAboveGroundInfWidget->addComponent(QString("GIS to Above Ground Infrastructure"), QString("GIS_to_ABOVE_GROUND"), gisAboveGroundInventory);
 
     // Wells and caprocks
     theWellsCaprocksWidget = new SimCenterAppSelection(QString("Wells and Caprocks"), QString("Assets"), QString("Wells and Caprocks"), QString(), this);
 
-    auto csvWellsCaprocksWidgetInventory = new QGISWellsCaprocksInputWidget(this, theVisualizationWidget, "Wells and Caprocks","Wells and Caprocks");
-
+    auto csvWellsCaprocksWidgetInventory = new CSVWellsCaprocksInputWidget(this, theVisualizationWidget, "Wells and Caprocks","Wells and Caprocks");
     theWellsCaprocksWidget->addComponent(QString("CSV to Wells and Caprocks"), QString("CSV_to_WELLS_CAPROCKS"), csvWellsCaprocksWidgetInventory);
+    auto gisWellsCaprocksWidgetInventory = new GISWellsCaprocksInputWidget(this, theVisualizationWidget);
+    theWellsCaprocksWidget->addComponent(QString("GIS to Wells and Caprocks"), QString("GIS_to_WELLS_CAPROCKS"), gisWellsCaprocksWidgetInventory);
+
 
     this->addComponent("Pipelines", gasPipelineWidget);
     this->addComponent("Wells and Caprocks", theWellsCaprocksWidget);
@@ -300,12 +305,16 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
     }
     else if(typeOfInf.compare("above_ground") == 0)
     {
-        if(typeOfFile.compare("CSV") == 0)
+        if(typeOfFile.compare("Shapefile") == 0)
+            app = "GIS to Above Ground Infrastructure";
+        else if(typeOfFile.compare("CSV") == 0)
             app = "CSV to Above Ground Infrastructure";
     }
     else if(typeOfInf.compare("wells_caprocks") == 0)
     {
-        if(typeOfFile.compare("CSV") == 0)
+        if(typeOfFile.compare("Shapefile") == 0)
+            app = "GIS to Wells and Caprocks";
+        else if(typeOfFile.compare("CSV") == 0)
             app = "CSV to Wells and Caprocks";
     }
 

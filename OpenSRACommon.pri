@@ -36,8 +36,10 @@ SOURCES +=  $$PATH_TO_R2D/Tools/CSVReaderWriter.cpp \
             $$PATH_TO_R2D/GraphicElements/RectangleGrid.cpp \
             $$PATH_TO_R2D/UIWidgets/LineAssetInputWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/PointAssetInputWidget.cpp \
-            $$PATH_TO_R2D/UIWidgets/QGISWellsCaprocksInputWidget.cpp \
-            $$PATH_TO_R2D/UIWidgets/QGISAboveGroundGasNetworkInputWidget.cpp \
+            $$PATH_TO_R2D/UIWidgets/CSVWellsCaprocksInputWidget.cpp \
+            $$PATH_TO_R2D/UIWidgets/GISWellsCaprocksInputWidget.cpp \
+            $$PATH_TO_R2D/UIWidgets/CSVAboveGroundGasComponentInputWidget.cpp \
+            $$PATH_TO_R2D/UIWidgets/GISAboveGroundGasComponentInputWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/AssetInputWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/CRSSelectionWidget.cpp \
             $$PATH_TO_R2D/UIWidgets/ShakeMapWidget.cpp \
@@ -100,8 +102,10 @@ HEADERS +=  $$PATH_TO_R2D/Tools/XMLAdaptor.h \
             $$PATH_TO_R2D/GraphicElements/RectangleGrid.h \
             $$PATH_TO_R2D/UIWidgets/LineAssetInputWidget.h \
             $$PATH_TO_R2D/UIWidgets/PointAssetInputWidget.h \
-            $$PATH_TO_R2D/UIWidgets/QGISWellsCaprocksInputWidget.h \
-            $$PATH_TO_R2D/UIWidgets/QGISAboveGroundGasNetworkInputWidget.h \
+            $$PATH_TO_R2D/UIWidgets/CSVWellsCaprocksInputWidget.h \
+            $$PATH_TO_R2D/UIWidgets/GISWellsCaprocksInputWidget.h \
+            $$PATH_TO_R2D/UIWidgets/CSVAboveGroundGasComponentInputWidget.h \
+            $$PATH_TO_R2D/UIWidgets/GISAboveGroundGasComponentInputWidget.h \
             $$PATH_TO_R2D/UIWidgets/AssetInputWidget.h \
             $$PATH_TO_R2D/UIWidgets/CRSSelectionWidget.h \
             $$PATH_TO_R2D/UIWidgets/ShakeMapWidget.h \

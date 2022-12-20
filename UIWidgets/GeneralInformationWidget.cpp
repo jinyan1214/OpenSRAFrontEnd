@@ -185,13 +185,26 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     auto assessmentSetupLabel = new QLabel("Assessment Setup", this);
     assessmentSetupLabel->setStyleSheet("font-weight: bold; color: black");
 
-    QRadioButton *button1 = new QRadioButton("Pre-configured setup for risk assessment (preferred)", this);
-    QRadioButton *button2 = new QRadioButton("Allow for user customization (e.g., source models, evaluation methods to use)", this);
-    button1->setChecked(true);
+//    int count = 1;
+    const char *setupDetailString =
+            "1. If you are not familiar with OpenSRA, it is best to pick the example that best match your problem and adjust the analysis parameters.\n"
+            "2. Examples are separated by the currently available infrastructure types: above ground components, below ground pipeline, and wells and caprocks.\n"
+            "\t- For below ground pipelines, the examples are further distributed by geohazards: lateral spread, liquefaction induced settlement, landslide, and surface fault rupture.\n";
+    auto setupDetailLabel = new QLabel(setupDetailString, this);
 
-    auto warningLabel = new QLabel(this);
-    warningLabel->setText("Warning: Only choose this option if you have read the user manual and are familiar with the program");
-    warningLabel->setStyleSheet("color: red");
+//    auto setupDetailLabel = new QLabel(
+//                QString::number(count) + ". If you are not familiar with OpenSRA, it is best to pick the example that best match your problem and adjust the analysis parameters.", + \
+//                QString::number(count) + ". If you are not familiar with OpenSRA, it is best to pick the example that best match your problem and adjust the analysis parameters.",
+//    )', this);
+
+
+//    QRadioButton *button1 = new QRadioButton("Pre-configured setup for risk assessment (preferred)", this);
+//    QRadioButton *button2 = new QRadioButton("Allow for user customization (e.g., source models, evaluation methods to use)", this);
+//    button1->setChecked(true);
+
+//    auto warningLabel = new QLabel(this);
+//    warningLabel->setText("Warning: Only choose this option if you have read the user manual and are familiar with the program");
+//    warningLabel->setStyleSheet("color: red");
 
     // Layout the UI components in a grid
     QVBoxLayout* layout = new QVBoxLayout();
@@ -230,10 +243,12 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
 
     layout->addWidget(assessmentSetupLabel);
 
-    layout->addWidget(button1);
-    layout->addWidget(button2);
+    layout->addWidget(setupDetailLabel);
 
-    layout->addWidget(warningLabel);
+//    layout->addWidget(button1);
+//    layout->addWidget(button2);
+
+//    layout->addWidget(warningLabel);
 
     return layout;
 }

@@ -369,18 +369,18 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
 
     connect(clearSelectionButton,SIGNAL(clicked()),this,SLOT(clearComponentSelection()));
 
-    auto selectedLabel = new QLabel("(Currently unused) 3. Enter the IDs of one or more CPT sites to analyze.  Define a range of sites with a dash and separate multiple sites with a comma.");
-    QFont fontSelectedLabel = selectedLabel->font();
-    fontSelectedLabel.setWeight(QFont::Bold);
-    selectedLabel->setFont(fontSelectedLabel);
+//    auto selectedLabel = new QLabel("(Currently unused) 3. Enter the IDs of one or more CPT sites to analyze.  Define a range of sites with a dash and separate multiple sites with a comma.");
+//    QFont fontSelectedLabel = selectedLabel->font();
+//    fontSelectedLabel.setWeight(QFont::Bold);
+//    selectedLabel->setFont(fontSelectedLabel);
 
-    QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
-    selectComponentsLayout->addWidget(selectedLabel);
-    selectComponentsLayout->addWidget(selectComponentsLineEdit);
-    selectComponentsLayout->addWidget(selectComponentsButton);
-    selectComponentsLayout->addWidget(clearSelectionButton);
+//    QHBoxLayout* selectComponentsLayout = new QHBoxLayout();
+//    selectComponentsLayout->addWidget(selectedLabel);
+//    selectComponentsLayout->addWidget(selectComponentsLineEdit);
+//    selectComponentsLayout->addWidget(selectComponentsButton);
+//    selectComponentsLayout->addWidget(clearSelectionButton);
 
-    fileLayout->addLayout(selectComponentsLayout,count,0,1,3);
+//    fileLayout->addLayout(selectComponentsLayout,count,0,1,3);
     count ++;
 
     siteListTableWidget = new ComponentTableView();
@@ -417,7 +417,7 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
     count ++;
 
     // select column to use for mean groundwater table depth
-    auto gwtMeanLabel = new QLabel("4. Column in summary file with mean groundwater depth in meters:");
+    auto gwtMeanLabel = new QLabel("3. Column in summary file with mean groundwater depth in meters:");
     QFont fontGwtMeanLabel = gwtMeanLabel->font();
     fontGwtMeanLabel.setWeight(QFont::Bold);
     gwtMeanLabel->setFont(fontGwtMeanLabel);
@@ -430,7 +430,7 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
     count ++;
 
     // Weights for CPT liquefaction and lateral spread models
-    auto methodLabel = new QLabel("5. Assign weights to use for \"liquefaction\" and \"lateral spread\" analysis of CPTs:");
+    auto methodLabel = new QLabel("4. Assign weights to use for \"liquefaction\" and \"lateral spread\" analysis of CPTs:");
     QFont methodFont = methodLabel->font();
     methodFont.setWeight(QFont::Bold);
     methodLabel->setFont(methodFont);
@@ -468,7 +468,7 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
     count ++;
 
     // path to free face feature
-    QLabel* selectFreefaceText = new QLabel("6. (Optional) Path to folder with shapefile for free-face feature (must contain the attribute \"Height_m\"):");
+    QLabel* selectFreefaceText = new QLabel("5. (Optional) Path to folder with shapefile for free-face feature (must contain the attribute \"Height_m\"):");
     QFont fontFreefaceText = selectFreefaceText->font();
     fontFreefaceText.setWeight(QFont::Bold);
     selectFreefaceText->setFont(fontFreefaceText);
