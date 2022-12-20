@@ -63,6 +63,9 @@ public:
 #ifdef OpenSRA
     bool inputFromJSON(QJsonObject &rvObject) override;
     bool outputToJSON(QJsonObject &rvObject) override;
+//    bool inputAppDataFromJSON(QJsonObject &rvObject) override;
+
+//    bool copyFiles(QString &destName) override;
 
     void createComponentsBox(void) override;
 #endif

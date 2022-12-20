@@ -384,7 +384,7 @@ QJsonObject WorkflowAppOpenSRA::getMethodAndParamsObj(const QString& path)
         {
             auto obj = objIt.value().toObject();
 
-            auto name = obj[ToDisplay"].toString();
+            auto name = obj["ToDisplay"].toString();
             if(!name.isEmpty())
             {
                 auto key = objIt.key();

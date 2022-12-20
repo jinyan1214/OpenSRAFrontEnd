@@ -93,7 +93,7 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     theMainLayout->insertLayout(0,theHeaderLayout);
 
     // Gas pipelines
-    gasPipelineWidget = new SimCenterAppSelection(QString("Regional Gas Pipelines"), QString("Assets"), QString("NaturalGasPipelines"), QString(), this);
+    gasPipelineWidget = new SimCenterAppSelection(QString("Pipeline Network"), QString("Assets"), QString("NaturalGasPipelines"), QString(), this);
 
     // CSV pipelines
     csvBelowGroundInputWidget = new LineAssetInputWidget(this, theVisualizationWidget, "Gas Pipelines","Gas Network");
@@ -103,7 +103,7 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     csvBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
 
     // Statewide
-    statewideBelowGroundInputWidget = new StateWidePipelineWidget(this, theVisualizationWidget, "Gas Pipelines","Gas Network");
+    statewideBelowGroundInputWidget = new StateWidePipelineWidget(this, theVisualizationWidget, "Pipeline Network","Pipeline Network");
 //    statewideBelowGroundInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
 
 //    statewideBelowGroundInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
@@ -299,7 +299,7 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
             app = "GIS to Pipeline";
         else if(typeOfFile.compare("CSV") == 0)
             app = "CSV to Pipeline";
-        else if(typeOfFile.compare("STATE_CSV") == 0)
+        else if(typeOfFile.compare("State_Network") == 0)
             app = "Use Prepackaged State Pipeline Network";
 
     }

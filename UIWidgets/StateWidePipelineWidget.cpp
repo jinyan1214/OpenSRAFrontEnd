@@ -32,7 +32,7 @@ StateWidePipelineWidget::StateWidePipelineWidget(QWidget *parent, VisualizationW
     componentFileLineEdit->setEnabled(false);
     componentFileLineEdit->setStyleSheet("{color: #000000; background-color: #D3D3D3;}");
 
-    componentFileLineEdit->setPlaceholderText("Click on the 'Load state network' button to load the California statewide natural gas network");
+    componentFileLineEdit->setPlaceholderText("Click on the \"Load state network\" button to load the statewide natural gas network for California");
 
     browseFileButton->setText("Load State Network:");
 
@@ -40,7 +40,7 @@ StateWidePipelineWidget::StateWidePipelineWidget(QWidget *parent, VisualizationW
     disconnect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseComponentInfoFileDialog()));
     connect(browseFileButton,&QPushButton::clicked,this,&StateWidePipelineWidget::handleLoadStateData);
 
-    label1->setText("California statewide natural gas network");
+    label1->setText("Use the prepackaged statewide natural gas network for California");
 
     // Hide the CRS
     crsSelectorWidget->hide();
@@ -255,14 +255,55 @@ StateWidePipelineWidget::~StateWidePipelineWidget()
 #ifdef OpenSRA
 bool StateWidePipelineWidget::outputToJSON(QJsonObject &rvObject)
 {
+    QJsonObject outJson;
 
+    auto res = this->outputAppDataToJSON(outJson);
 
-    return true;
+    if(!res)
+        return res;
+
+    QJsonObject appData = outJson["ApplicationData"].toObject();
+
+    if(!appData.contains("assetGISFile") || !appData.contains("pathToSource"))
+    {
+        this->errorMessage("Error, could not find the 'assetGISFile' or 'pathToSource' fields in 'ApplicationData' in "+this->objectName());
+        return false;
+    }
+
+    auto assetFileName = appData["assetGISFile"].toString();
+
+    auto assetFilePath = appData["pathToSource"].toString();
+
+    QDir dirInfo(assetFilePath);
+    auto assetDirName = dirInfo.dirName();
+    auto pathToFile = assetDirName + QDir::separator() + assetFileName;
+
+    //    auto pathToFile = assetFilePath + QDir::separator() + assetFileName;
+
+    //    auto pathToFile = assetFileName;
+
+    rvObject.insert("SiteDataFile", pathToFile);
+
+    if(!appData.contains("CRS"))
+    {
+        this->errorMessage("Error, could not find the 'CRS' field in 'ApplicationData' in "+this->objectName());
+        return false;
+    }
+
+    rvObject.insert("CRS",appData["CRS"]);
+
+    rvObject.insert("DataType", "State_Network");
+
+//    return GISAssetInputWidget::outputToJSON(rvObject);
+
+//    return true;
 }
 
 
 bool StateWidePipelineWidget::inputFromJSON(QJsonObject &rvObject)
 {
+    // load state data as part of call for input
+    this->handleLoadStateData();
     return true;
 }
 
@@ -309,8 +350,8 @@ void StateWidePipelineWidget::handleLoadStateData(void)
     auto path = pathToOSRABackend + QDir::separator() + "lib" +
             QDir::separator()+"OtherData"+
             QDir::separator()+"Preprocessed"+
-            QDir::separator()+"CA_Natural_Gas_Pipeline_Segments_WGS84"+
-            QDir::separator() + "CA_Natural_Gas_Pipeline_Segments_WGS84_Under100m_SUBSET_v2.gpkg";
+            QDir::separator()+"CA_Natural_Gas_Pipeline_Segments_WGS84_SUBSET"+
+            QDir::separator() + "CA_Natural_Gas_Pipeline_Segments_WGS84_Under100m_SUBSET.gpkg";
 
 
     if(!QFile::exists(path))
@@ -326,4 +367,3 @@ void StateWidePipelineWidget::handleLoadStateData(void)
     this->loadAssetData();
 
 }
-
