@@ -87,13 +87,15 @@ private:
 
     ComponentDatabase* thePipelineDb = nullptr;
 
-    TreeItem* totalTreeItem;
+//    TreeItem* totalTreeItem;
 
-    TreeItem* defaultItem;
+//    TreeItem* defaultItem;
 
     QSplitter* mainWidget;
 
     MutuallyExclusiveListWidget* listWidget;
+
+    QList<QgsMapLayer*> results_layers;
 
     //The number of header rows in the results file
     int numHeaderRows;

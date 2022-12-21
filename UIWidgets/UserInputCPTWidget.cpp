@@ -141,6 +141,12 @@ bool UserInputCPTWidget::inputFromJSON(QJsonObject &jsonObject)
     if (jsonObject.contains("PathToCPTSummaryCSV"))
     {
         auto sum_path = jsonObject["PathToCPTSummaryCSV"].toString();
+
+        // Check for relative/absolute paths
+        QFileInfo fileInfo(sum_path);
+        if (!fileInfo.exists())
+            sum_path=QDir::currentPath() + QDir::separator() + sum_path;
+
         CPTSummaryFileLineEdit->setText(sum_path);
         eventFile = sum_path;
     }
@@ -149,6 +155,12 @@ bool UserInputCPTWidget::inputFromJSON(QJsonObject &jsonObject)
     if (jsonObject.contains("PathToCPTDataFolder"))
     {
         auto cpt_dir = jsonObject["PathToCPTDataFolder"].toString();
+
+        // Check for relative/absolute paths
+        QFileInfo fileInfo(cpt_dir);
+        if (!fileInfo.exists())
+            cpt_dir=QDir::currentPath() + QDir::separator() + cpt_dir;
+
         CPTDirLineEdit->setText(cpt_dir);
         cptDataDir = cpt_dir;
     }

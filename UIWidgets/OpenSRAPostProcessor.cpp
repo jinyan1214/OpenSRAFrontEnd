@@ -86,14 +86,17 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsrenderer.h>
 #include <qgsgraduatedsymbolrenderer.h>
 #include <qgslayertreeview.h>
+#include <QgsDataProvider.h>
+#include <qgsvectorlayer.h>
+#include <QgsFields.h>
 
 using namespace QtCharts;
 
 OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    totalTreeItem = nullptr;
-    defaultItem = nullptr;
-//    thePipelineDb = nullptr;
+    //    totalTreeItem = nullptr;
+    //    defaultItem = nullptr;
+    //    thePipelineDb = nullptr;
     // The first n columns is information about the component and not results
     numInfoCols = 8;
 
@@ -106,13 +109,14 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWid
     mainWidget = new QSplitter();
     mainWidget->setOrientation(Qt::Horizontal);
     mainWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
-//    this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+    //    this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
     listWidget = new MutuallyExclusiveListWidget(this, "Results");
 
     connect(listWidget, &MutuallyExclusiveListWidget::itemChecked, this, &OpenSRAPostProcessor::handleListSelection);
-//    connect(listWidget, &MutuallyExclusiveListWidget::clearAll, this, &OpenSRAPostProcessor::clearAll);
-//    connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&OpenSRAPostProcessor::assemblePDF);
+
+    //    connect(listWidget, &MutuallyExclusiveListWidget::clearAll, this, &OpenSRAPostProcessor::clearAll);
+    //    connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&OpenSRAPostProcessor::assemblePDF);
 
     listWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
@@ -367,20 +371,11 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWid
 
 void OpenSRAPostProcessor::handleModifyLegend(void)
 {
+    auto res_layer = results_layers.at(0);
 
-//    auto pipelineInputWidget = theVisualizationWidget->getComponentWidget("GASPIPELINES");
+    auto layerId = res_layer->id();
 
-//    if(pipelineInputWidget == nullptr)
-//        return;
-
-//    auto pipelineLayer = pipelineInputWidget->getSelectedFeatureLayer();
-
-//    if(pipelineLayer == nullptr)
-//        return;
-
-//    auto layerId = pipelineLayer->layerId();
-
-//    theVisualizationWidget->handlePlotColorChange(layerId);
+    theVisualizationWidget->handleLegendChange(layerId);
 }
 
 
@@ -403,9 +398,50 @@ int OpenSRAPostProcessor::importResultVisuals(const QString& pathToResults)
     if (!resultsDir.exists())
         throw QString("Error, could not find the results file 'analysis_summary.gpkg' in the folder: "+pathToResults);
 
-    auto results_layer = theVisualizationWidget->addVectorInGroup(pathToResults,"Results", "ogr");
+    results_layers = theVisualizationWidget->addVectorInGroup(pathToResults,"Results", "ogr");
 
-    theVisualizationWidget->zoomToLayer(results_layer.value(0));
+    auto mean_layer = results_layers.value(0);
+
+    auto data_provider = dynamic_cast<QgsVectorDataProvider*>(mean_layer->dataProvider());
+
+    if(data_provider == nullptr)
+    {
+        this->errorMessage("Developer error: could not cast to vector data provider");
+        return -1;
+    }
+
+    auto fieldsList = data_provider->fields();
+
+    if (fieldsList.isEmpty())
+    {
+        this->errorMessage("Empty field list given by the data provider");
+        return -1;
+    }
+
+    auto idx_fid = fieldsList.indexOf("fid");
+    if(idx_fid!=-1)
+        fieldsList.remove(idx_fid);
+
+    auto segID_fid = fieldsList.indexOf("SegmentID");
+    if(segID_fid!=-1)
+        fieldsList.remove(segID_fid);
+
+    for(auto&& it : fieldsList)
+    {
+        auto displayName = it.displayName();
+
+        auto treeItem = listWidget->addItem(displayName);
+        treeItem->setIsCheckable(true);
+
+        treeItem->setProperty("HeaderString", it.name());
+    }
+
+    // Default check/select the first item
+    listWidget->checkItem(0);
+    listWidget->selectItem(0);
+
+
+    theVisualizationWidget->zoomToLayer(results_layers.value(0));
 
     return 0;
 }
@@ -414,114 +450,114 @@ int OpenSRAPostProcessor::importResultVisuals(const QString& pathToResults)
 int OpenSRAPostProcessor::importScenarioTraces(const QString& pathToFile)
 {
 
-//    if(pathToFile.isEmpty())
-//        return 0;
+    //    if(pathToFile.isEmpty())
+    //        return 0;
 
-//    CSVReaderWriter csvTool;
+    //    CSVReaderWriter csvTool;
 
-//    QString errMsg;
+    //    QString errMsg;
 
-//    auto traces = csvTool.parseCSVFile(pathToFile, errMsg);
-//    if(!errMsg.isEmpty())
-//    {
-//        errorMessage(errMsg);
-//        return -1;
-//    }
+    //    auto traces = csvTool.parseCSVFile(pathToFile, errMsg);
+    //    if(!errMsg.isEmpty())
+    //    {
+    //        errorMessage(errMsg);
+    //        return -1;
+    //    }
 
-//    if(traces.size() < 2)
-//    {
-//        statusMessage("No fault traces available.");
-//        return 0;
-//    }
+    //    if(traces.size() < 2)
+    //    {
+    //        statusMessage("No fault traces available.");
+    //        return 0;
+    //    }
 
-//    QgsFields featFields;
-//    featFields.append(QgsField("AssetType", QVariant::String));
-//    featFields.append(QgsField("TabName", QVariant::String));
-//    featFields.append(QgsField("SourceIndex", QVariant::String));
+    //    QgsFields featFields;
+    //    featFields.append(QgsField("AssetType", QVariant::String));
+    //    featFields.append(QgsField("TabName", QVariant::String));
+    //    featFields.append(QgsField("SourceIndex", QVariant::String));
 
-//    // Create the pipelines layer
-//    auto mainLayer = theVisualizationWidget->addVectorLayer("linestring","Scenario Faults");
+    //    // Create the pipelines layer
+    //    auto mainLayer = theVisualizationWidget->addVectorLayer("linestring","Scenario Faults");
 
-//    if(mainLayer == nullptr)
-//    {
-//        this->errorMessage("Error adding a vector layer");
-//        return -1;
-//    }
+    //    if(mainLayer == nullptr)
+    //    {
+    //        this->errorMessage("Error adding a vector layer");
+    //        return -1;
+    //    }
 
-//    QList<QgsField> attribFields;
-//    for(int i = 0; i<featFields.size(); ++i)
-//        attribFields.push_back(featFields[i]);
+    //    QList<QgsField> attribFields;
+    //    for(int i = 0; i<featFields.size(); ++i)
+    //        attribFields.push_back(featFields[i]);
 
-//    auto pr = mainLayer->dataProvider();
+    //    auto pr = mainLayer->dataProvider();
 
-//    mainLayer->startEditing();
+    //    mainLayer->startEditing();
 
-//    auto res = pr->addAttributes(attribFields);
+    //    auto res = pr->addAttributes(attribFields);
 
-//    if(!res)
-//        this->errorMessage("Error adding attributes to the layer" + mainLayer->name());
+    //    if(!res)
+    //        this->errorMessage("Error adding attributes to the layer" + mainLayer->name());
 
-//    mainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
+    //    mainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
 
-//    auto headers = traces.front();
+    //    auto headers = traces.front();
 
-//    auto indexListofTraces = headers.indexOf("ListOfTraces");
+    //    auto indexListofTraces = headers.indexOf("ListOfTraces");
 
-//    traces.pop_front();
+    //    traces.pop_front();
 
-//    auto numAtrb = attribFields.size();
+    //    auto numAtrb = attribFields.size();
 
-//    for(auto&& it : traces)
-//    {
-//        auto coordString = it.at(indexListofTraces);
+    //    for(auto&& it : traces)
+    //    {
+    //        auto coordString = it.at(indexListofTraces);
 
-//        auto geometry = theVisualizationWidget->getMultilineStringGeometryFromJson(coordString);
+    //        auto geometry = theVisualizationWidget->getMultilineStringGeometryFromJson(coordString);
 
-//        if(geometry.isEmpty())
-//        {
-//            QString msg ="Error getting the feature geometry for scenario faults layer";
-//            this->errorMessage(msg);
+    //        if(geometry.isEmpty())
+    //        {
+    //            QString msg ="Error getting the feature geometry for scenario faults layer";
+    //            this->errorMessage(msg);
 
-//            return -1;
-//        }
+    //            return -1;
+    //        }
 
-//        // create the feature attributes
-//        QgsAttributes featureAttributes(numAtrb);
+    //        // create the feature attributes
+    //        QgsAttributes featureAttributes(numAtrb);
 
-//        featureAttributes[0] = QVariant("SCENARIO_TRACES");
-//        featureAttributes[1] = QVariant("Scenario Traces");
-//        featureAttributes[2] = QVariant(it.at(0));
+    //        featureAttributes[0] = QVariant("SCENARIO_TRACES");
+    //        featureAttributes[1] = QVariant("Scenario Traces");
+    //        featureAttributes[2] = QVariant(it.at(0));
 
 
-//        QgsFeature feature;
-//        feature.setFields(featFields);
+    //        QgsFeature feature;
+    //        feature.setFields(featFields);
 
-//        feature.setGeometry(geometry);
+    //        feature.setGeometry(geometry);
 
-//        feature.setAttributes(featureAttributes);
+    //        feature.setAttributes(featureAttributes);
 
-//        if(!feature.isValid())
-//            return -1;
+    //        if(!feature.isValid())
+    //            return -1;
 
-//        auto res = pr->addFeature(feature, QgsFeatureSink::FastInsert);
-//        if(!res)
-//        {
-//            this->errorMessage("Error adding the feature to the layer");
-//            return -1;
-//        }
-//    }
+    //        auto res = pr->addFeature(feature, QgsFeatureSink::FastInsert);
+    //        if(!res)
+    //        {
+    //            this->errorMessage("Error adding the feature to the layer");
+    //            return -1;
+    //        }
+    //    }
 
-//    mainLayer->commitChanges(true);
-//    mainLayer->updateExtents();
+    //    mainLayer->commitChanges(true);
+    //    mainLayer->updateExtents();
 
-//    QgsLineSymbol* markerSymbol = new QgsLineSymbol();
+    //    QgsLineSymbol* markerSymbol = new QgsLineSymbol();
 
-//    QColor featureColor = QColor(0,0,0,200);
-//    auto weight = 1.0;
+    //    QColor featureColor = QColor(0,0,0,200);
+    //    auto weight = 1.0;
 
-//    markerSymbol->setWidth(weight);
-//    markerSymbol->setColor(featureColor);
-//    theVisualizationWidget->createSimpleRenderer(markerSymbol,mainLayer);
+    //    markerSymbol->setWidth(weight);
+    //    markerSymbol->setColor(featureColor);
+    //    theVisualizationWidget->createSimpleRenderer(markerSymbol,mainLayer);
 
 
     return 0;
@@ -552,6 +588,8 @@ void OpenSRAPostProcessor::clear(void)
         thePipelineDb->clear();
 
     mapViewSubWidget->clear();
+
+    results_layers.clear();
 }
 
 
@@ -568,41 +606,37 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
         return;
     }
 
-    // Get the pipelines database
-    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getAssetDb("GasNetworkPipelines");
+    auto res_layer = results_layers.at(0);
 
-    if(thePipelineDB == nullptr)
+    if(res_layer == nullptr)
     {
-        this->errorMessage("Error getting the pipeline database from the input widget!");
+        this->errorMessage("Dev error: Layer is a nullptr in "+QString(__FUNCTION__));
         return;
     }
 
-    if(thePipelineDB->isEmpty())
+    auto vector_layer = dynamic_cast<QgsVectorLayer*>(res_layer);
+
+    if(vector_layer == nullptr)
     {
-        this->errorMessage("Pipeline database is empty");
+        this->errorMessage("Developer error: could not cast to vector layer in "+QString(__FUNCTION__));
         return;
     }
 
-    auto selFeatLayer = thePipelineDB->getSelectedLayer();
-    if(selFeatLayer == nullptr)
-    {
-        this->errorMessage("Layer is a nullptr in handleListSelection");
-        return;
-    }
+    auto data_provider = vector_layer->dataProvider();
 
     // Check to see if that field exists in the layer
-    auto idx = selFeatLayer->dataProvider()->fieldNameIndex(headerString);
+    auto idx = data_provider->fieldNameIndex(headerString);
 
     if(idx == -1)
     {
-        this->errorMessage("Could not find the field "+headerString+" in layer "+selFeatLayer->name());
+        this->errorMessage("Could not find the field "+headerString+" in layer "+res_layer->name());
         return;
     }
 
-    auto layerRenderer = selFeatLayer->renderer();
+    auto layerRenderer = vector_layer->renderer();
     if(layerRenderer == nullptr)
     {
-        this->errorMessage("No layer renderer available in layer "+selFeatLayer->name());
+        this->errorMessage("No layer renderer available in layer "+res_layer->name());
         return;
     }
 
@@ -627,7 +661,7 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
         colors.push_back(QColor(189,0,38));
 
         // createCustomClassBreakRenderer(const QString attrName, const QVector<QPair<double,double>>& classBreaks, const QVector<QColor>& colors, QgsVectorLayer * vlayer)
-        theVisualizationWidget->createCustomClassBreakRenderer(headerString,selFeatLayer,Qgis::SymbolType::Line,classBreaks,colors);
+        theVisualizationWidget->createCustomClassBreakRenderer(headerString,vector_layer,Qgis::SymbolType::Line,classBreaks,colors,QVector<QString>(),1.0);
     }
     else if(auto graduatedRender = dynamic_cast<QgsGraduatedSymbolRenderer*>(layerRenderer))
     {
@@ -635,7 +669,7 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
     }
     else
     {
-        this->errorMessage("Unrecognized type of layer renderer available in layer "+selFeatLayer->name());
+        this->errorMessage("Unrecognized type of layer renderer available in layer "+res_layer->name());
         return;
     }
 
