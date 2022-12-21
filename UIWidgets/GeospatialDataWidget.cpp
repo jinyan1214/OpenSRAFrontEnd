@@ -62,7 +62,7 @@ GeospatialDataWidget::~GeospatialDataWidget()
 void GeospatialDataWidget::clear(void)
 {
     cptInputWidget->clear();
-    //GISMapInputWidget->clear();
+    GISMapInputWidget->clear();
 }
 
 

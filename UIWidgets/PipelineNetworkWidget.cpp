@@ -104,9 +104,9 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
 
     // Statewide
     statewideBelowGroundInputWidget = new StateWidePipelineWidget(this, theVisualizationWidget, "Pipeline Network","Pipeline Network");
-//    statewideBelowGroundInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
+    //    statewideBelowGroundInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
 
-//    statewideBelowGroundInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
+    //    statewideBelowGroundInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
     statewideBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
 
 
@@ -360,7 +360,7 @@ bool PipelineNetworkWidget::copyFiles(QString &destDir)
 
 void PipelineNetworkWidget::clear(void)
 {
-    csvBelowGroundInputWidget->clear();
+    gasPipelineWidget->clear();
     theWellsCaprocksWidget->clear();
     theAboveGroundInfWidget->clear();
 }
