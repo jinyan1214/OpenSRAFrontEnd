@@ -294,9 +294,7 @@ bool StateWidePipelineWidget::outputToJSON(QJsonObject &rvObject)
 
     rvObject.insert("DataType", "State_Network");
 
-//    return GISAssetInputWidget::outputToJSON(rvObject);
-
-//    return true;
+    return true;
 }
 
 
