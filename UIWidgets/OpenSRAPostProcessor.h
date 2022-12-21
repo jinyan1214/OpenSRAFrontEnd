@@ -47,8 +47,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <memory>
 #include <set>
 
+class TreeItem;
 class QGISVisualizationWidget;
+class MutuallyExclusiveListWidget;
 
+class QSplitter;
 
 class OpenSRAPostProcessor : public SimCenterAppWidget
 {
@@ -66,6 +69,13 @@ protected:
 
     void showEvent(QShowEvent *e);
 
+private slots:
+
+    void handleListSelection(const TreeItem* itemSelected);
+
+    void handleModifyLegend(void);
+
+
 private:
 
     int importResultVisuals(const QString& pathToResults);
@@ -76,6 +86,20 @@ private:
     std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
 
     ComponentDatabase* thePipelineDb = nullptr;
+
+    TreeItem* totalTreeItem;
+
+    TreeItem* defaultItem;
+
+    QSplitter* mainWidget;
+
+    MutuallyExclusiveListWidget* listWidget;
+
+    //The number of header rows in the results file
+    int numHeaderRows;
+
+    // The number of columns that contain component information
+    int numInfoCols;
 };
 
 #endif // OpenSRAPostProcessor_H
