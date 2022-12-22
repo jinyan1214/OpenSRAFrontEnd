@@ -68,7 +68,6 @@ DecisionVariableWidget::DecisionVariableWidget(QJsonObject mainObj, QWidget *par
 
     auto dvObj = mainObj.value("DecisionVariable").toObject();
 
-
     if(dvObj.isEmpty())
     {
         this->errorMessage("Could not find the 'DecisionVariable' key in the methods and params file");

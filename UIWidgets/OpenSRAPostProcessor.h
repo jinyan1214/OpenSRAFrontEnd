@@ -75,33 +75,21 @@ private slots:
 
     void handleModifyLegend(void);
 
-
 private:
 
     int importResultVisuals(const QString& pathToResults);
-    int importFaultCrossings(const QString& pathToFile);
-    int importScenarioTraces(const QString& pathToFile);
 
     QGISVisualizationWidget* theVisualizationWidget;
     std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
 
     ComponentDatabase* thePipelineDb = nullptr;
 
-//    TreeItem* totalTreeItem;
+    QSplitter* mainWidget = nullptr;
 
-//    TreeItem* defaultItem;
-
-    QSplitter* mainWidget;
-
-    MutuallyExclusiveListWidget* listWidget;
+    MutuallyExclusiveListWidget* listWidget = nullptr;
 
     QList<QgsMapLayer*> results_layers;
 
-    //The number of header rows in the results file
-    int numHeaderRows;
-
-    // The number of columns that contain component information
-    int numInfoCols;
 };
 
 #endif // OpenSRAPostProcessor_H

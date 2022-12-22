@@ -122,6 +122,15 @@ void LocalApplication::onRunButtonPressed(QPushButton* button)
 
     this->statusMessage("onRunButtonPressed "+ appDir);
 
+    QString localWorkDir = OpenSRAPreferences::getInstance()->getLocalWorkDir();
+    auto results_dir = localWorkDir + QDir::separator() + "analysis" + QDir::separator() + "Results";
+
+    QDir dirWorkdir(results_dir);
+    if (dirWorkdir.exists()) {
+        this->statusMessage("Deleting old results directory at: "+results_dir);
+        dirWorkdir.removeRecursively();
+    }
+
     if(setUpForRun == false)
     {
         this->setupTempDir(QString());

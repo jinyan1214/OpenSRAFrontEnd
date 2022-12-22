@@ -90,7 +90,6 @@ MultiComponentDMWidget::MultiComponentDMWidget(QWidget *parent) : MultiComponent
     this->addComponent("Above Ground \nGas Infrastructure", aboveGround);
 
     this->hideSelectionWidget();
-
 }
 
 
@@ -106,7 +105,9 @@ void MultiComponentDMWidget::handleWidgetSelected(const QString& name)
     auto res = this->show(name);
 
     if(!res)
-        this->errorMessage("Error, could not display the widget with the name "+name);
+        this->errorMessage("Error, could not display the widget with the name "+name+" in "+QString(__FUNCTION__));
+
+    this->hideSelectionWidget();
 
 }
 

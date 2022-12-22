@@ -79,6 +79,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QValueAxis>
 #include <QToolButton>
 #include <QPushButton>
+#include <QHeaderView>
 
 // GIS headers
 #include <qgslinesymbol.h>
@@ -94,11 +95,6 @@ using namespace QtCharts;
 
 OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    //    totalTreeItem = nullptr;
-    //    defaultItem = nullptr;
-    //    thePipelineDb = nullptr;
-    // The first n columns is information about the component and not results
-    numInfoCols = 8;
 
     //QVBoxLayout* mainLayout = new QVBoxLayout(this);
     QHBoxLayout* mainLayout = new QHBoxLayout(this);
@@ -119,7 +115,7 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWid
     //    connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&OpenSRAPostProcessor::assemblePDF);
 
     listWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-
+    listWidget->header()->resizeSections(QHeaderView::ResizeToContents);
 
     // Get the map view widget
     auto mapView = theVisualizationWidget->getMapViewWidget("ResultsWidget");
@@ -132,7 +128,7 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWid
     // Once map is set, connect to MapQuickView mouse clicked signal
     // connect(mapViewSubWidget.get(), &MapViewSubWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
 
-    mainLayout->addWidget(mapViewSubWidget.get());
+    mainWidget->addWidget(mapViewSubWidget.get());
 
     // right hand side widget
     QWidget* rightHandWidget = new QWidget();
@@ -151,10 +147,8 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWid
 
     mainLayout->addWidget(mainWidget);
 
-    // The number of header rows in the Pelicun results file
-    numHeaderRows = 1;
 
-    mainWidget->setStretchFactor(0,2);
+    mainWidget->setStretchFactor(0,0);
 
     // Now add the splitter handle
     // Note: index 0 handle is always hidden, index 1 is between the two widgets
@@ -184,189 +178,6 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWid
 
 }
 
-//int OpenSRAPostProcessor::importDVresults(const QString& pathToResults)
-//{
-
-//    QDir resultsDir(pathToResults);
-
-//    QString errMsg;
-
-//    // Get the existing files in the folder
-//    QStringList acceptableFileExtensions = {"*.csv"};
-//    QStringList existingCSVFiles = resultsDir.entryList(acceptableFileExtensions, QDir::Files);
-
-//    if(existingCSVFiles.empty())
-//    {
-//        errMsg = "The results folder is empty. Did you include DV's in the analysis?";
-//        throw errMsg;
-//    }
-
-//    QString PGDResultsSheet;
-//    QString PGVResultsSheet;
-//    QString AllResultsSheet;
-
-//    for(auto&& it : existingCSVFiles)
-//    {
-//        if(it.startsWith("RepairRatePGD"))
-//            PGDResultsSheet = it;
-//        else if(it.startsWith("RepairRatePGV"))
-//            PGVResultsSheet = it;
-//        else if(it.startsWith("AllResults"))
-//            AllResultsSheet = it;
-//    }
-
-//    // Create the CSV reader/writer tool
-//    CSVReaderWriter csvTool;
-
-//    // Vector to hold the attributes
-//    QVector< QgsAttributes > fieldAttributes;
-//    QStringList fieldNames;
-
-//    if(!PGVResultsSheet.isEmpty())
-//    {
-//        RepairRatePGV = csvTool.parseCSVFile(pathToResults + QDir::separator() + PGVResultsSheet,errMsg);
-//        if(!errMsg.isEmpty())
-//            throw errMsg;
-
-//        if(!RepairRatePGV.empty())
-//            this->processPGVResults(RepairRatePGV,fieldNames,fieldAttributes);
-//        else
-//        {
-//            errMsg = "The PGV results are empty";
-//            throw errMsg;
-//        }
-//    }
-
-//    if(!PGDResultsSheet.isEmpty())
-//    {
-//        RepairRatePGD = csvTool.parseCSVFile(pathToResults + QDir::separator() + PGDResultsSheet,errMsg);
-//        if(!errMsg.isEmpty())
-//            throw errMsg;
-
-//        if(!RepairRatePGD.empty())
-//            this->processPGDResults(RepairRatePGD,fieldNames,fieldAttributes);
-//        else
-//        {
-//            errMsg = "The PGD results are empty";
-//            throw errMsg;
-//        }
-//    }
-
-//    if(!AllResultsSheet.isEmpty())
-//    {
-//        RepairRateAll = csvTool.parseCSVFile(pathToResults + QDir::separator() + AllResultsSheet,errMsg);
-//        if(!errMsg.isEmpty())
-//            throw errMsg;
-
-//        if(!RepairRateAll.empty())
-//            this->processTotalResults(RepairRateAll,fieldNames,fieldAttributes);
-//        else
-//        {
-//            errMsg = "The total results are empty";
-//            throw errMsg;
-//        }
-//    }
-
-//    // Get the pipelines database
-
-//    auto thePipelineDB = ComponentDatabaseManager::getInstance()->getAssetDb("GasNetworkPipelines");
-
-//    if(thePipelineDB == nullptr)
-//    {
-//        QString msg = "Error getting the pipeline database from the input widget!";
-//        throw msg;
-//    }
-
-//    if(thePipelineDB->isEmpty())
-//    {
-//        QString msg = "Pipeline database is empty";
-//        throw msg;
-//    }
-
-//    auto selFeatLayer = thePipelineDB->getSelectedLayer();
-//    mapViewSubWidget->setCurrentLayer(selFeatLayer);
-
-////    mapViewSubWidget->addLayerToLegend(selFeatLayer);
-
-//    // Starting editing
-//    thePipelineDB->startEditing();
-
-//    auto res = thePipelineDB->addNewComponentAttributes(fieldNames,fieldAttributes,errMsg);
-//    if(!res)
-//        throw errMsg;
-
-//    // Commit the changes
-//    thePipelineDB->commitChanges();
-
-//    defaultItem->setState(2);
-
-//    listWidget->expandAll();
-
-//    return 0;
-//}
-
-
-//int OpenSRAPostProcessor::processTotalResults(const QVector<QStringList>& DVResults, QStringList& fieldNames, QVector<QgsAttributes>& fieldAttributes)
-//{
-
-//    auto numRows = DVResults.size();
-
-//    // Check if there is data in the results, and not just the header rows
-//    if(numRows < numHeaderRows)
-//    {
-//        QString msg = "No results to import!";
-//        throw msg;
-//    }
-
-//    auto numHeaderColumns = DVResults.at(0).size();
-
-//    if(numHeaderColumns < numInfoCols)
-//    {
-//        QString msg = "No results to import!";
-//        throw msg;
-//    }
-
-//    if(totalTreeItem == nullptr)
-//    {
-//        totalTreeItem = listWidget->addItem("Total Repair Rates");
-//        totalTreeItem->setIsCheckable(false);
-//    }
-
-//    QStringList tableHeadings = DVResults.at(0);
-
-//    QString headerStr = "TotalRepairRateForAllDemands";
-
-//    auto indexOfTotals = tableHeadings.indexOf(headerStr,-1);
-
-//    if(indexOfTotals == -1)
-//    {
-//        QString msg = "Error getting index to total repairs";
-//        throw msg;
-//    }
-
-//    QString itemStr = "All demands";
-
-//    defaultItem = listWidget->addItem(itemStr,totalTreeItem);
-
-//    // Set the header string as a property so I can find the header value later
-//    defaultItem->setProperty("HeaderString",headerStr);
-
-//    // Start at the row where headers end
-//    for(int row = numHeaderRows, count = 0; row<numRows; ++row, ++count)
-//    {
-//        auto inputRow = DVResults.at(row);
-
-//        // Add the result to the database
-//        auto value = inputRow.at(indexOfTotals).toDouble();
-
-//        fieldAttributes[count].push_back(QVariant(value));
-//    }
-
-//    fieldNames.append(headerStr);
-
-//    return 0;
-
-//}
 
 
 void OpenSRAPostProcessor::handleModifyLegend(void)
@@ -418,154 +229,41 @@ int OpenSRAPostProcessor::importResultVisuals(const QString& pathToResults)
         return -1;
     }
 
-    auto idx_fid = fieldsList.indexOf("fid");
-    if(idx_fid!=-1)
-        fieldsList.remove(idx_fid);
-
-    auto segID_fid = fieldsList.indexOf("SegmentID");
-    if(segID_fid!=-1)
-        fieldsList.remove(segID_fid);
-
+    QList<QString> finalFieldsList;
     for(auto&& it : fieldsList)
     {
         auto displayName = it.displayName();
 
+        if(!displayName.contains("case"))
+            continue;
+
+        finalFieldsList.push_back(displayName);
+    }
+
+
+    for(auto&& it : finalFieldsList)
+    {
+
+        auto field_idx = fieldsList.indexOf(it);
+        auto field = fieldsList.at(field_idx);
+
+        QString displayName = field.displayName();
+
+        displayName.replace("_"," ");
+
         auto treeItem = listWidget->addItem(displayName);
         treeItem->setIsCheckable(true);
 
-        treeItem->setProperty("HeaderString", it.name());
+        treeItem->setProperty("HeaderString", field.name());
     }
 
     // Default check/select the first item
     listWidget->checkItem(0);
     listWidget->selectItem(0);
 
+    listWidget->resizeColumnToContents(0);
 
     theVisualizationWidget->zoomToLayer(results_layers.value(0));
-
-    return 0;
-}
-
-
-int OpenSRAPostProcessor::importScenarioTraces(const QString& pathToFile)
-{
-
-    //    if(pathToFile.isEmpty())
-    //        return 0;
-
-    //    CSVReaderWriter csvTool;
-
-    //    QString errMsg;
-
-    //    auto traces = csvTool.parseCSVFile(pathToFile, errMsg);
-    //    if(!errMsg.isEmpty())
-    //    {
-    //        errorMessage(errMsg);
-    //        return -1;
-    //    }
-
-    //    if(traces.size() < 2)
-    //    {
-    //        statusMessage("No fault traces available.");
-    //        return 0;
-    //    }
-
-    //    QgsFields featFields;
-    //    featFields.append(QgsField("AssetType", QVariant::String));
-    //    featFields.append(QgsField("TabName", QVariant::String));
-    //    featFields.append(QgsField("SourceIndex", QVariant::String));
-
-    //    // Create the pipelines layer
-    //    auto mainLayer = theVisualizationWidget->addVectorLayer("linestring","Scenario Faults");
-
-    //    if(mainLayer == nullptr)
-    //    {
-    //        this->errorMessage("Error adding a vector layer");
-    //        return -1;
-    //    }
-
-    //    QList<QgsField> attribFields;
-    //    for(int i = 0; i<featFields.size(); ++i)
-    //        attribFields.push_back(featFields[i]);
-
-    //    auto pr = mainLayer->dataProvider();
-
-    //    mainLayer->startEditing();
-
-    //    auto res = pr->addAttributes(attribFields);
-
-    //    if(!res)
-    //        this->errorMessage("Error adding attributes to the layer" + mainLayer->name());
-
-    //    mainLayer->updateFields(); // tell the vector layer to fetch changes from the provider
-
-    //    auto headers = traces.front();
-
-    //    auto indexListofTraces = headers.indexOf("ListOfTraces");
-
-    //    traces.pop_front();
-
-    //    auto numAtrb = attribFields.size();
-
-    //    for(auto&& it : traces)
-    //    {
-    //        auto coordString = it.at(indexListofTraces);
-
-    //        auto geometry = theVisualizationWidget->getMultilineStringGeometryFromJson(coordString);
-
-    //        if(geometry.isEmpty())
-    //        {
-    //            QString msg ="Error getting the feature geometry for scenario faults layer";
-    //            this->errorMessage(msg);
-
-    //            return -1;
-    //        }
-
-    //        // create the feature attributes
-    //        QgsAttributes featureAttributes(numAtrb);
-
-    //        featureAttributes[0] = QVariant("SCENARIO_TRACES");
-    //        featureAttributes[1] = QVariant("Scenario Traces");
-    //        featureAttributes[2] = QVariant(it.at(0));
-
-
-    //        QgsFeature feature;
-    //        feature.setFields(featFields);
-
-    //        feature.setGeometry(geometry);
-
-    //        feature.setAttributes(featureAttributes);
-
-    //        if(!feature.isValid())
-    //            return -1;
-
-    //        auto res = pr->addFeature(feature, QgsFeatureSink::FastInsert);
-    //        if(!res)
-    //        {
-    //            this->errorMessage("Error adding the feature to the layer");
-    //            return -1;
-    //        }
-    //    }
-
-    //    mainLayer->commitChanges(true);
-    //    mainLayer->updateExtents();
-
-    //    QgsLineSymbol* markerSymbol = new QgsLineSymbol();
-
-    //    QColor featureColor = QColor(0,0,0,200);
-    //    auto weight = 1.0;
-
-    //    markerSymbol->setWidth(weight);
-    //    markerSymbol->setColor(featureColor);
-    //    theVisualizationWidget->createSimpleRenderer(markerSymbol,mainLayer);
-
-
-    return 0;
-}
-
-
-int OpenSRAPostProcessor::importFaultCrossings(const QString& pathToFile)
-{
 
     return 0;
 }
@@ -633,6 +331,8 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
         return;
     }
 
+    auto field = data_provider->fields().at(idx);
+
     auto layerRenderer = vector_layer->renderer();
     if(layerRenderer == nullptr)
     {
@@ -640,37 +340,45 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
         return;
     }
 
-    // Create a graduated renderer if one does not exist
-    if(layerRenderer->type().compare("graduatedSymbol") != 0)
+    if(field.isNumeric())
     {
-        QVector<QPair<double,double>>classBreaks;
-        QVector<QColor> colors;
 
-        classBreaks.append(QPair<double,double>(0.0, 1E-03));
-        classBreaks.append(QPair<double,double>(1.00E-03, 1.00E-02));
-        classBreaks.append(QPair<double,double>(1.00E-02, 1.00E-01));
-        classBreaks.append(QPair<double,double>(1.00E-01, 1.00E+00));
-        classBreaks.append(QPair<double,double>(1.00E+00, 1.00E+01));
-        classBreaks.append(QPair<double,double>(1.00E+01, 1.00E+10));
+        // Create a graduated renderer if one does not exist
+        if(layerRenderer->type().compare("graduatedSymbol") != 0)
+        {
+            QVector<QPair<double,double>>classBreaks;
+            QVector<QColor> colors;
 
-        colors.push_back(Qt::darkBlue);
-        colors.push_back(QColor(255,255,178));
-        colors.push_back(QColor(253,204,92));
-        colors.push_back(QColor(253,141,60));
-        colors.push_back(QColor(240,59,32));
-        colors.push_back(QColor(189,0,38));
+            classBreaks.append(QPair<double,double>(0.0, 1E-03));
+            classBreaks.append(QPair<double,double>(1.00E-03, 1.00E-02));
+            classBreaks.append(QPair<double,double>(1.00E-02, 1.00E-01));
+            classBreaks.append(QPair<double,double>(1.00E-01, 1.00E+00));
+            classBreaks.append(QPair<double,double>(1.00E+00, 1.00E+01));
+            classBreaks.append(QPair<double,double>(1.00E+01, 1.00E+10));
 
-        // createCustomClassBreakRenderer(const QString attrName, const QVector<QPair<double,double>>& classBreaks, const QVector<QColor>& colors, QgsVectorLayer * vlayer)
-        theVisualizationWidget->createCustomClassBreakRenderer(headerString,vector_layer,Qgis::SymbolType::Line,classBreaks,colors,QVector<QString>(),1.0);
-    }
-    else if(auto graduatedRender = dynamic_cast<QgsGraduatedSymbolRenderer*>(layerRenderer))
-    {
-        graduatedRender->setClassAttribute(headerString);
+            colors.push_back(Qt::darkBlue);
+            colors.push_back(QColor(255,255,178));
+            colors.push_back(QColor(253,204,92));
+            colors.push_back(QColor(253,141,60));
+            colors.push_back(QColor(240,59,32));
+            colors.push_back(QColor(189,0,38));
+
+            // createCustomClassBreakRenderer(const QString attrName, const QVector<QPair<double,double>>& classBreaks, const QVector<QColor>& colors, QgsVectorLayer * vlayer)
+            theVisualizationWidget->createCustomClassBreakRenderer(headerString,vector_layer,Qgis::SymbolType::Line,classBreaks,colors,QVector<QString>(),1.0);
+        }
+        else if(auto graduatedRender = dynamic_cast<QgsGraduatedSymbolRenderer*>(layerRenderer))
+        {
+            graduatedRender->setClassAttribute(headerString);
+        }
+        else
+        {
+            this->errorMessage("Unrecognized type of layer renderer available in layer "+res_layer->name());
+            return;
+        }
     }
     else
     {
-        this->errorMessage("Unrecognized type of layer renderer available in layer "+res_layer->name());
-        return;
+        this->statusMessage("TODO: implement category renderer for non-numeric fields in "+QString(__FUNCTION__));
     }
 
 
