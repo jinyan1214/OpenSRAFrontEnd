@@ -646,12 +646,12 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
         QVector<QPair<double,double>>classBreaks;
         QVector<QColor> colors;
 
-        classBreaks.append(QPair<double,double>(0.0, 1E-03));
+        classBreaks.append(QPair<double,double>(0.0, 1E-05));
+        classBreaks.append(QPair<double,double>(1.00E-05, 1.00E-04));
+        classBreaks.append(QPair<double,double>(1.00E-04, 1.00E-03));
         classBreaks.append(QPair<double,double>(1.00E-03, 1.00E-02));
         classBreaks.append(QPair<double,double>(1.00E-02, 1.00E-01));
-        classBreaks.append(QPair<double,double>(1.00E-01, 1.00E+00));
-        classBreaks.append(QPair<double,double>(1.00E+00, 1.00E+01));
-        classBreaks.append(QPair<double,double>(1.00E+01, 1.00E+10));
+        classBreaks.append(QPair<double,double>(1.00E-01, 1.00E+02));
 
         colors.push_back(Qt::darkBlue);
         colors.push_back(QColor(255,255,178));
