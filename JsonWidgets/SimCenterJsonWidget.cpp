@@ -108,7 +108,8 @@ QGroupBox* SimCenterJsonWidget::getWidgetBox(const QJsonObject jsonObj)
     }
 
     //    QGroupBox* groupBox = new QGroupBox("test GB Name");
-    QGroupBox* groupBox = new QGroupBox(this->objectName());
+    //QGroupBox* groupBox = new QGroupBox(this->objectName());
+    QGroupBox* groupBox = new QGroupBox(jsonObj.value("NameToDisplay").toString());
     groupBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     groupBox->setContentsMargins(0,0,0,0);
     groupBox->setFlat(true);

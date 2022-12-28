@@ -101,6 +101,10 @@ bool RandomVariablesWidget::removeConstant(const QString &uuid, const QString &f
 
 void RandomVariablesWidget::makeRVWidget(void)
 {
+
+    // make spacer item
+    QSpacerItem *vSpacer = new QSpacerItem(0,20);
+
     // title & add button
     QHBoxLayout *titleLayout = new QHBoxLayout();
     //titleLayout->setMargin(10);
@@ -126,6 +130,7 @@ void RandomVariablesWidget::makeRVWidget(void)
     tableModel->setHeaderStringList(RVTableHeaders);
 
     verticalLayout->addWidget(theRVTableView);
+    verticalLayout->addItem(vSpacer);
 
     // Source type
     sourceComboDelegate = new ComboBoxDelegate(this);
@@ -225,13 +230,47 @@ void RandomVariablesWidget::makeRVWidget(void)
 
     verticalLayout->addWidget(theConstantTableView);
 
+    verticalLayout->addStretch(1);
+
+    verticalLayout->addItem(vSpacer);
+
     QLabel* instructionsLabel = new QLabel();
-
-    instructionsLabel->setText("<html><ul><li>For user-provided GIS Maps, ensure that each GIS map only has one attribute and/or the raster contains a single band. </li><li>Alternatively, users can pick from the columns of the infrastructure table or enter a value in a box.</li><li>Something else</li></ul></html>");
-
+    instructionsLabel->setText("Instructions for modifying these tables:");
+    QFont fontInstructionsLabel = instructionsLabel->font();
+    fontInstructionsLabel.setWeight(QFont::Bold);
+    instructionsLabel->setFont(fontInstructionsLabel);
     verticalLayout->addWidget(instructionsLabel);
 
-    verticalLayout->addStretch(1);
+    QLabel* instructionsDesc = new QLabel();
+    instructionsDesc->setText(
+        "<html>"
+            "<ul>"
+                "<li>These tables contain the random and fixed variables collected from all of the methods specified under the tabs \"Decision Variable\", \"Damage Measure\", \"Engineering Demand Parameter\". Because some variables may be shared across multiple methods, these tables are created to ensure that the same distribution/values are used across all methods.</li>"
+                "<li>By default, OpenSRA will attempt to use the internal distributions/values for all of the variables shown above (noted as \"Preferred\" under the column \"Source\"). Some variables may not have default distributions/values, and they are either identified under the \"Description\" column or in the descriptions in their respective tab for method.</li>"
+                "<li>The \"Name\" column shows the variable name used by the OpenSRA backend. The \"Description\" column provides descriptions of the variable. The \"From Model\" column shows methods the variables are used in.</li>"
+                "<li>For any random variable that you want to edit:"
+                    "<ol>"
+                        "<li>Toggle the \"Preferred\" value under the \"Source\" column to either \"From infrastructure table or enter value\" or \"From user-provided GIS maps\" (to be elaborated in Step 3).</li>"
+                        "<li>Pick the type of distribution under the \"Distribution Type\" column </li>"
+                        "<li>Under the \"Mean or Median\" column:"
+                            "<ul>"
+                                "<li>If you selected \"From infrastructure table or enter value\" under the \"Source\" column, you can either enter a value to be used across all sites in the infrastructure table, or pick the column/attribute to use in the dropmenu menu.</li>"
+                                "<li>If you selected \"From user-provided GIS maps\" under the \"Source\" column, you can pick the GIS map to use in the dropmenu menu.</li>"
+                                "<li>Note 1: The values will be interpreted as \"means\" if the distribution type is \"normal\" and \"medians\" if the distribution type is \"lognormal\".</li>"
+                                "<li>Note 2: For user-specified GIS datasets, ensure that: (1) each GIS shapefile only has one attribute and, (2) each raster image contains only a single band. The feature to allow users to select from list of attributes/bands will be implemented later.</li>"
+                            "</ul>"
+                        "</li>"
+                        "<li>Under the \"Sigma\" column, you can either enter a value to be used across all sites in the infrastructure table, or pick the column/attribute to use in the dropmenu menu. The \"CoV\" column (i.e., \"Coefficient of Variantion\") is required if you don't specify anything under the \"Sigma\" column.</li>"
+                        "<li>(Optional) Assign constant lower and upper bounds under the \"Distribution Min\" and \"Distribution Max\" columns - option for site-varying bounds to be implemented.</li>"
+                    "</ol>"
+                "</li>"
+                "<li>Modifying the \"Constant or Fixed Variables\" table is similar to that of the instructions for the \"Random Variables\" table above. Because fixed variables do not vary, only a \"Value\" column is necessary.</li>"
+                    "</ol>"
+                "</li>"
+            "</ul>"
+        "</html>"
+    );
+    verticalLayout->addWidget(instructionsDesc);
 }
 
 

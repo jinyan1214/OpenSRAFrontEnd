@@ -140,10 +140,10 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
 
     this->addComponent("Pipelines", gasPipelineWidget);
     this->addComponent("Wells and Caprocks", theWellsCaprocksWidget);
-    this->addComponent("Above Ground \nGas Infrastructure", theAboveGroundInfWidget);
+    this->addComponent("Above Ground\nGas Infrastructure", theAboveGroundInfWidget);
 
     auto testInputWidget = new LineAssetInputWidget(this, theVisualizationWidget, "Test","Test");
-    this->addComponent("Future Infrastructure", testInputWidget);
+    this->addComponent("Future Infrastructure\n(Not Functional)", testInputWidget);
 
     //    vectorOfComponents.append(gasPipelineWidget);
     //    vectorOfComponents.append(theWellsCaprocksWidget);
@@ -204,7 +204,7 @@ bool PipelineNetworkWidget::outputToJSON(QJsonObject &jsonObject)
 
     if(typeOfInf.compare("Pipelines") == 0)
         infraType = "below_ground";
-    else if(typeOfInf.compare("Above Ground \nGas Infrastructure") == 0)
+    else if(typeOfInf.compare("Above Ground\nGas Infrastructure") == 0)
         infraType = "above_ground";
     else if(typeOfInf.compare("Wells and Caprocks") == 0)
         infraType = "wells_caprocks";
@@ -243,7 +243,7 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
     if(typeOfInf.compare("below_ground") == 0)
         osraType = "Pipelines";
     else if(typeOfInf.compare("above_ground") == 0)
-        osraType = "Above Ground \nGas Infrastructure";
+        osraType = "Above Ground\nGas Infrastructure";
     else if(typeOfInf.compare("wells_caprocks") == 0)
         osraType = "Wells and Caprocks";
 

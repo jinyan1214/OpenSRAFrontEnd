@@ -182,20 +182,84 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
 
     connect(loadFileButton,&QPushButton::clicked, this, &GeneralInformationWidget::chooseDirectoryDialog);
 
-    auto assessmentSetupLabel = new QLabel("Assessment Setup", this);
-    assessmentSetupLabel->setStyleSheet("font-weight: bold; color: black");
+    // overview
+    auto assessmentLabel = new QLabel("General Comments:", this);
+    assessmentLabel->setStyleSheet("font-weight: bold; color: black");
 
-//    int count = 1;
+    const char *assessmentDetailString =
+        "1. Refer back to this tab at any time for setup instructions.\n"
+
+        "2. Note that the first time you click \"PREPROCESS\" and \"PERFORM ANALYSIS\" after installation will take some time for OpenSRA to perform some behind-the-scene tasks.\n"
+
+        "3. If you are not familiar with OpenSRA, it is best to pick the example that best match your problem and adjust the analysis parameters from there (see \"Examples\" on the menu bar at the top).";
+    auto assessmentDetailLabel = new QLabel(assessmentDetailString, this);
+
+    // examples
+    auto exampleLabel = new QLabel("Instructions for Examples:", this);
+    exampleLabel->setStyleSheet("font-weight: bold; color: black");
+
+    const char *exampleDetailString =
+        "1. The built-in examples are separated by the currently available infrastructure types: (1) above ground components, (2) below ground pipeline, and (3) wells and caprocks.\n"
+        "\t- For below ground pipelines, the examples are further divided by the type of geohazard: (1) lateral spread, (2) liquefaction-induced settlement, (3) landslide, and (4) surface fault rupture.\n"
+
+        "2. To run an example:\n"
+        "\t- Select an example from the dropdown menu at the top of the screen\n"
+        "\t- Follow the pop-up prompts";
+    auto exampleDetailLabel = new QLabel(exampleDetailString, this);
+
+    // instructions
+    auto setupLabel = new QLabel("Program Overview and Setup Details:", this);
+    setupLabel->setStyleSheet("font-weight: bold; color: black");
+
     const char *setupDetailString =
-            "1. If you are not familiar with OpenSRA, it is best to pick the example that best match your problem and adjust the analysis parameters.\n"
-            "2. Examples are separated by the currently available infrastructure types: above ground components, below ground pipeline, and wells and caprocks.\n"
-            "\t- For below ground pipelines, the examples are further distributed by geohazards: lateral spread, liquefaction induced settlement, landslide, and surface fault rupture.\n";
-    auto setupDetailLabel = new QLabel(setupDetailString, this);
+        "1. \"General Information\":\n"
+        "\t- Define analysis ID (optional) and select the path for the working directory\n"
 
-//    auto setupDetailLabel = new QLabel(
-//                QString::number(count) + ". If you are not familiar with OpenSRA, it is best to pick the example that best match your problem and adjust the analysis parameters.", + \
-//                QString::number(count) + ". If you are not familiar with OpenSRA, it is best to pick the example that best match your problem and adjust the analysis parameters.",
-//    )', this);
+        "2. \"Infrastructure\":\n"
+        "\t- Click on the tab with the type of infrastructure to run\n"
+        "\t- From the dropdown menu, choose the file type to import\n"
+        "\t- Fill out the inputs as requested\n"
+        "\tNote: for \"Pipelines\", users can choose to use the prepackaged state pipeline network, which has been heavily preprocessed internally to reduce runtime; however, state-wide analysis can still take a long time to complete (~1 hour)\n"
+
+        "3. \"GIS and CPT Data\":\n"
+        "\t- \"User Provided GIS Data\"\n"\
+        "\t\t- Browse for folder with datasets - the menu on the right should populate with the GIS maps found in the folder\n"
+        "\t- \"Site Investigation Data (current supports CPTs only)\"\n"\
+        "\t\t- Follow the on-screen instructions to fill out the inputs as requested\n"
+        "\t\tNote: only used by below ground pipelines with lateral spread and settlement as geohazards\n"
+
+        "4. \"Decision Variable\":\n"
+        "\t- Pick the decision metric to run from the secondary list of tabs\n"
+        "\t- From the dropdown menu, pick the model to run\n"
+        "\t- Review the descriptions on the outputs, inputs, and additional requirements from other tabs\n"
+        "\t- Click \"Add run to list\" to the include this model in the run\n"
+        "\tNotes:\n"
+        "\t\t- The input parameters will be displayed under the \"Input Variables\" tab for users to edit\n"
+        "\t\t- While you can use more than one model, we advise to stay with one model per run as combinations of models may not be appropriate for Polynomial Chaos\n"
+
+        "5. \"Damage Measure\":\n"
+        "\t- Only required if requested by one of the models under the \"Decision Variable\" tab\n"
+        "\t- Follow the same instructions as those under \"Decision Variable\"\n"
+
+        "6. \"Engineering Demand Parameters\":\n"
+        "\t- Only required if requested by one of the models under the \"Decision Variable\" and/or the \"Damage Measure\" tab\n"
+        "\t- Follow the same instructions as those under \"Decision Variable\"\n"
+
+        "6. \"Intensity Measure\":\n"
+        "\t- From the dropdown menu, choose the type of seismic source to use\n"
+        "\t- Follow the on-screen instructions to \n"
+
+        "7. \"Input Variables\":\n"
+        "\t- This tab contains two tables:\n"
+        "\t\t- (a) random variables that can sampled for epistemic uncertainty\n"
+        "\t\t- (a) fixed variables that holds a singular value\n"
+        "\t- Follow the on-screen instructions to edit the tables\n"
+
+        "\nClick \"PREPROCESS\" once Steps 1 through 7 have been reviewed\n"
+
+        "When prompted, click \"PERFORM ANALYSIS\" to perform the analysis";
+        "\t- If the analysis is successful, the program will switch to the \"Results\" tab automatically";
+    auto setupDetailLabel = new QLabel(setupDetailString, this);
 
 
 //    QRadioButton *button1 = new QRadioButton("Pre-configured setup for risk assessment (preferred)", this);
@@ -241,8 +305,22 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     layout->addLayout(workingDirLayout);
 //    layout->addLayout(unitsLayout);
 
-    layout->addWidget(assessmentSetupLabel);
+    // add spacer
+    QSpacerItem *vSpacer = new QSpacerItem(0,20);
+    layout->addItem(vSpacer);
 
+    // general comment text
+    layout->addWidget(assessmentLabel);
+    layout->addWidget(assessmentDetailLabel);
+
+    // example text
+    layout->addItem(vSpacer);
+    layout->addWidget(exampleLabel);
+    layout->addWidget(exampleDetailLabel);
+
+    // setup text
+    layout->addItem(vSpacer);
+    layout->addWidget(setupLabel);
     layout->addWidget(setupDetailLabel);
 
 //    layout->addWidget(button1);

@@ -120,15 +120,15 @@ int OpenSRAPreProcessor::loadPreprocessingResults(const QString path)
     }
 
 
-    auto res = this->importFaultTraces(faultPath);
+//    auto res = this->importFaultTraces(faultPath);
 
-    if(res != 0)
-    {
-        this->errorMessage("Error importing the fault traces");
-        return -1;
-    }
+//    if(res != 0)
+//    {
+//        this->errorMessage("Error importing the fault traces");
+//        return -1;
+//    }
 
-    QString msgText("Preprocess step complete. Click the \"RUN\" button to perform the analysis.");
+    QString msgText("Preprocess step complete. Click the \"PERFORM ANALYSIS\" button to perform the analysis.");
     this->statusMessage(msgText);
 
     QMessageBox msgBox;

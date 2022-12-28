@@ -45,7 +45,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "TablePrinter.h"
 #include "TreeItem.h"
 #include "QGISVisualizationWidget.h"
-#include "ComponentDatabaseManager.h"
 #include "WorkflowAppOpenSRA.h"
 #include "EmbeddedMapViewWidget.h"
 #include "MutuallyExclusiveListWidget.h"
@@ -107,7 +106,27 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWid
     mainWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
     //    this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-    listWidget = new MutuallyExclusiveListWidget(this, "Results");
+    const char *resultHeaderString =
+            "Results:\n"
+            "- Showing the mean annual rate of occurrence of the loss metric\n"
+            "  (i.e., number of occurrences per year across all events)\n"
+            "- The \"Modify Legend\" widget below is being updated;\n"
+            "  for now, modify the legend by right-clicking on the layer\n"
+            "  and choosing \"Properties...\"";
+//            "- If the annual rates of events are set to 1 (e.g., ShakeMaps),\n"
+//            "  then the results correspond to probability.";
+//            "Mean annual rate of occurrence\n"
+//            "= (prob(decision metric) x annual rate of event)\n"
+//            "  summed over all events";
+    listWidget = new MutuallyExclusiveListWidget(this, resultHeaderString);
+
+    //
+    // initialize IM Source type for graduated renderer bin limits
+    this->IMSourceType = "Not ShakeMap";
+    this->infraType = "below_ground";
+    this->initIMSourceType = "Not ShakeMap";
+    this->initInfraType = "below_ground";
+    //
 
     connect(listWidget, &MutuallyExclusiveListWidget::itemChecked, this, &OpenSRAPostProcessor::handleListSelection);
 
@@ -138,7 +157,7 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWid
 
     rightHandLayout->addWidget(listWidget);
 
-    QPushButton* modifyLegendButton = new QPushButton("Modify Legend",this);
+    QPushButton* modifyLegendButton = new QPushButton("Modify Legend (currently inactive)",this);
     connect(modifyLegendButton, &QPushButton::clicked ,this, &OpenSRAPostProcessor::handleModifyLegend);
 
     rightHandLayout->addWidget(modifyLegendButton);
@@ -257,6 +276,14 @@ int OpenSRAPostProcessor::importResultVisuals(const QString& pathToResults)
         treeItem->setProperty("HeaderString", field.name());
     }
 
+    // get IM source type for determining graduated renderer bin limits
+    auto res = this->getSetupConfigParams(pathToResults);
+    if (res == -1)
+    {
+        this->errorMessage("Cannot find parameter(s) in SetupConfig.json to use in Results widget.");
+        return res;
+    }
+
     // Default check/select the first item
     listWidget->checkItem(0);
     listWidget->selectItem(0);
@@ -287,7 +314,17 @@ void OpenSRAPostProcessor::clear(void)
 
     mapViewSubWidget->clear();
 
+    listWidget->clear();
+
+    // remove layers from results_layers from visualization widget, then clear list
+    for (int i=0; i<results_layers.count(); ++i)
+        theVisualizationWidget->removeLayer(results_layers.value(i));
     results_layers.clear();
+
+    this->IMSourceType = "Not UCERF";
+    this->infraType = "below_ground";
+    this->initIMSourceType = "Not UCERF";
+    this->initInfraType = "below_ground";
 }
 
 
@@ -343,28 +380,58 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
     if(field.isNumeric())
     {
 
-        // Create a graduated renderer if one does not exist
-        if(layerRenderer->type().compare("graduatedSymbol") != 0)
+        // Create a graduated renderer if one does not exist or if IMSourceType or infraType has been updated
+        if(layerRenderer->type().compare("graduatedSymbol") != 0 || this->initIMSourceType != this->IMSourceType || this->initInfraType != this->infraType)
         {
             QVector<QPair<double,double>>classBreaks;
             QVector<QColor> colors;
 
-            classBreaks.append(QPair<double,double>(0.0, 1E-05));
-            classBreaks.append(QPair<double,double>(1.00E-05, 1.00E-04));
-            classBreaks.append(QPair<double,double>(1.00E-04, 1.00E-03));
-            classBreaks.append(QPair<double,double>(1.00E-03, 1.00E-02));
-            classBreaks.append(QPair<double,double>(1.00E-02, 1.00E-01));
-            classBreaks.append(QPair<double,double>(1.00E-01, 1.00E+02));
+            if (this->IMSourceType == "UCERF")
+            {
+                // rates can be on the order of 1e-6, -7, use log scale
+                classBreaks.append(QPair<double,double>(0.0, 1E-05));
+                classBreaks.append(QPair<double,double>(1.00E-05, 1.00E-04));
+                classBreaks.append(QPair<double,double>(1.00E-04, 1.00E-03));
+                classBreaks.append(QPair<double,double>(1.00E-03, 1.00E-02));
+                classBreaks.append(QPair<double,double>(1.00E-02, 1.00E-01));
+                classBreaks.append(QPair<double,double>(1.00E-01, 1.00E+03));
 
-            colors.push_back(Qt::darkBlue);
-            colors.push_back(QColor(255,255,178));
-            colors.push_back(QColor(253,204,92));
-            colors.push_back(QColor(253,141,60));
-            colors.push_back(QColor(240,59,32));
-            colors.push_back(QColor(189,0,38));
+                colors.push_back(Qt::darkBlue);
+                colors.push_back(QColor(255,255,178));
+                colors.push_back(QColor(253,204,92));
+                colors.push_back(QColor(253,141,60));
+                colors.push_back(QColor(240,59,32));
+                colors.push_back(QColor(189,0,38));
+            }
+            else
+            {
+                // generally showing just probabilities from 0 to 1 (rate = 1)
+                classBreaks.append(QPair<double,double>(0.0, 0.2));
+                classBreaks.append(QPair<double,double>(0.2, 0.4));
+                classBreaks.append(QPair<double,double>(0.4, 0.6));
+                classBreaks.append(QPair<double,double>(0.6, 0.8));
+                classBreaks.append(QPair<double,double>(0.8, 1.0));
+                classBreaks.append(QPair<double,double>(1.0, 1.00E+3));
 
-            // createCustomClassBreakRenderer(const QString attrName, const QVector<QPair<double,double>>& classBreaks, const QVector<QColor>& colors, QgsVectorLayer * vlayer)
-            theVisualizationWidget->createCustomClassBreakRenderer(headerString,vector_layer,Qgis::SymbolType::Line,classBreaks,colors,QVector<QString>(),1.0);
+                colors.push_back(Qt::darkBlue);
+                colors.push_back(QColor(255,255,178));
+                colors.push_back(QColor(253,204,92));
+                colors.push_back(QColor(253,141,60));
+                colors.push_back(QColor(240,59,32));
+                colors.push_back(QColor(189,0,38));
+            }
+
+            // if below ground, use line as symbol, otherwise use marker as symbol (e.g., wells, above ground components)
+            if (this->infraType == "below_ground")
+                // createCustomClassBreakRenderer(const QString attrName, const QVector<QPair<double,double>>& classBreaks, const QVector<QColor>& colors, QgsVectorLayer * vlayer)
+                theVisualizationWidget->createCustomClassBreakRenderer(headerString,vector_layer,Qgis::SymbolType::Line,classBreaks,colors,QVector<QString>(),1.0);
+            else
+                theVisualizationWidget->createCustomClassBreakRenderer(headerString,vector_layer,Qgis::SymbolType::Marker,classBreaks,colors,QVector<QString>(),2.0);
+
+            // update initIMSourceType and initInfraType
+            this->initIMSourceType = this->IMSourceType;
+            this->initInfraType = this->infraType;
+
         }
         else if(auto graduatedRender = dynamic_cast<QgsGraduatedSymbolRenderer*>(layerRenderer))
         {
@@ -385,3 +452,43 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
     theVisualizationWidget->markDirty();
 }
 
+
+int OpenSRAPostProcessor::getSetupConfigParams(const QString& pathToResults)
+{
+    // get path to setup config json
+    QFileInfo resultsPathInfo(pathToResults);
+    auto resultsPath = resultsPathInfo.absoluteDir().absolutePath();
+    QFileInfo workPathInfo(resultsPath);
+    auto workPath = workPathInfo.absoluteDir().absolutePath();
+    QString pathToSetupConfig = workPath +
+            QDir::separator() + "Input" +
+            QDir::separator() + "SetupConfig.json";
+
+    // read from json file
+    QFile jsonFile(pathToSetupConfig);
+    jsonFile.open(QFile::ReadOnly);
+    QJsonDocument inputDoc = QJsonDocument::fromJson(jsonFile.readAll());
+    QJsonObject jsonObj = inputDoc.object();
+
+    // get IM source type string
+    auto IMObject = jsonObj.value("IntensityMeasure").toObject();
+    auto IMSourceObject = IMObject.value("SourceForIM").toObject();
+    auto IMSourceTypes = IMSourceObject.keys();
+    if(IMSourceTypes.isEmpty())
+    {
+        this->errorMessage("Processing results... SourceForIM in SetupConfig.json is empty.");
+        return -1;
+    }
+    this->IMSourceType = IMSourceTypes.first();
+
+    // get infrastructure type
+    auto infraObject = jsonObj.value("Infrastructure").toObject();
+    if(infraObject.isEmpty())
+    {
+        this->errorMessage("Processing results... infraObject in SetupConfig.json is empty.");
+        return -1;
+    }
+    this->infraType = infraObject.value("InfrastructureType").toString();
+
+    return 0;
+}

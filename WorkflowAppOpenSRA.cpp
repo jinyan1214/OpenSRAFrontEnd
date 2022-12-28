@@ -298,14 +298,6 @@ void WorkflowAppOpenSRA::initialize(void)
     connect(this, SIGNAL(setUpForApplicationRunDone(QString&, QString&)), theRunWidget, SLOT(setupForRunApplicationDone(QString&, QString&)));
     connect(localApp, SIGNAL(processResults(QString, QString, QString)), this, SLOT(postprocessResults(QString, QString, QString)));
 
-//    QString msgText("Preprocess step complete. Click the \"RUN\" button to perform the analysis.");
-//    this->statusMessage(msgText);
-
-//    QMessageBox msgBox;
-//    msgBox.setText(msgText);
-//    msgBox.exec();
-
-
     // for left hand side layout
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
@@ -320,9 +312,9 @@ void WorkflowAppOpenSRA::initialize(void)
 
     theComponentSelection->addComponent(QString("Visualization"), theCustomVisualizationWidget);
     theComponentSelection->addComponent(QString("General\nInformation"), theGenInfoWidget);
-    theComponentSelection->addComponent(QString("GIS and CPT Data"), theGISDataWidget);
     //    theComponentSelection->addComponent(QString("Sampling\nMethod"), theUQWidget);
     theComponentSelection->addComponent(QString("Infrastructure"), thePipelineNetworkWidget);
+    theComponentSelection->addComponent(QString("GIS and CPT Data"), theGISDataWidget);
     theComponentSelection->addComponent(QString("Decision\nVariable"), theDecisionVariableWidget);
     theComponentSelection->addComponent(QString("Damage\nMeasure"), theDamageMeasureWidget);
     theComponentSelection->addComponent(QString("Engineering\nDemand\nParameter"), theEDPWidget);
@@ -673,7 +665,7 @@ bool WorkflowAppOpenSRA::inputFromJSON(QJsonObject &jsonObject)
         return false;
     }
 
-    auto GISandCPTParamObj = jsonObject.value("UserSpecifiedGISandCPTData").toObject();
+    auto GISandCPTParamObj = jsonObject.value("UserSpecifiedData").toObject();
     if(theGISDataWidget->inputFromJSON(GISandCPTParamObj) == false)
     {
         errorMessage("Error loading .json input file at " + theGISDataWidget->objectName() + " panel");
@@ -739,7 +731,7 @@ void WorkflowAppOpenSRA::setUpForPreprocessingRun(QString &workingDir, QString &
 
     QString inputDirectory = tmpDirectory + QDir::separator();
 
-    statusMessage("Set up Done.  Now starting the preprocessing.");
+    statusMessage("Set up done.  Now starting the preprocessing.");
 
     emit setUpForPreprocessingDone(workingDir, inputDirectory);
 }
@@ -773,7 +765,12 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
 //        return;
 //    }
 
-    statusMessage("Set up Done.  Now starting the analysis.");
+    //
+    // clear Results tab of loaded any results
+    theResultsWidget->clear();
+    //
+
+    statusMessage("Set up done.  Now starting the analysis.");
 
 //    emit setUpForApplicationRunDone(runDir, runDir);
       emit setUpForApplicationRunDone(analysisdir, analysisdir);

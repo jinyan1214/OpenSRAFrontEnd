@@ -488,7 +488,7 @@ int LocalApplication::handleApplicationRunDone(int res)
     if(res ==0)
         emit processResults(QString(),QString(),QString());
     else
-        this->errorMessage("Error at the \"RUN\" step with result "+QString(res));
+        this->errorMessage("Error at the \"PERFORM ANALYSIS\" step with result "+QString(res));
 
     return 0;
 }

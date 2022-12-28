@@ -292,5 +292,3 @@ void ResultsWidget::clear(void)
 
     resultsShow(false);
 }
-
-

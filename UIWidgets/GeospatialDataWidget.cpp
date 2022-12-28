@@ -42,14 +42,14 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "UserInputCPTWidget.h"
 
-GeospatialDataWidget::GeospatialDataWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppSelection(QString("Geospatial Data"),QString("UserSpecifiedGISandCPTData"), parent), visualizationWidget(visWidget)
+GeospatialDataWidget::GeospatialDataWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppSelection(QString("Geospatial Data"),QString("UserSpecifiedData"), parent), visualizationWidget(visWidget)
 {
     cptInputWidget = new UserInputCPTWidget(visualizationWidget, this);
 
     GISMapInputWidget = new GISMapWidget(visualizationWidget,this);
 
-    this->addComponent("GIS Map Input Widget", "GISMaps", GISMapInputWidget);
-    this->addComponent("CPT Borehole Input", "CPTParameters", cptInputWidget);
+    this->addComponent("User Provided GIS Data", "GISDatasets", GISMapInputWidget);
+    this->addComponent("Site Investigation Data (current supports CPTs only)", "CPTParameters", cptInputWidget);
 }
 
 
@@ -69,16 +69,24 @@ void GeospatialDataWidget::clear(void)
 bool GeospatialDataWidget::inputFromJSON(QJsonObject &jsonObject)
 {
 
-    auto GISObject = jsonObject.value("GISMaps").toObject();
+    auto GISObject = jsonObject.value("GISDatasets").toObject();
     auto CPTObject = jsonObject.value("CPTParameters").toObject();
 
 //    if(GISObject.isEmpty())
 //        return false;
 
-    /*
-    To add asection for importing GIS objects
-    */
+    // GIS input
+    auto GISParams = GISObject.keys();
 
+    if(!GISParams.isEmpty())
+    {
+        auto res =  GISMapInputWidget->inputFromJSON(GISObject);
+        if(res == false)
+            return false;
+    }
+
+
+    // CPT input
     auto CPTParams = CPTObject.keys();
 
     if(!CPTParams.isEmpty())
@@ -113,7 +121,7 @@ bool GeospatialDataWidget::outputToJSON(QJsonObject &rvObject)
         return false;
     }
 
-    rvObject["UserSpecifiedGISandCPTData"] = GISCPTObj;
+    rvObject["UserSpecifiedData"] = GISCPTObj;
 
     return true;
 }

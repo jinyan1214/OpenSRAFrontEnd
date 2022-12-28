@@ -118,7 +118,7 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
 
     // Create run and exit buttons
     runButton = new QPushButton();
-    runButton->setText(tr("RUN"));
+    runButton->setText(tr("PERFORM ANALYSIS"));
     pushButtonLayout->addWidget(runButton);
 
     QPushButton *exitButton = new QPushButton();

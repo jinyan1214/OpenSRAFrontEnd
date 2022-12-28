@@ -79,6 +79,8 @@ private:
 
     int importResultVisuals(const QString& pathToResults);
 
+    int getSetupConfigParams(const QString& pathToResults);
+
     QGISVisualizationWidget* theVisualizationWidget;
     std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
 
@@ -90,6 +92,10 @@ private:
 
     QList<QgsMapLayer*> results_layers;
 
+    QString IMSourceType;
+    QString infraType;
+    QString initIMSourceType;
+    QString initInfraType;
 };
 
 #endif // OpenSRAPostProcessor_H

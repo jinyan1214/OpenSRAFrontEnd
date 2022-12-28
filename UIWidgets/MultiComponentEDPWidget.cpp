@@ -87,7 +87,7 @@ MultiComponentEDPWidget::MultiComponentEDPWidget(QWidget *parent) : MultiCompone
 
     this->addComponent("Pipelines", belowGround);
     this->addComponent("Wells and Caprocks",  wellAndCaprocks);
-    this->addComponent("Above Ground \nGas Infrastructure", aboveGround);
+    this->addComponent("Above Ground\nGas Infrastructure", aboveGround);
 
     this->hideSelectionWidget();
 }

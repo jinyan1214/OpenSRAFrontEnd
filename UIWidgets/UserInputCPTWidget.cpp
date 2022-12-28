@@ -142,58 +142,62 @@ bool UserInputCPTWidget::inputFromJSON(QJsonObject &jsonObject)
     {
         auto sum_path = jsonObject["PathToCPTSummaryCSV"].toString();
 
-        // Check for relative/absolute paths
-        QFileInfo fileInfo(sum_path);
-        if (!fileInfo.exists())
-            sum_path=QDir::currentPath() + QDir::separator() + sum_path;
+        // if string is not empty, then continue, else don't load into CPT widget tab
+        if (sum_path.length() > 0)
+        {
+            // Check for relative/absolute paths
+            QFileInfo fileInfo(sum_path);
+            if (!fileInfo.exists())
+                sum_path=QDir::currentPath() + QDir::separator() + sum_path;
 
-        CPTSummaryFileLineEdit->setText(sum_path);
-        eventFile = sum_path;
-    }
+            CPTSummaryFileLineEdit->setText(sum_path);
+            eventFile = sum_path;
 
-    // set the line
-    if (jsonObject.contains("PathToCPTDataFolder"))
-    {
-        auto cpt_dir = jsonObject["PathToCPTDataFolder"].toString();
+            // set the line
+            if (jsonObject.contains("PathToCPTDataFolder"))
+            {
+                auto cpt_dir = jsonObject["PathToCPTDataFolder"].toString();
 
-        // Check for relative/absolute paths
-        QFileInfo fileInfo(cpt_dir);
-        if (!fileInfo.exists())
-            cpt_dir=QDir::currentPath() + QDir::separator() + cpt_dir;
+                // Check for relative/absolute paths
+                QFileInfo fileInfo(cpt_dir);
+                if (!fileInfo.exists())
+                    cpt_dir=QDir::currentPath() + QDir::separator() + cpt_dir;
 
-        CPTDirLineEdit->setText(cpt_dir);
-        cptDataDir = cpt_dir;
-    }
+                CPTDirLineEdit->setText(cpt_dir);
+                cptDataDir = cpt_dir;
+            }
 
-    // set the line
-    if (jsonObject.contains("WeightRobertson09"))
-    {
-        auto wr09 = jsonObject["WeightRobertson09"].toDouble();
-        weightR09LineEdit->setText(QString::number(wr09));
-    }
+            // set the line
+            if (jsonObject.contains("WeightRobertson09"))
+            {
+                auto wr09 = jsonObject["WeightRobertson09"].toDouble();
+                weightR09LineEdit->setText(QString::number(wr09));
+            }
 
-    // set the line
-    if (jsonObject.contains("WeightZhang04"))
-    {
-        auto wz04 = jsonObject["WeightZhang04"].toDouble();
-        weightZ04LineEdit->setText(QString::number(wz04));
-    }
+            // set the line
+            if (jsonObject.contains("WeightZhang04"))
+            {
+                auto wz04 = jsonObject["WeightZhang04"].toDouble();
+                weightZ04LineEdit->setText(QString::number(wz04));
+            }
 
-    // set the line
-    if (jsonObject.contains("PathToFreefaceDir"))
-    {
-        auto ff_dir = jsonObject["PathToFreefaceDir"].toString();
-        FreefaceDirLineEdit->setText(ff_dir);
-    }
+            // set the line
+            if (jsonObject.contains("PathToFreefaceDir"))
+            {
+                auto ff_dir = jsonObject["PathToFreefaceDir"].toString();
+                FreefaceDirLineEdit->setText(ff_dir);
+            }
 
-    // load the motions
-    this->loadUserCPTData();
+            // load the motions
+            this->loadUserCPTData();
 
-    // set the QComboBox, valid after table has been loaded
-    if (jsonObject.contains("ColumnInCPTSummaryWithGWTable"))
-    {
-        auto gwt_input = jsonObject["ColumnInCPTSummaryWithGWTable"].toString();
-        gwtMeanOption->setCurrentText(gwt_input);
+            // set the QComboBox, valid after table has been loaded
+            if (jsonObject.contains("ColumnInCPTSummaryWithGWTable"))
+            {
+                auto gwt_input = jsonObject["ColumnInCPTSummaryWithGWTable"].toString();
+                gwtMeanOption->setCurrentText(gwt_input);
+            }
+        }
     }
 
     return true;
