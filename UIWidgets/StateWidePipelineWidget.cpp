@@ -32,9 +32,9 @@ StateWidePipelineWidget::StateWidePipelineWidget(QWidget *parent, VisualizationW
     componentFileLineEdit->setEnabled(false);
     componentFileLineEdit->setStyleSheet("{color: #000000; background-color: #D3D3D3;}");
 
-    componentFileLineEdit->setPlaceholderText("Click on the \"Load state network\" button to load the statewide natural gas network for California");
+    componentFileLineEdit->setPlaceholderText("Click on the \"Load Network\" button to load the statewide natural gas network for California");
 
-    browseFileButton->setText("Load State Network:");
+    browseFileButton->setText("Load Network:");
 
     // Disconnect the old slot and connect the new one
     disconnect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseComponentInfoFileDialog()));

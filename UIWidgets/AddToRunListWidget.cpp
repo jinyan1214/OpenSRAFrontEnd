@@ -146,6 +146,8 @@ void AddToRunListWidget::clear()
     aleatoryLE->clear();
     episLE->clear();
     weightLineEdit->clear();
+
+    weightLineEdit->setText("1.0");
 }
 
 

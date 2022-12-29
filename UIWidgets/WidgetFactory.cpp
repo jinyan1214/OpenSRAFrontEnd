@@ -235,6 +235,14 @@ QWidget* WidgetFactory::getLineEditWidget(const QJsonObject& obj, const QString&
     lineEditWidget->setMethodAndParamJsonObj(obj);
     lineEditWidget->setDefaultValue(defVal);
 
+    // for method parameters
+    if (obj.contains("DescToDisplay"))
+    {
+        auto descTxt = "\t" + obj.value("DescToDisplay").toString();
+        // not using as intended - proxy attribute to store description text
+        lineEditWidget->setToolTip(descTxt);
+    }
+
     return lineEditWidget;
 }
 
@@ -245,7 +253,7 @@ QWidget* WidgetFactory::getLabelWidget(const QJsonObject& obj, const QString& pa
     if(obj.value("ToDisplay").toBool() == false)
         return nullptr;
 
-    auto defVal = obj.value("DescToDisplay");
+    auto defVal = "\t" + obj.value("DescToDisplay").toString();
 
     JsonLabel* labelWidget = new JsonLabel(parent);
     labelWidget->setObjectName(parentKey);
@@ -412,18 +420,48 @@ bool WidgetFactory::addWidgetToLayout(const QJsonObject& paramObj, const QString
     }
     else
     {
-        QLabel* widgetLabel = new QLabel(widgetLabelText+":",this->parentWidget());
+        // for method params only
+        if (paramObj.contains("DescToDisplay"))
+        {
+            auto numThings = mainLayout->count();
+            QLabel* widgetLabel = new QLabel(QString::number(numThings+1)+".  "+widgetLabelText+":",this->parentWidget());
 
-        widgetLabel->setStyleSheet("font-weight: bold; color: black");
+            widgetLabel->setStyleSheet("font-weight: bold; color: black");
 
-        QGridLayout* newHLayout = new QGridLayout();
-        newHLayout->setMargin(0);
-        newHLayout->setSpacing(4);
+            QVBoxLayout* newVLayout = new QVBoxLayout();
 
-        newHLayout->addWidget(widgetLabel,0,0);
-        newHLayout->addWidget(widget,0,1);
+            QGridLayout* newHLayout = new QGridLayout();
+            newHLayout->setMargin(0);
+            newHLayout->setSpacing(4);
 
-        mainLayout->addLayout(newHLayout);
+            newHLayout->addWidget(widgetLabel,0,0);
+            widget->setMaximumWidth(200);
+            newHLayout->addWidget(widget,0,1);
+            newHLayout->setColumnStretch(2,1);
+
+            // proxy way to get description text for line edit
+            QLabel* widgetDesc = new QLabel(widget->toolTip());
+
+            newVLayout->addLayout(newHLayout);
+            newVLayout->addWidget(widgetDesc);
+
+            mainLayout->addLayout(newVLayout);
+        }
+        else
+        {
+            QLabel* widgetLabel = new QLabel(widgetLabelText+":",this->parentWidget());
+
+            widgetLabel->setStyleSheet("font-weight: bold; color: black");
+
+            QGridLayout* newHLayout = new QGridLayout();
+            newHLayout->setMargin(0);
+            newHLayout->setSpacing(4);
+
+            newHLayout->addWidget(widgetLabel,0,0);
+            newHLayout->addWidget(widget,0,1);
+
+            mainLayout->addLayout(newHLayout);
+        }
     }
 
     return true;

@@ -45,6 +45,8 @@ class AssetInputWidget;
 class SimCenterAppSelection;
 
 class StateWidePipelineWidget;
+class BayAreaPipelineWidget;
+class LosAngelesPipelineWidget;
 class LineAssetInputWidget;
 class CSVWellsCaprocksInputWidget;
 class GISWellsCaprocksInputWidget;
@@ -84,6 +86,9 @@ private:
     LineAssetInputWidget* csvBelowGroundInputWidget = nullptr;
 
     StateWidePipelineWidget* statewideBelowGroundInputWidget = nullptr;
+    BayAreaPipelineWidget* bayareaBelowGroundInputWidget = nullptr;
+    LosAngelesPipelineWidget* losangelesBelowGroundInputWidget = nullptr;
+
 
     SimCenterAppSelection* theWellsCaprocksWidget = nullptr;
     SimCenterAppSelection* theAboveGroundInfWidget = nullptr;

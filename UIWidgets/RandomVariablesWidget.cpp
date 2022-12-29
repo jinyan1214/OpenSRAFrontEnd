@@ -232,7 +232,7 @@ void RandomVariablesWidget::makeRVWidget(void)
 
     verticalLayout->addStretch(1);
 
-    verticalLayout->addItem(vSpacer);
+//    verticalLayout->addItem(vSpacer);
 
     QLabel* instructionsLabel = new QLabel();
     instructionsLabel->setText("Instructions for modifying these tables:");

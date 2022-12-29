@@ -109,6 +109,8 @@ SOURCES += main.cpp \
     UIWidgets/GeospatialDataWidget.cpp \
     UIWidgets/GenericModelWidget.cpp \
     UIWidgets/StateWidePipelineWidget.cpp \
+    UIWidgets/BayAreaPipelineWidget.cpp \
+    UIWidgets/LosAngelesPipelineWidget.cpp \
     ModelViewItems/RVTableView.cpp \
     ModelViewItems/RVTableModel.cpp \
     ModelViewItems/MixedDelegate.cpp \
@@ -148,6 +150,8 @@ HEADERS  += \
     UIWidgets/GeospatialDataWidget.h \
     UIWidgets/GenericModelWidget.h \
     UIWidgets/StateWidePipelineWidget.h \
+    UIWidgets/BayAreaPipelineWidget.h \
+    UIWidgets/LosAngelesPipelineWidget.h \
     WorkflowAppOpenSRA.h \
     WorkflowAppWidget.h \
     MainWindowWorkflowApp.h \

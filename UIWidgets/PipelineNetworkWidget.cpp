@@ -47,6 +47,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GISGasNetworkInputWidget.h"
 
 #include "StateWidePipelineWidget.h"
+#include "BayAreaPipelineWidget.h"
+#include "LosAngelesPipelineWidget.h"
 #include "LineAssetInputWidget.h"
 #include "PointAssetInputWidget.h"
 #include "CSVWellsCaprocksInputWidget.h"
@@ -104,10 +106,14 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
 
     // Statewide
     statewideBelowGroundInputWidget = new StateWidePipelineWidget(this, theVisualizationWidget, "Pipeline Network","Pipeline Network");
+    bayareaBelowGroundInputWidget = new BayAreaPipelineWidget(this, theVisualizationWidget, "Pipeline Network","Pipeline Network");
+    losangelesBelowGroundInputWidget = new LosAngelesPipelineWidget(this, theVisualizationWidget, "Pipeline Network","Pipeline Network");
     //    statewideBelowGroundInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
 
     //    statewideBelowGroundInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
     statewideBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
+    bayareaBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
+    losangelesBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
 
 
     // GIS pipelines
@@ -118,6 +124,8 @@ PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidge
     gasPipelineWidget->addComponent(QString("CSV to Pipeline"), QString("CSV_to_PIPELINE"), csvBelowGroundInputWidget);
     gasPipelineWidget->addComponent(QString("GIS to Pipeline"), QString("GIS_to_PIPELINE"), gisGasNetworkInventory);
     gasPipelineWidget->addComponent(QString("Use Prepackaged State Pipeline Network"), QString("STATE_PIPELINE"), statewideBelowGroundInputWidget);
+    gasPipelineWidget->addComponent(QString("Use Prepackaged Bay Area Pipeline Network"), QString("BAY_AREA_PIPELINE"), bayareaBelowGroundInputWidget);
+    gasPipelineWidget->addComponent(QString("Use Prepackaged Los Angeles Pipeline Network"), QString("LOS_ANGELES_PIPELINE"), losangelesBelowGroundInputWidget);
 
 
     // Above ground widget
@@ -301,6 +309,13 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
             app = "CSV to Pipeline";
         else if(typeOfFile.compare("State_Network") == 0)
             app = "Use Prepackaged State Pipeline Network";
+        else if(typeOfFile.compare("Region_Network") == 0)
+        {
+            if (fileName.contains("Bay_Area"))
+                app = "Use Prepackaged Bay Area Pipeline Network";
+            else if (fileName.contains("Los_Angeles"))
+                app = "Use Prepackaged Los Angeles Pipeline Network";
+        }
 
     }
     else if(typeOfInf.compare("above_ground") == 0)

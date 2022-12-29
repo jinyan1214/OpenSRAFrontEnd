@@ -78,7 +78,7 @@ JsonDefinedWidget::JsonDefinedWidget(QWidget* parent, const QJsonObject& obj, co
     {
         auto returnStr = "\t"+returnObj.value("Description").toString();
 
-        QLabel* returnLabel = new QLabel("Returns:");
+        QLabel* returnLabel = new QLabel("Return description:");
         returnLabel->setStyleSheet("font-weight: bold; color: black");
 
         QLabel* returnVal = new QLabel(returnStr);
@@ -86,9 +86,36 @@ JsonDefinedWidget::JsonDefinedWidget(QWidget* parent, const QJsonObject& obj, co
         layout->addWidget(returnLabel);
         layout->addWidget(returnVal);
 
+        QLabel* returnParamLabel = new QLabel("Return parameter labels used by OpenSRA backend (presented here for making generic model):");
+        returnParamLabel->setStyleSheet("font-weight: bold; color: black");
+
+        auto returnParam = returnObj.value("Params").toArray();
+
+        QVBoxLayout *returnParamLayout = new QVBoxLayout();
+        returnParamLayout->setMargin(0);
+        returnParamLayout->setSpacing(4);
+
+        if (returnParam.size() > 0)
+        {
+            for(int i = 0; i < returnParam.size(); ++i)
+            {
+                auto numThings = returnParamLayout->count();
+                QLabel* returnParamItem = new QLabel("\t" + QString::number(numThings+1)+".  "+returnParam[i].toString());
+                returnParamLayout->addWidget(returnParamItem);
+            }
+        }
+        else
+        {
+            QLabel* returnParamItem = new QLabel("No return parameters");
+            returnParamLayout->addWidget(returnParamItem);
+        }
+
+        layout->addWidget(returnParamLabel);
+        layout->addLayout(returnParamLayout);
+
         if(!upstreamObj.isEmpty())
         {
-            QLabel* upstreamLabel = new QLabel("Upstream Dependencies:");
+            QLabel* upstreamLabel = new QLabel("Upstream dependencies:");
             upstreamLabel->setStyleSheet("font-weight: bold; color: black");
 
             auto upstreamStr = "\t"+upstreamObj.value("Description").toString();
@@ -99,7 +126,7 @@ JsonDefinedWidget::JsonDefinedWidget(QWidget* parent, const QJsonObject& obj, co
             layout->addWidget(upstreamVal);
         }
 
-        QLabel* paramsLabel = new QLabel("Additional Input Parameters (see the \"Input Variables\" tab):");
+        QLabel* paramsLabel = new QLabel("Additional input parameters (visit the \"Input Variables\" tab to modify the variable values):");
         paramsLabel->setStyleSheet("font-weight: bold; color: black");
 
         layout->addWidget(paramsLabel);

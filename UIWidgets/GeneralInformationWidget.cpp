@@ -219,7 +219,7 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
         "\t- Click on the tab with the type of infrastructure to run\n"
         "\t- From the dropdown menu, choose the file type to import\n"
         "\t- Fill out the inputs as requested\n"
-        "\tNote: for \"Pipelines\", users can choose to use the prepackaged state pipeline network, which has been heavily preprocessed internally to reduce runtime; however, state-wide analysis can still take a long time to complete (~1 hour)\n"
+        "\tNote: for \"Pipelines\", users can choose to use the prepackaged state pipeline network, which has been heavily preprocessed internally to reduce runtime; however, state-wide analysis can still take a long time to complete (over 1 hour)\n"
 
         "3. \"GIS and CPT Data\":\n"
         "\t- \"User Provided GIS Data\"\n"\
@@ -233,9 +233,8 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
         "\t- From the dropdown menu, pick the model to run\n"
         "\t- Review the descriptions on the outputs, inputs, and additional requirements from other tabs\n"
         "\t- Click \"Add run to list\" to the include this model in the run\n"
-        "\tNotes:\n"
-        "\t\t- The input parameters will be displayed under the \"Input Variables\" tab for users to edit\n"
-        "\t\t- While you can use more than one model, we advise to stay with one model per run as combinations of models may not be appropriate for Polynomial Chaos\n"
+        "\tNote 1: The input parameters will be displayed under the \"Input Variables\" tab for users to edit\n"
+        "\tNote 2: While you can use more than one model, we advise to stay with one model per run as combinations of models may not be appropriate for Polynomial Chaos\n"
 
         "5. \"Damage Measure\":\n"
         "\t- Only required if requested by one of the models under the \"Decision Variable\" tab\n"
@@ -247,7 +246,7 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
 
         "6. \"Intensity Measure\":\n"
         "\t- From the dropdown menu, choose the type of seismic source to use\n"
-        "\t- Follow the on-screen instructions to \n"
+        "\t- Follow the on-screen instructions to fill out the inputs as requested\n"
 
         "7. \"Input Variables\":\n"
         "\t- This tab contains two tables:\n"
