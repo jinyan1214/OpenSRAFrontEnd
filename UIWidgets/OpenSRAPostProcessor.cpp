@@ -389,37 +389,51 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
             if (this->IMSourceType == "UCERF")
             {
                 // rates can be on the order of 1e-6, -7, use log scale
-                classBreaks.append(QPair<double,double>(0.0, 1E-05));
-                classBreaks.append(QPair<double,double>(1.00E-05, 1.00E-04));
-                classBreaks.append(QPair<double,double>(1.00E-04, 1.00E-03));
-                classBreaks.append(QPair<double,double>(1.00E-03, 1.00E-02));
-                classBreaks.append(QPair<double,double>(1.00E-02, 1.00E-01));
                 classBreaks.append(QPair<double,double>(1.00E-01, 1.00E+03));
-
-                colors.push_back(Qt::darkBlue);
-                colors.push_back(QColor(255,255,178));
-                colors.push_back(QColor(253,204,92));
-                colors.push_back(QColor(253,141,60));
-                colors.push_back(QColor(240,59,32));
-                colors.push_back(QColor(189,0,38));
+                classBreaks.append(QPair<double,double>(1.00E-02, 1.00E-01));
+                classBreaks.append(QPair<double,double>(1.00E-03, 1.00E-02));
+                classBreaks.append(QPair<double,double>(1.00E-04, 1.00E-03));
+                classBreaks.append(QPair<double,double>(1.00E-05, 1.00E-04));
+                classBreaks.append(QPair<double,double>(0.0, 1E-05));
             }
             else
             {
                 // generally showing just probabilities from 0 to 1 (rate = 1)
-                classBreaks.append(QPair<double,double>(0.0, 0.2));
-                classBreaks.append(QPair<double,double>(0.2, 0.4));
-                classBreaks.append(QPair<double,double>(0.4, 0.6));
-                classBreaks.append(QPair<double,double>(0.6, 0.8));
-                classBreaks.append(QPair<double,double>(0.8, 1.0));
                 classBreaks.append(QPair<double,double>(1.0, 1.00E+3));
-
-                colors.push_back(Qt::darkBlue);
-                colors.push_back(QColor(255,255,178));
-                colors.push_back(QColor(253,204,92));
-                colors.push_back(QColor(253,141,60));
-                colors.push_back(QColor(240,59,32));
-                colors.push_back(QColor(189,0,38));
+                classBreaks.append(QPair<double,double>(0.8, 1.0));
+                classBreaks.append(QPair<double,double>(0.6, 0.8));
+                classBreaks.append(QPair<double,double>(0.4, 0.6));
+                classBreaks.append(QPair<double,double>(0.2, 0.4));
+                classBreaks.append(QPair<double,double>(0.0, 0.2));
             }
+
+//            colors.push_back(QColor(189,0,38));
+//            colors.push_back(QColor(240,59,32));
+//            colors.push_back(QColor(253,141,60));
+//            colors.push_back(QColor(254,178,76));
+//            colors.push_back(QColor(254,217,118));
+//            colors.push_back(QColor(255,255,178)); // start at yellow
+
+//            colors.push_back(QColor(177,0,38));
+//            colors.push_back(QColor(227,26,28));
+//            colors.push_back(QColor(252,78,42));
+//            colors.push_back(QColor(253,141,60));
+//            colors.push_back(QColor(254,178,76));
+//            colors.push_back(QColor(254,217,118)); // start at light orange
+
+            colors.push_back(QColor(140,45,4));
+            colors.push_back(QColor(204,76,2));
+            colors.push_back(QColor(236,112,20));
+            colors.push_back(QColor(254,153,41));
+            colors.push_back(QColor(254,196,79));
+            colors.push_back(QColor(254,227,145)); // start at light orange
+
+//            colors.push_back(QColor(189,0,38));
+//            colors.push_back(QColor(240,59,32));
+//            colors.push_back(QColor(253,141,60));
+//            colors.push_back(QColor(253,204,92));
+//            colors.push_back(QColor(255,255,178));
+//            colors.push_back(Qt::darkBlue);
 
             // if below ground, use line as symbol, otherwise use marker as symbol (e.g., wells, above ground components)
             if (this->infraType == "below_ground")
