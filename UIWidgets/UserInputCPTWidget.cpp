@@ -83,6 +83,7 @@ UserInputCPTWidget::UserInputCPTWidget(VisualizationWidget* visWidget, QWidget *
 
     eventFile = "";
     cptDataDir = "";
+    freefaceDir = "";
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     QStackedWidget* CPTWidget = this->getUserInputCPTWidget();
@@ -115,12 +116,16 @@ bool UserInputCPTWidget::outputToJSON(QJsonObject &jsonObj)
 {
     QJsonObject outputObj;
 
-    outputObj.insert("PathToCPTSummaryCSV",CPTSummaryFileLineEdit->text());
-    outputObj.insert("PathToCPTDataFolder",CPTDirLineEdit->text());
+    QFileInfo pathToCPTSummaryCSV(CPTSummaryFileLineEdit->text());
+    QFileInfo pathToCPTDataFolder(CPTDirLineEdit->text());
+    QFileInfo pathToFreefaceDir(FreefaceDirLineEdit->text());
+
+    outputObj.insert("PathToCPTSummaryCSV",pathToCPTSummaryCSV.absoluteFilePath());
+    outputObj.insert("PathToCPTDataFolder",pathToCPTDataFolder.absoluteFilePath());
     outputObj.insert("ColumnInCPTSummaryWithGWTable",gwtMeanOption->currentText());
     outputObj.insert("WeightRobertson09",weightR09LineEdit->text().toDouble());
     outputObj.insert("WeightZhang04",weightZ04LineEdit->text().toDouble());
-    outputObj.insert("PathToFreefaceDir",FreefaceDirLineEdit->text());
+    outputObj.insert("PathToFreefaceDir",pathToFreefaceDir.absoluteFilePath());
 
     jsonObj.insert("CPTParameters",outputObj);
 
@@ -146,11 +151,12 @@ bool UserInputCPTWidget::inputFromJSON(QJsonObject &jsonObject)
         if (sum_path.length() > 0)
         {
             // Check for relative/absolute paths
-            QFileInfo fileInfo(sum_path);
-            if (!fileInfo.exists())
+            QFileInfo pathToCPTSummaryCSV(sum_path);
+            if (!pathToCPTSummaryCSV.exists())
                 sum_path=QDir::currentPath() + QDir::separator() + sum_path;
+            pathToCPTSummaryCSV.setFile(sum_path);
 
-            CPTSummaryFileLineEdit->setText(sum_path);
+            CPTSummaryFileLineEdit->setText(pathToCPTSummaryCSV.absoluteFilePath());
             eventFile = sum_path;
 
             // set the line
@@ -159,11 +165,12 @@ bool UserInputCPTWidget::inputFromJSON(QJsonObject &jsonObject)
                 auto cpt_dir = jsonObject["PathToCPTDataFolder"].toString();
 
                 // Check for relative/absolute paths
-                QFileInfo fileInfo(cpt_dir);
-                if (!fileInfo.exists())
+                QFileInfo pathToCPTDataFolder(cpt_dir);
+                if (!pathToCPTDataFolder.exists())
                     cpt_dir=QDir::currentPath() + QDir::separator() + cpt_dir;
+                pathToCPTDataFolder.setFile(cpt_dir);
 
-                CPTDirLineEdit->setText(cpt_dir);
+                CPTDirLineEdit->setText(pathToCPTDataFolder.absoluteFilePath());
                 cptDataDir = cpt_dir;
             }
 
@@ -185,7 +192,20 @@ bool UserInputCPTWidget::inputFromJSON(QJsonObject &jsonObject)
             if (jsonObject.contains("PathToFreefaceDir"))
             {
                 auto ff_dir = jsonObject["PathToFreefaceDir"].toString();
-                FreefaceDirLineEdit->setText(ff_dir);
+
+                if (ff_dir.length() == 0)
+                    FreefaceDirLineEdit->setText(ff_dir);
+                else
+                {
+                    // Check for relative/absolute paths
+                    QFileInfo pathToFreeFaceDir(ff_dir);
+                    if (!pathToFreeFaceDir.exists())
+                        ff_dir=QDir::currentPath() + QDir::separator() + ff_dir;
+                    pathToFreeFaceDir.setFile(ff_dir);
+
+                    FreefaceDirLineEdit->setText(pathToFreeFaceDir.absoluteFilePath());
+                    freefaceDir = ff_dir;
+                }
             }
 
             // load the motions
@@ -648,6 +668,7 @@ void UserInputCPTWidget::clear(void)
 {
     eventFile.clear();
     cptDataDir.clear();
+    freefaceDir.clear();
 
     theComponentDb->clear();
     selectComponentsLineEdit->clear();

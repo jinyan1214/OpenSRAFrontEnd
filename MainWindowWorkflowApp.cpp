@@ -6,7 +6,7 @@
 #include "Utils/RelativePathResolver.h"
 #include "Utils/dialogabout.h"
 #include "Utils/PythonProgressDialog.h"
-#include "EventFilter.h"
+#include "Utils/EventFilter.h"
 
 #include <QTreeView>
 #include <QDockWidget>
@@ -46,9 +46,9 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
 
     statusWidget = PythonProgressDialog::getInstance();
 
-
-    EventFilter* myFilter = new EventFilter();
-    this->installEventFilter(myFilter);
+    // hover over to see widget
+//    EventFilter* myFilter = new EventFilter();
+//    this->installEventFilter(myFilter);
 
     statusDockWidget = new QDockWidget(tr("Program Output"), this);
     statusDockWidget->setContentsMargins(0,0,0,0);

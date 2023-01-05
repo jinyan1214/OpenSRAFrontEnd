@@ -65,7 +65,19 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("SimCenter");
     QCoreApplication::setApplicationVersion(OpenSRAVersion);
 
+
+#ifdef Q_OS_WIN
+//    QGuiApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+
+#ifdef Q_OS_MACOS
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+
+#ifdef Q_OS_LINUX
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
 
     // Set up the application
     // Start the Application
