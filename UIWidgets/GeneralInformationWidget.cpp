@@ -56,9 +56,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QMetaEnum>
 #include <QStandardPaths>
 #include <QApplication>
+#include <QScrollArea>
 
 GeneralInformationWidget::GeneralInformationWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
+
+
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);
     mainLayout->setSpacing(0);
@@ -78,9 +81,19 @@ GeneralInformationWidget::GeneralInformationWidget(QWidget *parent) : SimCenterA
     infoLayout->setSpacing(3);
     infoLayout->setContentsMargins(5,0,0,0);
 
+    auto infoWidget = new QWidget();
+    infoWidget->setLayout(infoLayout);
+
+    QScrollArea *scrollWidget = new QScrollArea;
+    scrollWidget->setWidgetResizable(true);
+    scrollWidget->setLineWidth(0);
+    scrollWidget->setWidget(infoWidget);
+    scrollWidget->setFrameShape(QFrame::NoFrame);
+    scrollWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
     mainLayout->addLayout(theHeaderLayout);
-    mainLayout->addLayout(infoLayout,-1);
-    mainLayout->addStretch();
+    mainLayout->addWidget(scrollWidget);
+//    mainLayout->addStretch();
 
     this->setLayout(mainLayout);
 }
@@ -256,8 +269,9 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
 
         "\nClick \"PREPROCESS\" once Steps 1 through 7 have been reviewed\n"
 
-        "When prompted, click \"PERFORM ANALYSIS\" to perform the analysis";
-        "\t- If the analysis is successful, the program will switch to the \"Results\" tab automatically";
+        "When prompted, click \"PERFORM ANALYSIS\" to perform the analysis\n\n"
+        "\t- If the analysis is successful, the program will switch to the \"Results\" tab automatically\n";
+
     auto setupDetailLabel = new QLabel(setupDetailString, this);
 
 

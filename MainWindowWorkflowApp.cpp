@@ -6,6 +6,7 @@
 #include "Utils/RelativePathResolver.h"
 #include "Utils/dialogabout.h"
 #include "Utils/PythonProgressDialog.h"
+#include "EventFilter.h"
 
 #include <QTreeView>
 #include <QDockWidget>
@@ -43,7 +44,11 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
     centralWidget->setLayout(layout);
     centralWidget->setContentsMargins(0,0,0,0);
 
-    statusWidget = PythonProgressDialog::getInstance(this);
+    statusWidget = PythonProgressDialog::getInstance();
+
+
+    EventFilter* myFilter = new EventFilter();
+    this->installEventFilter(myFilter);
 
     statusDockWidget = new QDockWidget(tr("Program Output"), this);
     statusDockWidget->setContentsMargins(0,0,0,0);
@@ -73,10 +78,10 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
         );
         ********************************************************/
 
-//    QRect rec = QGuiApplication::primaryScreen()->geometry();
-//    int height = this->height()<int(rec.height())?int(rec.height()):this->height();
-//    int width  = this->width()<int(rec.width())?int(rec.width()):this->width();
-//    this->resize(width, height);
+    //    QRect rec = QGuiApplication::primaryScreen()->geometry();
+    //    int height = this->height()<int(rec.height())?int(rec.height()):this->height();
+    //    int width  = this->width()<int(rec.width())?int(rec.width()):this->width();
+    //    this->resize(width, height);
 
 
     //
@@ -168,8 +173,8 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
     citeText = QString("");
     aboutText = QString(tr("This is a SimCenter Workflow Application"));
 
-//    aboutTitle = "About this Application"; // this is the title displayed in the on About dialog
-//    aboutSource = ":/Resources/docs/textAbout.html";  // this is an HTML file stored under resources
+    //    aboutTitle = "About this Application"; // this is the title displayed in the on About dialog
+    //    aboutSource = ":/Resources/docs/textAbout.html";  // this is an HTML file stored under resources
 
     copyrightText = QString("\
                             <p>\
@@ -291,7 +296,7 @@ bool MainWindowWorkflowApp::saveFile(const QString &fileName)
     file.close();
 
     // set current file
-//    setCurrentFile(fileName);
+    //    setCurrentFile(fileName);
 
     return true;
 }
@@ -335,7 +340,7 @@ void MainWindowWorkflowApp::loadFile(const QString &fileName)
     QJsonObject jsonObj = doc.object();
 
     //
-//    QFileInfo fileInfo(fileName);
+    //    QFileInfo fileInfo(fileName);
     SCUtils::ResolveAbsolutePaths(jsonObj, fileInfo.dir());
 
     // close file
@@ -347,7 +352,7 @@ void MainWindowWorkflowApp::loadFile(const QString &fileName)
     }
     inputWidget->inputFromJSON(jsonObj);
 
-//    setCurrentFile(fileName);
+    //    setCurrentFile(fileName);
 }
 
 

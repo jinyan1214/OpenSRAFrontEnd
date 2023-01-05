@@ -115,6 +115,8 @@ public slots:
 
     void clearWorkDir(void);
 
+    void clearResultsDir(void);
+
     void setUpForApplicationRun(QString &workingDir, QString &subDir);
     void setUpForPreprocessingRun(QString &workingDir, QString &subDir);
 

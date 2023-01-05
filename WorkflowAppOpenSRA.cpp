@@ -183,8 +183,9 @@ void WorkflowAppOpenSRA::initialize(void)
     // Create the edit menu with the clear action
     QMenu *editMenu = theMainWindow->menuBar()->addMenu(tr("&Edit"));
     // Set the path to the input file
-    editMenu->addAction("Clear Inputs", this, &WorkflowAppOpenSRA::clear);
+    editMenu->addAction("Clear GUI Inputs", this, &WorkflowAppOpenSRA::clear);
     editMenu->addAction("Clear Working Directory", this, &WorkflowAppOpenSRA::clearWorkDir);
+    editMenu->addAction("Clear Results Directory", this, &WorkflowAppOpenSRA::clearResultsDir);
 
     // Load the examples
     auto backendLocation = OpenSRAPreferences::getInstance()->getAppDir();
@@ -195,7 +196,6 @@ void WorkflowAppOpenSRA::initialize(void)
     QJsonDocument exDoc = QJsonDocument::fromJson(jsonFile.readAll());
 
     auto docObj = exDoc.object();
-    auto exContainerObj = docObj.value("Examples").toArray();
 
     // Just add "Examples" to menubar, even if it's empty
     QMenu *exampleMenu = theMainWindow->menuBar()->addMenu(tr("&Examples"));
@@ -273,7 +273,7 @@ void WorkflowAppOpenSRA::initialize(void)
     theCustomVisualizationWidget = new CustomVisualizationWidget(this,theVisualizationWidget);
     theDecisionVariableWidget = new MultiComponentDVWidget(this);
     theResultsWidget = new ResultsWidget(this,theVisualizationWidget);
-    theGISDataWidget = new GeospatialDataWidget(this,theVisualizationWidget);
+    theGISDataWidget = new GeospatialDataWidget(nullptr,theVisualizationWidget);
 
     SimCenterWidget *theWidgets[1];
 
@@ -604,6 +604,25 @@ void WorkflowAppOpenSRA::clearWorkDir(void)
         return;
     }
 }
+
+
+void WorkflowAppOpenSRA::clearResultsDir(void)
+{
+    auto thePreferences = OpenSRAPreferences::getInstance(this);
+
+    QString workDirectoryPath =  thePreferences->getLocalWorkDir();
+
+    QString resultsPath = workDirectoryPath + QDir::separator() + "analysis" + QDir::separator() + "Results";
+
+    QDir resultsDirectory(resultsPath);
+
+    if(resultsDirectory.exists()) {
+        resultsDirectory.removeRecursively();
+    }
+
+    theResultsWidget->clear();
+}
+
 
 
 bool WorkflowAppOpenSRA::inputFromJSON(QJsonObject &jsonObject)

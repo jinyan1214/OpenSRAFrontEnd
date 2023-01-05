@@ -44,9 +44,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 GeospatialDataWidget::GeospatialDataWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppSelection(QString("Geospatial Data"),QString("UserSpecifiedData"), parent), visualizationWidget(visWidget)
 {
-    cptInputWidget = new UserInputCPTWidget(visualizationWidget, this);
+    cptInputWidget = new UserInputCPTWidget(visualizationWidget);
 
-    GISMapInputWidget = new GISMapWidget(visualizationWidget,this);
+    GISMapInputWidget = new GISMapWidget(visualizationWidget);
 
     this->addComponent("User Provided GIS Data", "GISDatasets", GISMapInputWidget);
     this->addComponent("Site Investigation Data (current supports CPTs only)", "CPTParameters", cptInputWidget);

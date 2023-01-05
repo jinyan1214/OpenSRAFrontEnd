@@ -87,6 +87,7 @@ SOURCES += main.cpp \
     UIWidgets/ResultsWidget.cpp \
     UIWidgets/UncertaintyQuantificationWidget.cpp \
     UIWidgets/WidgetFactory.cpp \
+    Utils/EventFilter.cpp \
     WorkflowAppOpenSRA.cpp \
     WorkflowAppWidget.cpp \
     MainWindowWorkflowApp.cpp \
@@ -152,6 +153,7 @@ HEADERS  += \
     UIWidgets/StateWidePipelineWidget.h \
     UIWidgets/BayAreaPipelineWidget.h \
     UIWidgets/LosAngelesPipelineWidget.h \
+    Utils/EventFilter.h \
     WorkflowAppOpenSRA.h \
     WorkflowAppWidget.h \
     MainWindowWorkflowApp.h \

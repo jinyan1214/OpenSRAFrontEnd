@@ -57,6 +57,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <sectiontitle.h>
 #include <QLineEdit>
 #include <QFileDialog>
+#include <QScrollArea>
 
 RandomVariablesWidget::RandomVariablesWidget(QWidget *parent) : SimCenterWidget(parent)
 {
@@ -270,6 +271,9 @@ void RandomVariablesWidget::makeRVWidget(void)
             "</ul>"
         "</html>"
     );
+
+    instructionsDesc->setWordWrap(true);
+
     verticalLayout->addWidget(instructionsDesc);
 }
 

@@ -157,10 +157,10 @@ OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWid
 
     rightHandLayout->addWidget(listWidget);
 
-    QPushButton* modifyLegendButton = new QPushButton("Modify Legend (currently inactive)",this);
-    connect(modifyLegendButton, &QPushButton::clicked ,this, &OpenSRAPostProcessor::handleModifyLegend);
+//    QPushButton* modifyLegendButton = new QPushButton("Modify Legend (currently inactive)",this);
+//    connect(modifyLegendButton, &QPushButton::clicked ,this, &OpenSRAPostProcessor::handleModifyLegend);
 
-    rightHandLayout->addWidget(modifyLegendButton);
+//    rightHandLayout->addWidget(modifyLegendButton);
 
     mainWidget->addWidget(rightHandWidget);
 
