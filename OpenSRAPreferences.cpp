@@ -193,8 +193,8 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent) : QDialog(parent)
     QHBoxLayout *appDataLayout = new QHBoxLayout();
     QPushButton *appDataButton = new QPushButton();
     appDataButton->setText("Browse");
-    appDataButton->setToolTip(tr("Select directory containing the pre-packaged datasets for OpenSRA"));
-    auto appDataLabel = new QLabel("Folder with Pre-packaged OpenSRA Datasets:");
+    appDataButton->setToolTip(tr("Select directory containing the prepackaged datasets for OpenSRA"));
+    auto appDataLabel = new QLabel("Folder with Prepackaged OpenSRA Datasets:");
     appDataLayout->addWidget(appDataLabel);
     appDataLayout->addWidget(appDataDirLineEdit);
     appDataLayout->addWidget(appDataButton);

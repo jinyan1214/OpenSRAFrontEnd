@@ -181,7 +181,7 @@ QGroupBox* CustomVisualizationWidget::getVisSelectionGroupBox(void)
     auto layout = new QVBoxLayout();
     groupBox->setLayout(layout);
 
-    auto mapDataLabel = new QLabel("Pre-packaged maps and\ndata sets:");
+    auto mapDataLabel = new QLabel("Prepackaged maps and\ndata sets:");
     mapDataLabel->setStyleSheet("font-weight: bold; color: black");
 
     CGS1Checkbox = new QCheckBox("CGS Geologic Map (Ref.)");
