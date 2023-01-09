@@ -46,13 +46,6 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
 
     statusWidget = PythonProgressDialog::getInstance();
 
-<<<<<<< HEAD
-    // hover over to see widget
-//    EventFilter* myFilter = new EventFilter();
-//    this->installEventFilter(myFilter);
-
-=======
->>>>>>> ce3ac0ebdc98632b7893a4fc0f96abc90a2f2f23
     statusDockWidget = new QDockWidget(tr("Program Output"), this);
     statusDockWidget->setContentsMargins(0,0,0,0);
 

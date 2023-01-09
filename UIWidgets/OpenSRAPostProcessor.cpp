@@ -389,44 +389,45 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
             if (this->IMSourceType == "UCERF")
             {
                 // rates can be on the order of 1e-6, -7, use log scale
-                classBreaks.append(QPair<double,double>(1.00E-01, 1.00E+03));
+                classBreaks.append(QPair<double,double>(1.00E+01, 1.00E+03));
+                classBreaks.append(QPair<double,double>(1.00E-00, 1.00E+01));
+                classBreaks.append(QPair<double,double>(1.00E-01, 1.00E+00));
                 classBreaks.append(QPair<double,double>(1.00E-02, 1.00E-01));
                 classBreaks.append(QPair<double,double>(1.00E-03, 1.00E-02));
                 classBreaks.append(QPair<double,double>(1.00E-04, 1.00E-03));
                 classBreaks.append(QPair<double,double>(1.00E-05, 1.00E-04));
-                classBreaks.append(QPair<double,double>(0.0, 1E-05));
+                classBreaks.append(QPair<double,double>(1.00E-06, 1.00E-05));
+                classBreaks.append(QPair<double,double>(0.0     , 1.00E-06));
+
+                colors.push_back(QColor(158,   1,  66));
+                colors.push_back(QColor(220,  73,  75));
+                colors.push_back(QColor(248, 142,  82));
+                colors.push_back(QColor(253, 212, 129));
+                colors.push_back(QColor(254, 254, 190));
+                colors.push_back(QColor(213, 238, 155));
+                colors.push_back(QColor(134, 206, 164));
+                colors.push_back(QColor( 61, 148, 183));
+                colors.push_back(QColor( 94,  79, 162));
             }
             else
             {
                 // generally showing just probabilities from 0 to 1 (rate = 1)
-                classBreaks.append(QPair<double,double>(1.0, 1.00E+3));
-                classBreaks.append(QPair<double,double>(0.8, 1.0));
-                classBreaks.append(QPair<double,double>(0.6, 0.8));
-                classBreaks.append(QPair<double,double>(0.4, 0.6));
-                classBreaks.append(QPair<double,double>(0.2, 0.4));
-                classBreaks.append(QPair<double,double>(0.0, 0.2));
+                classBreaks.append(QPair<double,double>(1.0     , 1.00E+03));
+                classBreaks.append(QPair<double,double>(0.8     , 1.      ));
+                classBreaks.append(QPair<double,double>(0.6     , 0.8     ));
+                classBreaks.append(QPair<double,double>(0.4     , 0.6     ));
+                classBreaks.append(QPair<double,double>(0.2     , 0.4     ));
+                classBreaks.append(QPair<double,double>(1.00E-03, 0.2     ));
+                classBreaks.append(QPair<double,double>(0.0     , 1.00E-03));
+
+                colors.push_back(QColor(158,   1,  66));
+                colors.push_back(QColor(233,  92,  71));
+                colors.push_back(QColor(253, 190, 110));
+                colors.push_back(QColor(254, 254, 190));
+                colors.push_back(QColor(190, 229, 160));
+                colors.push_back(QColor( 83, 173, 173));
+                colors.push_back(QColor( 94,  79, 162));
             }
-
-//            colors.push_back(QColor(189,0,38));
-//            colors.push_back(QColor(240,59,32));
-//            colors.push_back(QColor(253,141,60));
-//            colors.push_back(QColor(254,178,76));
-//            colors.push_back(QColor(254,217,118));
-//            colors.push_back(QColor(255,255,178)); // start at yellow
-
-//            colors.push_back(QColor(177,0,38));
-//            colors.push_back(QColor(227,26,28));
-//            colors.push_back(QColor(252,78,42));
-//            colors.push_back(QColor(253,141,60));
-//            colors.push_back(QColor(254,178,76));
-//            colors.push_back(QColor(254,217,118)); // start at light orange
-
-            colors.push_back(QColor(140,45,4));
-            colors.push_back(QColor(204,76,2));
-            colors.push_back(QColor(236,112,20));
-            colors.push_back(QColor(254,153,41));
-            colors.push_back(QColor(254,196,79));
-            colors.push_back(QColor(254,227,145)); // start at light orange
 
 //            colors.push_back(QColor(189,0,38));
 //            colors.push_back(QColor(240,59,32));

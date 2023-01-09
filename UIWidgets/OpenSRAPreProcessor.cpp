@@ -107,8 +107,8 @@ int OpenSRAPreProcessor::loadPreprocessingResults(const QString path)
 
     QString jsonString = doc.toJson(QJsonDocument::Indented);
 
-    this->statusMessage("Workflow :");
-    this->statusMessage(jsonString);
+//    this->statusMessage("Workflow :");
+//    this->statusMessage(jsonString);
 
     // Now load the fault traces
     auto faultPath = path + QDir::separator() + "IM" + QDir::separator() + "RUPTURE_METADATA.csv";
