@@ -313,6 +313,7 @@ OpenSRAPreferences::~OpenSRAPreferences()
 void OpenSRAPreferences::savePreferences(bool) {
     QSettings settingsApp("SimCenter", QCoreApplication::applicationName());
     settingsApp.setValue("appDir", customAppDirLineEdit->text());
+    settingsApp.setValue("appDataDir", appDataDirLineEdit->text());
     settingsApp.setValue("pythonExePath", customPythonLineEdit->text());
     settingsApp.setValue("localWorkDir", localWorkDir);
     settingsApp.setValue("customAppDir", customAppDirCheckBox->isChecked());
@@ -343,6 +344,8 @@ void OpenSRAPreferences::resetPreferences(bool) {
     QString appDirLocation = getAppDir();
     settingsApplication.setValue("appDir", appDirLocation);
     customAppDirLineEdit->setText(appDirLocation);
+
+    appDataDirLineEdit->setText("");
 }
 
 
@@ -388,6 +391,13 @@ void OpenSRAPreferences::loadPreferences()
 
     customAppDirLineEdit->setText(currentAppDir);
 
+
+    // appDataDir
+    QString currentAppDataDir = "";
+    QVariant  appDataDirVariant = settingsApplication.value("appDataDir");
+    if (appDataDirVariant.isValid())
+        currentAppDataDir = appDataDirVariant.toString();
+    appDataDirLineEdit->setText(currentAppDataDir);
     
 }
 
