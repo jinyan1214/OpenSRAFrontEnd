@@ -109,16 +109,16 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
 {
 
     QJsonObject outputObj;
-
     QJsonObject directoryObj;
 
     QDir workDir(workingDirectoryLineEdit->text());
     directoryObj.insert("Working",workDir.absolutePath());
+    directoryObj.insert("OpenSRAData",OpenSRAPreferences::getInstance()->getAppDataDir());
 
     outputObj.insert("AnalysisID",analysisLineEdit->text());
 //    outputObj.insert("UnitSystem",unitsCombo->currentText());
     outputObj.insert("Directory", directoryObj);
-    outputObj.insert("OutputFileType", "csv");
+//    outputObj.insert("OutputFileType", "csv");
 
     jsonObj.insert("General",outputObj);
 
@@ -147,6 +147,22 @@ bool GeneralInformationWidget::inputFromJSON(QJsonObject &jsonObject)
 
     auto analysisID = jsonObject["AnalysisID"].toString();
     analysisLineEdit->setText(analysisID);
+
+    if(dirObj.contains("OpenSRAData"))
+    {
+        auto appDataDir = dirObj["OpenSRAData"].toString();
+        if(!appDataDir.isEmpty())
+        {
+            QDir dataDir(appDataDir);
+
+            if(dataDir.exists())
+            {
+                // Set the file path to the preferences
+                OpenSRAPreferences::getInstance()->setAppDataDir(dataDir.absolutePath());
+            }
+        }
+
+    }
 
 //    auto unitsSystem = jsonObject["UnitSystem"].toString();
 //    unitsCombo->setCurrentText(unitsSystem);

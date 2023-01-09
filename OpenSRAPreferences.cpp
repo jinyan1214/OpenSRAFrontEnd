@@ -185,7 +185,7 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent) : QDialog(parent)
     appDirLayout->addWidget(customAppDirLineEdit);
     QPushButton *appDirButton = new QPushButton();
     appDirButton->setText("Browse");
-    appDirButton->setToolTip(tr("Select Directory containing the Backend directory named applications"));
+    appDirButton->setToolTip(tr("Select directory containing the Backend directory named applications"));
     appDirLayout->addWidget(appDirButton);
 
 
@@ -193,8 +193,8 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent) : QDialog(parent)
     QHBoxLayout *appDataLayout = new QHBoxLayout();
     QPushButton *appDataButton = new QPushButton();
     appDataButton->setText("Browse");
-    appDataButton->setToolTip(tr("Select Directory containing the Backend directory named applications"));
-    auto appDataLabel = new QLabel("Application Data:");
+    appDataButton->setToolTip(tr("Select directory containing the pre-packaged datasets for OpenSRA"));
+    auto appDataLabel = new QLabel("Folder with Pre-packaged OpenSRA Datasets:");
     appDataLayout->addWidget(appDataLabel);
     appDataLayout->addWidget(appDataDirLineEdit);
     appDataLayout->addWidget(appDataButton);
@@ -436,6 +436,12 @@ QString OpenSRAPreferences::getAppDir(void) {
 QString OpenSRAPreferences::getAppDataDir(void)
 {
     return appDataDirLineEdit->text();
+}
+
+
+void OpenSRAPreferences::setAppDataDir(const QString &value)
+{
+    appDataDirLineEdit->setText(value);
 }
 
 
