@@ -49,7 +49,7 @@ GeospatialDataWidget::GeospatialDataWidget(QWidget *parent, VisualizationWidget*
     GISMapInputWidget = new GISMapWidget(visualizationWidget);
 
     this->addComponent("User Provided GIS Data", "GISDatasets", GISMapInputWidget);
-    this->addComponent("Site Investigation Data (current supports CPTs only)", "CPTParameters", cptInputWidget);
+    this->addComponent("Site Investigation Data (currently supporting CPTs only)", "CPTParameters", cptInputWidget);
 }
 
 

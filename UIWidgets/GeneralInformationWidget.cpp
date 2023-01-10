@@ -253,7 +253,7 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
         "3. \"GIS and CPT Data\":\n"
         "\t- \"User Provided GIS Data\"\n"\
         "\t\t- Browse for folder with datasets - the menu on the right should populate with the GIS maps found in the folder\n"
-        "\t- \"Site Investigation Data (current supports CPTs only)\"\n"\
+        "\t- \"Site Investigation Data (currently supporting CPTs only)\"\n"\
         "\t\t- Follow the on-screen instructions to fill out the inputs as requested\n"
         "\t\tNote: only used by below ground pipelines with lateral spread and settlement as geohazards\n"
 
