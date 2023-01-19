@@ -46,7 +46,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "SimCenterWidget.h"
 #include "Application.h"
-#include "PythonProcessHandler.h"
+#include "Utils/PythonProcessHandler.h"
 
 #include <QProcess>
 

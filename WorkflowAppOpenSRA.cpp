@@ -58,7 +58,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "MainWindowWorkflowApp.h"
 #include "OpenSRAPreferences.h"
 #include "LoadResultsDialog.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 #include "Utils/FileOperations.h"
 
 #include "OpenSRAPreProcessor.h"

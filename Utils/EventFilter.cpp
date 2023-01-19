@@ -1,5 +1,5 @@
 #include "EventFilter.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 
 #include <QApplication>
 
@@ -7,7 +7,7 @@
 EventFilter::EventFilter(QWidget *parent):
     QObject(parent)
 {
-    dialog = PythonProgressDialog::getInstance();
+    dialog = ProgramOutputDialog::getInstance();
 }
 
 bool EventFilter::eventFilter(QObject *target, QEvent *event)

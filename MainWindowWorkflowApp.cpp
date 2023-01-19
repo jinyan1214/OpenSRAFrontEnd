@@ -5,8 +5,7 @@
 #include "OpenSRAPreferences.h"
 #include "Utils/RelativePathResolver.h"
 #include "Utils/dialogabout.h"
-#include "Utils/PythonProgressDialog.h"
-#include "EventFilter.h"
+#include "Utils/ProgramOutputDialog.h"
 
 #include <QTreeView>
 #include <QDockWidget>
@@ -44,7 +43,7 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
     centralWidget->setLayout(layout);
     centralWidget->setContentsMargins(0,0,0,0);
 
-    statusWidget = PythonProgressDialog::getInstance();
+    statusWidget = ProgramOutputDialog::getInstance();
 
     statusDockWidget = new QDockWidget(tr("Program Output"), this);
     statusDockWidget->setContentsMargins(0,0,0,0);
@@ -55,7 +54,7 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
 
     resizeDocks({statusDockWidget}, {30}, Qt::Vertical);
 
-    connect(statusWidget,&PythonProgressDialog::showDialog,statusDockWidget,&QDockWidget::setVisible);
+    connect(statusWidget,&ProgramOutputDialog::showDialog,statusDockWidget,&QDockWidget::setVisible);
 
     //
     // resize to primary screen

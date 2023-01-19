@@ -12,7 +12,7 @@ class SimCenterWidget;
 class QPushButton;
 class QLabel;
 class OpenSRAPreferences;
-class PythonProgressDialog;
+class ProgramOutputDialog;
 
 class MainWindowWorkflowApp : public QMainWindow
 {
@@ -90,7 +90,7 @@ protected:
     QPushButton *runButton = nullptr;
     QPushButton *loginButton = nullptr;
 
-    PythonProgressDialog* statusWidget = nullptr;
+    ProgramOutputDialog* statusWidget = nullptr;
     QDockWidget* statusDockWidget = nullptr;
 
     QString versionText;
