@@ -120,6 +120,7 @@ private:
 
     QString eventFile;
     QString cptDataDir;
+    QString freefaceDir;
 
     AssetInputDelegate* selectComponentsLineEdit = nullptr;
 

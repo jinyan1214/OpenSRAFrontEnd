@@ -348,8 +348,11 @@ void StateWidePipelineWidget::handleLoadStateData(void)
     auto path = pathToOSRABackend + QDir::separator() + "lib" +
             QDir::separator()+"OtherData"+
             QDir::separator()+"Preprocessed"+
-            QDir::separator()+"CA_Natural_Gas_Pipeline_Segments_WGS84_SUBSET"+
-            QDir::separator() + "CA_Natural_Gas_Pipeline_Segments_WGS84_Under100m_SUBSET.gpkg";
+            QDir::separator()+"CA_Natural_Gas_Pipeline_Segments_WGS84"+
+            QDir::separator() + "CA_Natural_Gas_Pipeline_Segments_WGS84_Under100m.gpkg";
+
+//    QDir::separator()+"CA_Natural_Gas_Pipeline_Segments_WGS84_SUBSET"+
+//    QDir::separator() + "CA_Natural_Gas_Pipeline_Segments_WGS84_Under100m_SUBSET.gpkg";
 
 
     if(!QFile::exists(path))

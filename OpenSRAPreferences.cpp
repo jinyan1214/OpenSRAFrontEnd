@@ -185,7 +185,7 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent) : QDialog(parent)
     appDirLayout->addWidget(customAppDirLineEdit);
     QPushButton *appDirButton = new QPushButton();
     appDirButton->setText("Browse");
-    appDirButton->setToolTip(tr("Select Directory containing the Backend directory named applications"));
+    appDirButton->setToolTip(tr("Select directory containing the Backend directory named applications"));
     appDirLayout->addWidget(appDirButton);
 
 
@@ -193,8 +193,8 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent) : QDialog(parent)
     QHBoxLayout *appDataLayout = new QHBoxLayout();
     QPushButton *appDataButton = new QPushButton();
     appDataButton->setText("Browse");
-    appDataButton->setToolTip(tr("Select Directory containing the Backend directory named applications"));
-    auto appDataLabel = new QLabel("Application Data:");
+    appDataButton->setToolTip(tr("Select directory containing the prepackaged datasets for OpenSRA"));
+    auto appDataLabel = new QLabel("Folder with Prepackaged OpenSRA Datasets:");
     appDataLayout->addWidget(appDataLabel);
     appDataLayout->addWidget(appDataDirLineEdit);
     appDataLayout->addWidget(appDataButton);
@@ -313,6 +313,7 @@ OpenSRAPreferences::~OpenSRAPreferences()
 void OpenSRAPreferences::savePreferences(bool) {
     QSettings settingsApp("SimCenter", QCoreApplication::applicationName());
     settingsApp.setValue("appDir", customAppDirLineEdit->text());
+    settingsApp.setValue("appDataDir", appDataDirLineEdit->text());
     settingsApp.setValue("pythonExePath", customPythonLineEdit->text());
     settingsApp.setValue("localWorkDir", localWorkDir);
     settingsApp.setValue("customAppDir", customAppDirCheckBox->isChecked());
@@ -343,6 +344,8 @@ void OpenSRAPreferences::resetPreferences(bool) {
     QString appDirLocation = getAppDir();
     settingsApplication.setValue("appDir", appDirLocation);
     customAppDirLineEdit->setText(appDirLocation);
+
+    appDataDirLineEdit->setText("");
 }
 
 
@@ -388,6 +391,13 @@ void OpenSRAPreferences::loadPreferences()
 
     customAppDirLineEdit->setText(currentAppDir);
 
+
+    // appDataDir
+    QString currentAppDataDir = "";
+    QVariant  appDataDirVariant = settingsApplication.value("appDataDir");
+    if (appDataDirVariant.isValid())
+        currentAppDataDir = appDataDirVariant.toString();
+    appDataDirLineEdit->setText(currentAppDataDir);
     
 }
 
@@ -436,6 +446,12 @@ QString OpenSRAPreferences::getAppDir(void) {
 QString OpenSRAPreferences::getAppDataDir(void)
 {
     return appDataDirLineEdit->text();
+}
+
+
+void OpenSRAPreferences::setAppDataDir(const QString &value)
+{
+    appDataDirLineEdit->setText(value);
 }
 
 

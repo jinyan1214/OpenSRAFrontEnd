@@ -64,6 +64,7 @@ public:
     QString getAppDataDir(void);
 
     void setLocalWorkDir(const QString &value);
+    void setAppDataDir(const QString &value);
 
 public slots:
     void savePreferences(bool);

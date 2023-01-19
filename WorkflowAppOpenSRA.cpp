@@ -432,7 +432,7 @@ void WorkflowAppOpenSRA::loadExamples()
     if(!description.isEmpty())
         this->infoMessage(description);
 
-    this->statusMessage("Loading Example file.  Wait until \"Done Loading\" appears before progressing.");
+    this->statusMessage("Loading example file.  Wait until \"Done Loading\" appears before progressing.");
 
     auto progressDialog = this->getProgressDialog();
 
@@ -536,12 +536,12 @@ void WorkflowAppOpenSRA::postprocessResults(QString resultsDirectory, QString /*
 
     if(res == 0)
     {
-        this->infoMessage("Analysis complete. Results loaded.");
+        this->infoMessage("Analysis complete. Results loaded.\n");
         theComponentSelection->displayComponent("Results");
     }
     else
     {
-        this->infoMessage("Failed to load the results.");
+        this->infoMessage("Failed to load the results.\n");
     }
 
 }

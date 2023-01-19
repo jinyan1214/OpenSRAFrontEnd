@@ -6,6 +6,7 @@
 #include "Utils/RelativePathResolver.h"
 #include "Utils/dialogabout.h"
 #include "Utils/ProgramOutputDialog.h"
+#include "Utils/EventFilter.h"
 
 #include <QTreeView>
 #include <QDockWidget>

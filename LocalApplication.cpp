@@ -120,7 +120,7 @@ void LocalApplication::onRunButtonPressed(QPushButton* button)
         return;
     }
 
-    this->statusMessage("onRunButtonPressed "+ appDir);
+    this->statusMessage("\nonRunButtonPressed "+ appDir);
 
     QString localWorkDir = OpenSRAPreferences::getInstance()->getLocalWorkDir();
     auto results_dir = localWorkDir + QDir::separator() + "analysis" + QDir::separator() + "Results";
