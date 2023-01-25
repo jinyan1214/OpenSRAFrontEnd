@@ -39,9 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written by: Stevan Gavrilovic
 
 #include "SimCenterWidget.h"
-#include "PythonProcessHandler.h"
 
-class PythonProcessHandler;
 class QGISVisualizationWidget;
 class QgsRasterLayer;
 

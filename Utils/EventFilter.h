@@ -5,7 +5,7 @@
 #include <QDebug>
 #include <QEvent>
 
-class PythonProgressDialog;
+class ProgramOutputDialog;
 
 class EventFilter : public QObject
 {
@@ -16,7 +16,7 @@ signals:
 protected:
     bool eventFilter(QObject *target, QEvent *event);
 
-    PythonProgressDialog* dialog = nullptr;
+    ProgramOutputDialog* dialog = nullptr;
 };
 
 #endif // EVENTFILTER_H

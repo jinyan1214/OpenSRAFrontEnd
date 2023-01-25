@@ -1,16 +1,16 @@
 #include "WorkflowAppWidget.h"
-#include "Utils/PythonProgressDialog.h"
+#include "Utils/ProgramOutputDialog.h"
 
 #include <QWidget>
 #include <QDebug>
 
-PythonProgressDialog *WorkflowAppWidget::progressDialog = nullptr;
+ProgramOutputDialog *WorkflowAppWidget::progressDialog = nullptr;
 
 WorkflowAppWidget::WorkflowAppWidget(QWidget *parent)
     :QWidget(parent)
 {
     this->setContentsMargins(0,0,0,0);
-    progressDialog = PythonProgressDialog::getInstance(this);
+    progressDialog = ProgramOutputDialog::getInstance(this);
 }
 
 
@@ -58,7 +58,7 @@ void WorkflowAppWidget::showOutputDialog(void)
 }
 
 
-PythonProgressDialog *WorkflowAppWidget::getProgressDialog()
+ProgramOutputDialog *WorkflowAppWidget::getProgressDialog()
 {
     return progressDialog;
 }

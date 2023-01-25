@@ -43,7 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QWidget>
 
 class MainWindowWorkflowApp;
-class PythonProgressDialog;
+class ProgramOutputDialog;
 class QPushButton;
 
 class WorkflowAppWidget : public QWidget
@@ -65,7 +65,7 @@ public:
     virtual void onRemoteGetButtonClicked() = 0;
     virtual void onExitButtonClicked() = 0;
 
-    static PythonProgressDialog *getProgressDialog();
+    static ProgramOutputDialog *getProgressDialog();
     
 signals:
     void setUpForApplicationRunDone(QString &tmpDirectory, QString &inputFile, QString runType = QString("run"));
@@ -91,7 +91,7 @@ public slots:
 protected:
     MainWindowWorkflowApp *theMainWindow;
 
-    static PythonProgressDialog *progressDialog;
+    static ProgramOutputDialog *progressDialog;
 };
 
 #endif // WORKFLOW_APP_WIDGET_H
