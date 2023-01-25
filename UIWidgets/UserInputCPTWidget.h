@@ -138,6 +138,8 @@ private:
 
     QLineEdit *FreefaceDirLineEdit = nullptr;
 
+    QComboBox* depthFactorOption = nullptr;
+
     QMap<QString,QVector<QStringList>> stationMap;
 
 };

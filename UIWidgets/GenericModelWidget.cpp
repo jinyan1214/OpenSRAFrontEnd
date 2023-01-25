@@ -103,7 +103,7 @@ void GenericModelWidget::makeRVWidget(void)
 
     QGroupBox* instructionsGB = new QGroupBox("Instructions");
     QHBoxLayout *instructionsLayout = new QHBoxLayout(instructionsGB);
-    auto instructionsLabel = new QLabel("For constants leave the RV label blank and/or set power to 0");
+    auto instructionsLabel = new QLabel("For constants, leave \"RV Name\" blank and/or set \"Power\" to 0");
     instructionsLayout->addWidget(instructionsLabel);
     verticalLayout->addWidget(instructionsGB);
 
@@ -275,21 +275,21 @@ void GenericModelWidget::addParam(void)
     auto fromModel = parentName;
     auto desc = "User-created parameter from the generic model widget";
 
-    auto name = "RV_"+QString::number(i)+"-"+parentName;
+    auto name = "RV_"+QString::number(i);
 
     RV newRV(5,uid,fromModel,desc);
 
-    int level = 1;
+//    int level = 1;
 
-    if(i>0)
-        level = data.back().at(0).toInt() + 1;
+//    if(i>0)
+//        level = data.back().at(0).toInt() + 1;
 
-    // maximum level is 3
-    if(level > 3)
-        level = 3;
+//    // maximum level is 3
+//    if(level > 3)
+//        level = 3;
 
     newRV[0] = QVariant(name);
-    newRV[1] = level;
+    newRV[1] = QVariant(rand() % 2 + 1);
     newRV[2] = QVariant(rand() % 5 + 1);
     newRV[3] = rand() % 10 < 5 ? true : false;
     newRV[4] = QVariant(rand() % 2);

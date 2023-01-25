@@ -127,6 +127,15 @@ bool UserInputCPTWidget::outputToJSON(QJsonObject &jsonObj)
     outputObj.insert("WeightZhang04",weightZ04LineEdit->text().toDouble());
     outputObj.insert("PathToFreefaceDir",pathToFreefaceDir.absoluteFilePath());
 
+    // for depth scaling method, depends on selection
+    if (depthFactorOption->currentIndex() == 0)
+        outputObj.insert("DepthScalingMethod","None (ScaleFactor=1)");
+    else if(depthFactorOption->currentIndex() == 1)
+        outputObj.insert("DepthScalingMethod","Linear (Zhang et al., 2004)");
+    else if(depthFactorOption->currentIndex() == 2)
+        outputObj.insert("DepthScalingMethod","Nonlinear (Bain and Bray, 2022)");
+
+    // add to output json object
     jsonObj.insert("CPTParameters",outputObj);
 
     return true;
@@ -205,6 +214,24 @@ bool UserInputCPTWidget::inputFromJSON(QJsonObject &jsonObject)
 
                     FreefaceDirLineEdit->setText(pathToFreeFaceDir.absoluteFilePath());
                     freefaceDir = ff_dir;
+                }
+            }
+
+            // set the line
+            if (jsonObject.contains("DepthScalingMethod"))
+            {
+                auto depthScalingMethod = jsonObject["DepthScalingMethod"].toString();
+
+                if (depthScalingMethod.length() == 0)
+                    depthFactorOption->setCurrentIndex(2);
+                else
+                {
+                    if (depthScalingMethod == "None (ScaleFactor=1)")
+                        depthFactorOption->setCurrentIndex(0);
+                    else if(depthScalingMethod == "Linear (Zhang et al., 2004)")
+                        depthFactorOption->setCurrentIndex(1);
+                    else if(depthScalingMethod == "Nonlinear (Bain and Bray, 2022)")
+                        depthFactorOption->setCurrentIndex(2);
                 }
             }
 
@@ -477,6 +504,19 @@ QStackedWidget* UserInputCPTWidget::getUserInputCPTWidget(void)
     fileLayout->addWidget(browseFreefaceButton, count,2);
     count ++;
 
+    // select method to use for depth weighting factor
+    auto depthFactorLabel = new QLabel("6. (Optional) Method to use for depth-weight factor for CPT processing:");
+    depthFactorOption = new QComboBox();
+    depthFactorOption->addItem("None (ScaleFactor=1)");
+    depthFactorOption->addItem("Linear (Zhang et al., 2004)");
+    depthFactorOption->addItem("Nonlinear (Bain and Bray, 2022)");
+    depthFactorOption->setCurrentIndex(2);
+    depthFactorOption->setMaximumWidth(300);
+
+    fileLayout->addWidget(depthFactorLabel,count,0,1,1);
+    fileLayout->addWidget(depthFactorOption,count,1,1,2);
+    count ++;
+
     //
     // progress bar
     //
@@ -693,6 +733,8 @@ void UserInputCPTWidget::clear(void)
     weightZ04LineEdit->setText("0.5");
 
     FreefaceDirLineEdit->clear();
+
+    depthFactorOption->setCurrentIndex(2);
 
 }
 

@@ -169,7 +169,7 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
             else
             {
                 // Check for the special case if this is a user-defined model
-                if(key.compare("UserdefinedModel") == 0)
+                if(key.compare("GenericModel") == 0)
                 {
                     auto parentName = parent->objectName();
 
