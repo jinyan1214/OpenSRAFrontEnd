@@ -48,7 +48,6 @@ class JsonDefinedWidget : public JsonWidget
 public:
     JsonDefinedWidget(QWidget* parent, const QJsonObject& obj, const QString parentKey);
 
-
 private:
 
     QVBoxLayout* layout = nullptr;

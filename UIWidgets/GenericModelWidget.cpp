@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GenericModelWidget.h"
 #include "RVTableView.h"
 #include "RVTableModel.h"
+#include "CSVReaderWriter.h"
 
 #include "ComboBoxDelegate.h"
 #include "sectiontitle.h"
@@ -104,18 +105,17 @@ void GenericModelWidget::makeRVWidget(void)
     QGroupBox* instructionsGB = new QGroupBox("Instructions");
     QHBoxLayout *instructionsLayout = new QHBoxLayout(instructionsGB);
     auto instructionsLabel = new QLabel(
-        "- Create equations by adding one term at a time using the following table."
-        "\n\t- e.g., to make generate the term \"0.5*(ln(pga))^2\":"
-        "\n\t\t- set \"Variable Label\" to \"pga\""
-        "\n\t\t- set \"Level\" to \"1\""
-        "\n\t\t- set \"Coefficient\" to \"0.5\""
-        "\n\t\t- set \"Apply Ln\" to \"true\""
-        "\n\t\t- set \"Power\" to \"2\""
-        "\n\t\t- click the \"Add\" button to add tje term to the equation. The term you added should be reflected under the \"Generic Equation\" below."
-        "\n- To generate constants, set \"Power\" to 0 (the value under \"Variable Label\" will not be used when \"Power\" is set to 0)."
+        "- Create equations by adding one term at a time using the following table. E.g., to make the term \"0.5*(ln(pga))^2\":"
+        "\n\t- set \"Variable Label\" to \"pga\""
+        "\n\t- set \"Level\" to \"1\""
+        "\n\t- set \"Coefficient\" to \"0.5\""
+        "\n\t- set \"Apply Ln\" to \"true\""
+        "\n\t- set \"Power\" to \"2\""
+        "\n\t- click the \"Add\" button to add the term to the equation. The term you added should show up under the \"Generic Equation\" section below."
+        "\n- To generate constants, set \"Power\" to \"0\" (the value under \"Variable Label\" will not be used when \"Power\" is set to \"0\")."
         "\n- The \"Remove\" button removes the term in the last row."
-        "\n- The three levels correspond to the levels of analysis users can choose to create models for. Each level can have its own model form. OpenSRA decides which level to use based on data availability."
-        "\n\t- Ideally, the lower levels should contain the variables used by the upper levels (e.g., variables used by the level 1 equation should also show up in the level 2 equation)."
+        "\n- The three levels correspond to the levels of analysis users can create models for. OpenSRA decides the level to use based on data availability."
+        "\n\t- Ideally, the lower levels should contain the variables used by the upper levels (e.g., the level 2 model should contain the variables used by level 1)."
     );
     instructionsLayout->addWidget(instructionsLabel);
     verticalLayout->addWidget(instructionsGB);
@@ -160,6 +160,7 @@ void GenericModelWidget::makeRVWidget(void)
     eqTypeCombo = new QComboBox();
     eqTypeCombo->addItems(QStringList({"lognormal","normal"}));
     eqTypeCombo->setMinimumWidth(100);
+    eqTypeCombo->setMinimumHeight(25);
 
     connect(eqTypeCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(handleTypeChanged(int)));
 
@@ -199,7 +200,7 @@ void GenericModelWidget::makeRVWidget(void)
     //    theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
     // Add five random parameters to start with
-    for(int i = 0; i<5; ++i)
+    for(int i = 0; i<3; ++i)
         this->addParam();
 
     this->generateEquation();
@@ -378,7 +379,7 @@ void GenericModelWidget::generateEquation(void)
     else
         eqnBase = "Y = ";
 
-    QString start = "<html><head/><body><p><span style=\" font-size:16pt;\ font-style:italic;\">"+eqnBase;
+    QString start = "<html><head/><body><p><span style=\" font-size:11pt;\ font-style:italic;\">"+eqnBase;
 
     QString level1Str = start;
     QString level2Str;
@@ -473,4 +474,29 @@ void GenericModelWidget::handleTypeChanged(int type)
     Q_UNUSED(type);
 
     this->generateEquation();
+}
+
+
+bool GenericModelWidget::outputToCsv(const QString& path)
+{
+
+    // theRVTableView
+
+    auto RVData = theRVTableView->getTableModel()->getTableData();
+
+    auto RVHeaderValues = theRVTableView->getTableModel()->getHeaderStringList();
+
+    RVData.push_front(RVHeaderValues);
+
+    CSVReaderWriter csvTool;
+
+    auto finalRVPath = path + QDir::separator() + "genmod_" + ".csv";
+
+    QString err;
+    csvTool.saveCSVFile(RVData,finalRVPath,err);
+
+    if(!err.isEmpty())
+        return false;
+
+    return true;
 }

@@ -403,6 +403,12 @@ bool SimCenterJsonWidget::outputToJSON(QJsonObject &jsonObj)
 
     jsonObj.insert(methodKey,outputObj);
 
+    // for generic models, also export table
+    if (methodsObj.contains("GenericModel"))
+    {
+        auto temp = 1;
+    }
+
     return true;
 }
 
@@ -516,11 +522,17 @@ bool SimCenterJsonWidget::inputFromJSON(QJsonObject &jsonObject)
         finalObj["ModelName"] = name;
         finalObj["ModelWeight"] = methodObj.value("ModelWeight").toDouble();
         if (methodObj.contains("Aleatory"))
-            finalObj["Aleatory"] = methodObj.value("Aleatory").toString();
+            if (methodObj.value("Aleatory").isDouble())
+                finalObj["Aleatory"] = QString::number(methodObj.value("Aleatory").toDouble());
+            else
+                finalObj["Aleatory"] = methodObj.value("Aleatory").toString();
         else
             finalObj["Aleatory"] = QString("Preferred");
         if (methodObj.contains("Epistemic"))
-            finalObj["Epistemic"] = methodObj.value("Epistemic").toString();
+            if (methodObj.value("Epistemic").isDouble())
+                finalObj["Epistemic"] = QString::number(methodObj.value("Epistemic").toDouble());
+            else
+                finalObj["Epistemic"] = methodObj.value("Epistemic").toString();
         else
             finalObj["Epistemic"] = QString("Preferred");
 
