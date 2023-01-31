@@ -67,7 +67,7 @@ AddToRunListWidget::AddToRunListWidget(QWidget* parent) : QWidget(parent)
     aleatoryLE->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     QDoubleValidator* validator2 = new QDoubleValidator(this);
     aleatoryLE->setValidator(validator2);
-    aleatoryLE->setEnabled(false);
+    aleatoryLE->setEnabled(true);
 
     // Epistemic uncertainty
     auto episLabel = new QLabel("Epistemic Uncertainty:");
@@ -76,7 +76,7 @@ AddToRunListWidget::AddToRunListWidget(QWidget* parent) : QWidget(parent)
     episLE->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     QDoubleValidator* validator3 = new QDoubleValidator(this);
     episLE->setValidator(validator3);
-    episLE->setEnabled(false);
+    episLE->setEnabled(true);
 
     QHBoxLayout* inputLayout = new QHBoxLayout();
     inputLayout->setMargin(0);
@@ -118,23 +118,23 @@ bool AddToRunListWidget::outputToJSON(QJsonObject &jsonObj)
 
     if(aleatoryLE->text().isEmpty())
     {
-        jsonObj["ModelAleatoryVariability"] = aleatoryLE->placeholderText();
+        jsonObj["Aleatory"] = aleatoryLE->placeholderText();
     }
     else
     {
         double aleatory = this->getAleatoryVariability();
-        jsonObj["ModelAleatoryVariability"] = aleatory;
+        jsonObj["Aleatory"] = aleatory;
     }
 
     // Return preferred if the user did not enter anything
     if(episLE->text().isEmpty())
     {
-        jsonObj["ModelEpistemicUncertainty"] = episLE->placeholderText();
+        jsonObj["Epistemic"] = episLE->placeholderText();
     }
     else
     {
         double epistemic = this->getEpistemicUncertainty();
-        jsonObj["ModelEpistemicUncertainty"] = epistemic;
+        jsonObj["Epistemic"] = epistemic;
     }
 
     return true;
@@ -153,24 +153,31 @@ void AddToRunListWidget::clear()
 
 bool AddToRunListWidget::inputFromJSON(QJsonObject &jsonObj)
 {
-
     auto modWeight = jsonObj.value("ModelWeight").toDouble();
     weightLineEdit->setText(QString::number(modWeight));
 
+    if (jsonObj.contains("Aleatory"))
+    {
+        auto modAV = jsonObj.value("Aleatory");
+        if(modAV.type() == QJsonValue::Double)
+            aleatoryLE->setText(QString::number(modAV.toDouble()));
+        else if (modAV.type() == QJsonValue::String)
+            aleatoryLE->setText(modAV.toString());
+    }
+    else
+        aleatoryLE->setPlaceholderText("Preferred");
 
-    auto modAV = jsonObj.value("ModelAleatoryVariability");
-    if(modAV.type() == QJsonValue::Double)
-        aleatoryLE->setText(QString::number(modAV.toDouble()));
-    else if (modAV.type() == QJsonValue::String)
-        aleatoryLE->setText(modAV.toString());
 
-
-    auto modEpis= jsonObj.value("ModelEpistemicUncertainty");
-    if(modEpis.type() == QJsonValue::Double)
-        episLE->setText(QString::number(modEpis.toDouble()));
-    else if (modEpis.type() == QJsonValue::String)
-        episLE->setText(modEpis.toString());
-
+    if (jsonObj.contains("Epistemic"))
+    {
+        auto modEpis= jsonObj.value("Epistemic");
+        if(modEpis.type() == QJsonValue::Double)
+            episLE->setText(QString::number(modEpis.toDouble()));
+        else if (modEpis.type() == QJsonValue::String)
+            episLE->setText(modEpis.toString());
+    }
+    else
+        episLE->setPlaceholderText("Preferred");
 
     return true;
 }

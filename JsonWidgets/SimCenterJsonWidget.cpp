@@ -45,6 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "AddToRunListWidget.h"
 #include "WorkflowAppOpenSRA.h"
 #include "RandomVariablesWidget.h"
+#include "GenericModelWidget.h"
 
 #include <QScrollArea>
 #include <QCheckBox>
@@ -147,9 +148,9 @@ QGroupBox* SimCenterJsonWidget::getWidgetBox(const QJsonObject jsonObj)
         // widget for additional landslide parameters for deformation polygons to use
         defPolyLineEdit = new QLineEdit();
         QHBoxLayout *defPolyLayout = new QHBoxLayout();
-        defPolyCheckBox = new QCheckBox("First check the box, then either leave as \"CA_LandslideInventory_WGS84\" or browse and locate the shapefile");
-        defPolyCheckBox->setChecked(false);
-        defPolyLineEdit->setEnabled(false);
+        defPolyCheckBox = new QCheckBox("Leave as \"CA_LandslideInventory_WGS84\" or browse and locate the shapefile:");
+        defPolyCheckBox->setChecked(true);
+        defPolyLineEdit->setEnabled(true);
         defPolyLineEdit->setText("CA_LandslideInventory_WGS84");
         defPolyLayout->setEnabled(false);
 
@@ -195,8 +196,7 @@ QGroupBox* SimCenterJsonWidget::getWidgetBox(const QJsonObject jsonObj)
             this->defPolyLineEdit->setText("CA_LandslideInventory_WGS84");
         });
 
-
-        auto defPolyLabel = new QLabel("Use a shapefile with deformation polygons?");
+        auto defPolyLabel = new QLabel("Use a shapefile with deformation polygons (checked = yes)? Default: use the California Landslide Inventory");
 
         inputLayout->addWidget(defPolyLabel);
         inputLayout->addLayout(defPolyLayout);
@@ -254,7 +254,7 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
     auto key = keys.front();
 
     // Handle the special case of a user defined model
-    if(key.compare("UserdefinedModel") == 0)
+    if(key.compare("GenericModel") == 0)
     {
         auto paramObj = variablesObj.value(key).toObject();
 
@@ -285,8 +285,6 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
             }
         }
     }
-
-
 
     // Get the human readable text or name to display
     auto methodsAndParamsMap = WorkflowAppOpenSRA::getInstance()->getMethodsAndParamsMap();
@@ -517,40 +515,58 @@ bool SimCenterJsonWidget::inputFromJSON(QJsonObject &jsonObject)
         finalObj["Key"] = key;
         finalObj["ModelName"] = name;
         finalObj["ModelWeight"] = methodObj.value("ModelWeight").toDouble();
+        if (methodObj.contains("Aleatory"))
+            finalObj["Aleatory"] = methodObj.value("Aleatory").toString();
+        else
+            finalObj["Aleatory"] = QString("Preferred");
+        if (methodObj.contains("Epistemic"))
+            finalObj["Epistemic"] = methodObj.value("Epistemic").toString();
+        else
+            finalObj["Epistemic"] = QString("Preferred");
 
-        // Get the vars for the key
-        auto variablesObj = this->getVars(passedObj,key);
-        if(variablesObj.isEmpty())
-        {
-            this->errorMessage("Error, could not get the variable for method "+name+" in "+this->objectName());
-            return false;
+        if (name == "GenericModel") {
+
+//            this->wid
+
+//            inputFromJSON(methodObj);
+            auto temp = 1;
         }
 
-        // There could be a model with no input parameters
-        if(!variablesObj.contains("N/A"))
-        {
-            QJsonObject variableTypesObj;
-            auto res = this->getVarTypes(variablesObj,passedObj,key,variableTypesObj);
-            if(res != 0)
+        else {
+            // Get the vars for the key
+            auto variablesObj = this->getVars(passedObj,key);
+            if(variablesObj.isEmpty())
             {
-                this->errorMessage("Error, could not get the variable types for method "+name+" in "+this->objectName());
+                this->errorMessage("Error, could not get the variable for method "+name+" in "+this->objectName());
                 return false;
             }
 
-            finalObj["VarTypes"] = variableTypesObj;
-
-            // Object to store the uuid's of the parameters, where the key is the parameter name
-            QJsonObject uuidObjs;
-
-            auto res2 = this->addNewParametersToInputWidget(variablesObj,variableTypesObj, key, uuidObjs);
-
-            if(!res2)
+            // There could be a model with no input parameters
+            if(!variablesObj.contains("N/A"))
             {
-                this->errorMessage("Error, adding the parameters to the input widget for the model "+name+" in "+methodKey);
-                return false;
-            }
+                QJsonObject variableTypesObj;
+                auto res = this->getVarTypes(variablesObj,passedObj,key,variableTypesObj);
+                if(res != 0)
+                {
+                    this->errorMessage("Error, could not get the variable types for method "+name+" in "+this->objectName());
+                    return false;
+                }
 
-            finalObj["Uuids"] = uuidObjs;
+                finalObj["VarTypes"] = variableTypesObj;
+
+                // Object to store the uuid's of the parameters, where the key is the parameter name
+                QJsonObject uuidObjs;
+
+                auto res2 = this->addNewParametersToInputWidget(variablesObj,variableTypesObj, key, uuidObjs);
+
+                if(!res2)
+                {
+                    this->errorMessage("Error, adding the parameters to the input widget for the model "+name+" in "+methodKey);
+                    return false;
+                }
+
+                finalObj["Uuids"] = uuidObjs;
+            }
         }
 
         auto item = listWidget->addItem(finalObj);

@@ -103,7 +103,20 @@ void GenericModelWidget::makeRVWidget(void)
 
     QGroupBox* instructionsGB = new QGroupBox("Instructions");
     QHBoxLayout *instructionsLayout = new QHBoxLayout(instructionsGB);
-    auto instructionsLabel = new QLabel("For constants, leave \"RV Name\" blank and/or set \"Power\" to 0");
+    auto instructionsLabel = new QLabel(
+        "- Create equations by adding one term at a time using the following table."
+        "\n\t- e.g., to make generate the term \"0.5*(ln(pga))^2\":"
+        "\n\t\t- set \"Variable Label\" to \"pga\""
+        "\n\t\t- set \"Level\" to \"1\""
+        "\n\t\t- set \"Coefficient\" to \"0.5\""
+        "\n\t\t- set \"Apply Ln\" to \"true\""
+        "\n\t\t- set \"Power\" to \"2\""
+        "\n\t\t- click the \"Add\" button to add tje term to the equation. The term you added should be reflected under the \"Generic Equation\" below."
+        "\n- To generate constants, set \"Power\" to 0 (the value under \"Variable Label\" will not be used when \"Power\" is set to 0)."
+        "\n- The \"Remove\" button removes the term in the last row."
+        "\n- The three levels correspond to the levels of analysis users can choose to create models for. Each level can have its own model form. OpenSRA decides which level to use based on data availability."
+        "\n\t- Ideally, the lower levels should contain the variables used by the upper levels (e.g., variables used by the level 1 equation should also show up in the level 2 equation)."
+    );
     instructionsLayout->addWidget(instructionsLabel);
     verticalLayout->addWidget(instructionsGB);
 
@@ -142,10 +155,11 @@ void GenericModelWidget::makeRVWidget(void)
     eqnLayout->addStretch();
 
     QHBoxLayout *eqnTypeLayout = new QHBoxLayout();
-    QLabel* eqTypeLabel = new QLabel("Select the distribution for the model:");
+    QLabel* eqTypeLabel = new QLabel("Select model distribution type:");
 
     eqTypeCombo = new QComboBox();
     eqTypeCombo->addItems(QStringList({"lognormal","normal"}));
+    eqTypeCombo->setMinimumWidth(100);
 
     connect(eqTypeCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(handleTypeChanged(int)));
 
@@ -158,7 +172,7 @@ void GenericModelWidget::makeRVWidget(void)
     verticalLayout->addWidget(eqnGB);
 
     RVTableModel* tableModel = theRVTableView->getTableModel();
-    QStringList headers = {"RV Name","Level","Coeff. Value", "Apply Ln", "Power"};
+    QStringList headers = {"Variable Label","Level","Coefficient", "Apply Ln", "Power"};
     tableModel->setHeaderStringList(headers);
     theRVTableView->show();
 
