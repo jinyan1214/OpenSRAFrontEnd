@@ -406,6 +406,8 @@ bool SimCenterJsonWidget::outputToJSON(QJsonObject &jsonObj)
     // for generic models, also export table
     if (methodsObj.contains("GenericModel"))
     {
+        QJsonObject someObj;
+        methodWidget->outputToJSON(someObj);
         auto temp = 1;
     }
 

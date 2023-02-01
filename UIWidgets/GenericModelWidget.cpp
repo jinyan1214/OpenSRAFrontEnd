@@ -269,6 +269,14 @@ bool GenericModelWidget::outputToJSON(QJsonObject &rvObject) {
         rvObject.insert(RVname,rv);
     }
 
+    auto par_name = this->parentWidget()->objectName();
+
+    auto eqText =eqTypeCombo->currentText();
+
+//    QString path = "some_path";
+//    QString file_name = par_name+"some_filename";
+//    this->outputToCsv(path,file_name);
+
     return result;
 }
 
@@ -477,7 +485,8 @@ void GenericModelWidget::handleTypeChanged(int type)
 }
 
 
-bool GenericModelWidget::outputToCsv(const QString& path)
+
+bool GenericModelWidget::outputToCsv(const QString& path, const QString& fileName)
 {
 
     // theRVTableView
@@ -490,7 +499,7 @@ bool GenericModelWidget::outputToCsv(const QString& path)
 
     CSVReaderWriter csvTool;
 
-    auto finalRVPath = path + QDir::separator() + "genmod_" + ".csv";
+    auto finalRVPath = path + QDir::separator() + "genmod_" + fileName + ".csv";
 
     QString err;
     csvTool.saveCSVFile(RVData,finalRVPath,err);

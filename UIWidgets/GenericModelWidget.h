@@ -65,7 +65,7 @@ public:
 
     void reset(void) override;
 
-    bool outputToCsv(const QString& path);
+    bool outputToCsv(const QString& path, const QString& fileName);
 
 public slots:
     void clear(void) override;
