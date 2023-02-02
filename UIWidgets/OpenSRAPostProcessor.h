@@ -38,20 +38,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "ComponentDatabase.h"
 #include "SimCenterAppWidget.h"
-#include "SimCenterMapcanvasWidget.h"
-
-#include <QString>
-
-#include <memory>
-#include <set>
 
 class TreeItem;
 class QGISVisualizationWidget;
 class MutuallyExclusiveListWidget;
-
-class QSplitter;
+class QgsMapLayer;
 
 class OpenSRAPostProcessor : public SimCenterAppWidget
 {
@@ -64,10 +56,6 @@ public:
     void importResults(const QString& pathToResults);
 
     void clear(void);
-
-protected:
-
-    void showEvent(QShowEvent *e);
 
 private slots:
 
@@ -82,11 +70,6 @@ private:
     int getSetupConfigParams(const QString& pathToResults);
 
     QGISVisualizationWidget* theVisualizationWidget;
-    std::unique_ptr<SimCenterMapcanvasWidget> mapViewSubWidget;
-
-    ComponentDatabase* thePipelineDb = nullptr;
-
-    QSplitter* mainWidget = nullptr;
 
     MutuallyExclusiveListWidget* listWidget = nullptr;
 

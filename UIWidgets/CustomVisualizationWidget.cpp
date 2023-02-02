@@ -38,6 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "CustomVisualizationWidget.h"
 #include "QGISVisualizationWidget.h"
+#include "OpenSRAPostProcessor.h"
 #include "sectiontitle.h"
 #include "ShakeMapWidget.h"
 
@@ -88,7 +89,7 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  QGISVisua
     theHeaderLayout->addItem(spacer);
     theHeaderLayout->addStretch(1);
 
-    QSplitter *theVizLayout = new QSplitter(this);
+    theVizLayout = new QSplitter(this);
     visWidget->setContentsMargins(0,0,0,0);
 
     theVizLayout->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -96,7 +97,6 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  QGISVisua
     auto visSelectBox = this->getVisSelectionGroupBox();
 
     QWidget* theLeftHandWidget = new QWidget(this);
-
     theLeftHandWidget->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Expanding);
 
     QVBoxLayout *theLeftHandLayout = new QVBoxLayout(theLeftHandWidget);
@@ -105,8 +105,8 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  QGISVisua
     theLeftHandLayout->addWidget(visSelectBox);
 
     theVizLayout->addWidget(theLeftHandWidget);
-    theVizLayout->addWidget(theVisualizationWidget);
 
+    theVizLayout->addWidget(theVisualizationWidget);
     theVizLayout->setStretchFactor(1,1);
 
     mainLayout->addLayout(theHeaderLayout);
@@ -114,18 +114,20 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  QGISVisua
 
     this->setLayout(mainLayout);
 
-    // Now add the splitter handle
+    // Now add the left splitter handle
     // Note: index 0 handle is always hidden, index 1 is between the two widgets
-    QSplitterHandle *handle = theVizLayout->handle(1);
+    QSplitterHandle *handleLeft = theVizLayout->handle(1);
 
-    if(handle == nullptr)
+    if(handleLeft == nullptr)
     {
         qDebug()<<"Error getting the handle";
         return;
     }
 
-    auto buttonHandle = new QToolButton(handle);
-    QVBoxLayout *layout = new QVBoxLayout(handle);
+    handleLeft->setEnabled(false);
+
+    auto buttonHandle = new QToolButton(handleLeft);
+    QVBoxLayout *layout = new QVBoxLayout(handleLeft);
     layout->setSpacing(0);
     layout->setMargin(0);
 
@@ -140,10 +142,37 @@ CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  QGISVisua
     buttonHandle->setIconSize(buttonHandle->size());
     layout->addWidget(buttonHandle);
 
-    QList<int> sizes = {0,theVizLayout->width()};
+    theOpenSRAPostProcessor = new OpenSRAPostProcessor(this,theVisualizationWidget);
+    theOpenSRAPostProcessor->setMinimumWidth(250);
+    theVizLayout->addWidget(theOpenSRAPostProcessor);
 
-    theVizLayout->setSizes(sizes);
+    // Now add the right splitter handle
+    // Note: index 0 handle is always hidden, index 1 is between the two widgets
 
+    auto idxR = theVizLayout->indexOf(theOpenSRAPostProcessor);
+    handleRight = theVizLayout->handle(idxR);
+
+    if(handleRight == nullptr)
+    {
+        qDebug()<<"Error getting the handle";
+        return;
+    }
+
+    auto buttonHandleRight = new QToolButton(handleRight);
+    QVBoxLayout *layoutRight = new QVBoxLayout(handleRight);
+    layoutRight->setSpacing(0);
+    layoutRight->setMargin(0);
+
+    buttonHandleRight->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    buttonHandleRight->setDown(false);
+    buttonHandleRight->setAutoRaise(false);
+    buttonHandleRight->setCheckable(false);
+    buttonHandleRight->setArrowType(Qt::LeftArrow);
+    buttonHandleRight->setStyleSheet("QToolButton{border:0px solid}; QToolButton:pressed {border:0px solid}");
+    buttonHandleRight->setIconSize(buttonHandleRight->size());
+    layoutRight->addWidget(buttonHandleRight);
+
+    this->resultsShow(false);
 }
 
 
@@ -167,6 +196,10 @@ bool CustomVisualizationWidget::inputFromJSON(QJsonObject &jsonObject)
 
 int CustomVisualizationWidget::processResults(QString &filenameResults)
 {
+    theOpenSRAPostProcessor->importResults(filenameResults);
+
+    this->resultsShow(true);
+
     return 0;
 }
 
@@ -269,11 +302,32 @@ void CustomVisualizationWidget::showCGSLiquefactionMap(bool state)
 
 
 
+void CustomVisualizationWidget::resultsShow(bool value)
+{
+    // Set the splitter handle sizes
+    QList<int> sizes;
+    if(value)
+    {
+        sizes = {0, 1,1};
+    }
+    else
+        // Set the splitter handle sizes
+        sizes = {0, 1,0};
+
+    theVizLayout->setSizes(sizes);
+    handleRight->setEnabled(value);
+}
+
+
+
 void CustomVisualizationWidget::clear()
 {
     theVisualizationWidget->clear();
+    theOpenSRAPostProcessor->clear();
     CGS1Checkbox->setChecked(false);
     CGS2Checkbox->setChecked(false);
     CGS3Checkbox->setChecked(false);
+
+    this->resultsShow(false);
 }
 

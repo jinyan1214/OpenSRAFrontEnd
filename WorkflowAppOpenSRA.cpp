@@ -320,7 +320,7 @@ void WorkflowAppOpenSRA::initialize(void)
     theComponentSelection->addComponent(QString("Engineering\nDemand\nParameter"), theEDPWidget);
     theComponentSelection->addComponent(QString("Intensity\nMeasure"), theIntensityMeasureWidget);
     theComponentSelection->addComponent(QString("Input\nVariables"), theRandomVariableWidget);
-    theComponentSelection->addComponent(QString("Results"), theResultsWidget);
+//    theComponentSelection->addComponent(QString("Results"), theResultsWidget);
     theComponentSelection->setWidth(120);
     theComponentSelection->setItemWidthHeight(120,70);
 
@@ -531,13 +531,15 @@ void WorkflowAppOpenSRA::postprocessResults(QString resultsDirectory, QString /*
     if(resultsDirectory.isEmpty())
         resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "analysis"+ QDir::separator() + "Results";
 
-    auto res = theResultsWidget->processResults(resultsDirectory);
+//    auto res = theResultsWidget->processResults(resultsDirectory);
+    auto res = theCustomVisualizationWidget->processResults(resultsDirectory);
+
     theRunWidget->hide();
 
     if(res == 0)
     {
         this->infoMessage("Analysis complete. Results loaded.\n");
-        theComponentSelection->displayComponent("Results");
+//        theComponentSelection->displayComponent("Results");
     }
     else
     {

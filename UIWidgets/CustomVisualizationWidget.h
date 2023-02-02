@@ -41,7 +41,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SimCenterAppWidget.h>
 
 class QGISVisualizationWidget;
+class OpenSRAPostProcessor;
 
+class QSplitter;
+class QSplitterHandle;
 class QGroupBox;
 class QCheckBox;
 class QListView;
@@ -61,7 +64,7 @@ public:
     virtual bool outputToJSON(QJsonObject &rvObject);
     virtual bool inputFromJSON(QJsonObject &rvObject);
 
-    virtual int processResults(QString &filenameResults);
+    int processResults(QString &filenameResults);
 
     void clear();
 
@@ -79,19 +82,25 @@ protected:
 
 private:
 
+    QSplitter* theVizLayout = nullptr;
+    QSplitterHandle* handleRight = nullptr;
+
+    void resultsShow(bool value);
+
     QGroupBox* getVisSelectionGroupBox(void);
 
-    QGISVisualizationWidget* theVisualizationWidget;
+    QGISVisualizationWidget* theVisualizationWidget = nullptr;
+    OpenSRAPostProcessor* theOpenSRAPostProcessor = nullptr;
 
     QString baseCGSURL;
 
-    QgsVectorLayer* landslideLayer;
-    QgsVectorLayer* liquefactionLayer;
-    QgsVectorLayer* geologicMapLayer;
+    QgsVectorLayer* landslideLayer = nullptr;
+    QgsVectorLayer* liquefactionLayer = nullptr;
+    QgsVectorLayer* geologicMapLayer = nullptr;
 
-    QCheckBox* CGS1Checkbox;
-    QCheckBox* CGS2Checkbox;
-    QCheckBox* CGS3Checkbox;
+    QCheckBox* CGS1Checkbox = nullptr;
+    QCheckBox* CGS2Checkbox = nullptr;
+    QCheckBox* CGS3Checkbox = nullptr;
 
 };
 

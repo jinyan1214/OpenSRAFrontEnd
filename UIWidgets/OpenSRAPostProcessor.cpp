@@ -36,49 +36,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written by: Stevan Gavrilovic
 
-#include "CSVReaderWriter.h"
-#include "AssetInputWidget.h"
-#include "GeneralInformationWidget.h"
-#include "MainWindowWorkflowApp.h"
 #include "OpenSRAPostProcessor.h"
-#include "REmpiricalProbabilityDistribution.h"
-#include "TablePrinter.h"
 #include "TreeItem.h"
 #include "QGISVisualizationWidget.h"
-#include "WorkflowAppOpenSRA.h"
-#include "EmbeddedMapViewWidget.h"
 #include "MutuallyExclusiveListWidget.h"
 
-#include <QBarCategoryAxis>
-#include <QBarSeries>
-#include <QBarSet>
-#include <QChart>
-#include <QChartView>
-#include <QComboBox>
-#include <QDir>
-#include <QDockWidget>
-#include <QFileInfo>
-#include <QFontMetrics>
-#include <QGraphicsLayout>
-#include <QGridLayout>
-#include <QGroupBox>
+
+#include <QVBoxLayout>
 #include <QHeaderView>
-#include <QLabel>
-#include <QLineSeries>
-#include <QPixmap>
-#include <QListView>
-#include <QPrinter>
-#include <QSplitter>
-#include <QStackedBarSeries>
-#include <QStringList>
-#include <QTabWidget>
-#include <QTableWidget>
-#include <QTextCursor>
-#include <QTextTable>
-#include <QValueAxis>
-#include <QToolButton>
-#include <QPushButton>
-#include <QHeaderView>
+
 
 // GIS headers
 #include <qgslinesymbol.h>
@@ -86,117 +52,46 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsrenderer.h>
 #include <qgsgraduatedsymbolrenderer.h>
 #include <qgslayertreeview.h>
-#include <QgsDataProvider.h>
+#include <qgsdataprovider.h>
 #include <qgsvectorlayer.h>
-#include <QgsFields.h>
+#include <qgsfields.h>
 
-using namespace QtCharts;
 
 OpenSRAPostProcessor::OpenSRAPostProcessor(QWidget *parent, QGISVisualizationWidget* visWidget) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
 
-    //QVBoxLayout* mainLayout = new QVBoxLayout(this);
-    QHBoxLayout* mainLayout = new QHBoxLayout(this);
-    mainLayout->setMargin(0);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
-
-    // Create a view menu for the dockable windows
-    mainWidget = new QSplitter();
-    mainWidget->setOrientation(Qt::Horizontal);
-    mainWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
-    //    this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
-
     const char *resultHeaderString =
             "Results:\n"
             "- Showing the mean annual rate of occurrence of the loss metric\n"
-            "  (i.e., number of occurrences per year across all events)\n"
-            "- The \"Modify Legend\" widget below is being updated;\n"
-            "  for now, modify the legend by right-clicking on the layer\n"
-            "  and choosing \"Properties...\"";
+            "  (i.e., number of occurrences per year across all events)\n";
+//            "- The \"Modify Legend\" widget below is being updated;\n"
+//            "  for now, modify the legend by right-clicking on the layer\n"
+//            "  and choosing \"Properties...\"";
 //            "- If the annual rates of events are set to 1 (e.g., ShakeMaps),\n"
 //            "  then the results correspond to probability.";
 //            "Mean annual rate of occurrence\n"
 //            "= (prob(decision metric) x annual rate of event)\n"
 //            "  summed over all events";
     listWidget = new MutuallyExclusiveListWidget(this, resultHeaderString);
+    listWidget->setWordWrap(true);
 
-    //
     // initialize IM Source type for graduated renderer bin limits
     this->IMSourceType = "Not ShakeMap";
     this->infraType = "below_ground";
     this->initIMSourceType = "Not ShakeMap";
     this->initInfraType = "below_ground";
-    //
 
     connect(listWidget, &MutuallyExclusiveListWidget::itemChecked, this, &OpenSRAPostProcessor::handleListSelection);
-
-    //    connect(listWidget, &MutuallyExclusiveListWidget::clearAll, this, &OpenSRAPostProcessor::clearAll);
-    //    connect(theVisualizationWidget,&VisualizationWidget::emitScreenshot,this,&OpenSRAPostProcessor::assemblePDF);
 
     listWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     listWidget->header()->resizeSections(QHeaderView::ResizeToContents);
 
-    // Get the map view widget
-    auto mapView = theVisualizationWidget->getMapViewWidget("ResultsWidget");
-    mapViewSubWidget = std::unique_ptr<SimCenterMapcanvasWidget>(mapView);
-
-    // Enable the selection tool
-    mapViewSubWidget->enableSelectionTool();
-
-    // Popup stuff
-    // Once map is set, connect to MapQuickView mouse clicked signal
-    // connect(mapViewSubWidget.get(), &MapViewSubWidget::mouseClick, theVisualizationWidget, &VisualizationWidget::onMouseClickedGlobal);
-
-    mainWidget->addWidget(mapViewSubWidget.get());
-
-    // right hand side widget
-    QWidget* rightHandWidget = new QWidget();
-    QVBoxLayout* rightHandLayout = new QVBoxLayout(rightHandWidget);
-    rightHandLayout->setMargin(0);
-    rightHandLayout->setContentsMargins(0, 0, 0, 0);
-
-    rightHandLayout->addWidget(listWidget);
-
-//    QPushButton* modifyLegendButton = new QPushButton("Modify Legend (currently inactive)",this);
-//    connect(modifyLegendButton, &QPushButton::clicked ,this, &OpenSRAPostProcessor::handleModifyLegend);
-
-//    rightHandLayout->addWidget(modifyLegendButton);
-
-    mainWidget->addWidget(rightHandWidget);
-
-    mainLayout->addWidget(mainWidget);
-
-
-    mainWidget->setStretchFactor(0,0);
-
-    // Now add the splitter handle
-    // Note: index 0 handle is always hidden, index 1 is between the two widgets
-    QSplitterHandle *handle = mainWidget->handle(1);
-
-    if(handle == nullptr)
-    {
-        qDebug()<<"Error getting the handle";
-        return;
-    }
-
-    auto buttonHandle = new QToolButton(handle);
-    QVBoxLayout *layout = new QVBoxLayout(handle);
-    layout->setSpacing(0);
-    layout->setMargin(0);
-
-    mainWidget->setHandleWidth(15);
-
-    buttonHandle->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    buttonHandle->setDown(false);
-    buttonHandle->setAutoRaise(false);
-    buttonHandle->setCheckable(false);
-    buttonHandle->setArrowType(Qt::LeftArrow);
-    buttonHandle->setStyleSheet("QToolButton{border:0px solid}; QToolButton:pressed {border:0px solid}");
-    buttonHandle->setIconSize(buttonHandle->size());
-    layout->addWidget(buttonHandle);
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->addWidget(listWidget);
 
 }
-
 
 
 void OpenSRAPostProcessor::handleModifyLegend(void)
@@ -206,17 +101,6 @@ void OpenSRAPostProcessor::handleModifyLegend(void)
     auto layerId = res_layer->id();
 
     theVisualizationWidget->handleLegendChange(layerId);
-}
-
-
-void OpenSRAPostProcessor::showEvent(QShowEvent *e)
-{
-    auto mainCanvas = mapViewSubWidget->getMainCanvas();
-
-    auto mainExtent = mainCanvas->extent();
-
-    mapViewSubWidget->mapCanvas()->zoomToFeatureExtent(mainExtent);
-    QWidget::showEvent(e);
 }
 
 
@@ -308,17 +192,7 @@ void OpenSRAPostProcessor::importResults(const QString& pathToResults)
 
 void OpenSRAPostProcessor::clear(void)
 {
-
-    if(thePipelineDb)
-        thePipelineDb->clear();
-
-    mapViewSubWidget->clear();
-
     listWidget->clear();
-
-    // remove layers from results_layers from visualization widget, then clear list
-    for (int i=0; i<results_layers.count(); ++i)
-        theVisualizationWidget->removeLayer(results_layers.value(i));
     results_layers.clear();
 
     this->IMSourceType = "Not UCERF";
@@ -428,13 +302,6 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
                 colors.push_back(QColor( 83, 173, 173));
                 colors.push_back(QColor( 94,  79, 162));
             }
-
-//            colors.push_back(QColor(189,0,38));
-//            colors.push_back(QColor(240,59,32));
-//            colors.push_back(QColor(253,141,60));
-//            colors.push_back(QColor(253,204,92));
-//            colors.push_back(QColor(255,255,178));
-//            colors.push_back(Qt::darkBlue);
 
             // if below ground, use line as symbol, otherwise use marker as symbol (e.g., wells, above ground components)
             if (this->infraType == "below_ground")
