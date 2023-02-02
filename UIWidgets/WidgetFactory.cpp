@@ -159,7 +159,7 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
 
             auto params = itemObj["Params"].toObject();
 
-            if(!params.isEmpty())
+            if(!params.isEmpty() && key.compare("GenericModel") != 0)
             {
                 JsonDefinedWidget* newWidget = new JsonDefinedWidget(mainWidget, itemObj, key);
                 newWidget->setObjectName(key);

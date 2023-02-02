@@ -61,11 +61,11 @@ public:
     ~GenericModelWidget();
 
     bool inputFromJSON(QJsonObject &rvObject) override;
-    bool outputToJSON(QJsonObject &rvObject) override;
+    bool outputToJSON(QJsonObject &jsonObj) override;
 
     void reset(void) override;
 
-    bool outputToCsv(const QString& path, const QString& fileName);
+    bool outputToCsv(const QString& path);
 
 public slots:
     void clear(void) override;

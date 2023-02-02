@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RVTableView.h"
 #include "RVTableModel.h"
 #include "CSVReaderWriter.h"
+#include "OpenSRAPreferences.h"
 
 #include "ComboBoxDelegate.h"
 #include "sectiontitle.h"
@@ -105,15 +106,11 @@ void GenericModelWidget::makeRVWidget(void)
     QGroupBox* instructionsGB = new QGroupBox("Instructions");
     QHBoxLayout *instructionsLayout = new QHBoxLayout(instructionsGB);
     auto instructionsLabel = new QLabel(
-        "- Create equations by adding one term at a time using the following table. E.g., to make the term \"0.5*(ln(pga))^2\":"
-        "\n\t- set \"Variable Label\" to \"pga\""
-        "\n\t- set \"Level\" to \"1\""
-        "\n\t- set \"Coefficient\" to \"0.5\""
-        "\n\t- set \"Apply Ln\" to \"true\""
-        "\n\t- set \"Power\" to \"2\""
-        "\n\t- click the \"Add\" button to add the term to the equation. The term you added should show up under the \"Generic Equation\" section below."
+        "- Create equations by adding one term at a time using the following table."
+        "\n\t- The \"Add\" button adds the term to the equation. The term you added should show up under the \"Generic Equation\" section below."
+        "\n\t- The \"Remove\" button removes the term in the bottom row of the table."
+        "\n- The first row in the table shows how to make the term 0.5*(ln(pga))^2"
         "\n- To generate constants, set \"Power\" to \"0\" (the value under \"Variable Label\" will not be used when \"Power\" is set to \"0\")."
-        "\n- The \"Remove\" button removes the term in the last row."
         "\n- The three levels correspond to the levels of analysis users can create models for. OpenSRA decides the level to use based on data availability."
         "\n\t- Ideally, the lower levels should contain the variables used by the upper levels (e.g., the level 2 model should contain the variables used by level 1)."
     );
@@ -200,7 +197,7 @@ void GenericModelWidget::makeRVWidget(void)
     //    theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
 
     // Add five random parameters to start with
-    for(int i = 0; i<3; ++i)
+    for(int i = 0; i<5; ++i)
         this->addParam();
 
     this->generateEquation();
@@ -238,46 +235,76 @@ void GenericModelWidget::clear(void) {
 }
 
 
-bool GenericModelWidget::outputToJSON(QJsonObject &rvObject) {
+bool GenericModelWidget::outputToJSON(QJsonObject &jsonObj) {
 
     // Here we get the random variables and constants
     // At the same time we need to populate the methods json object to provide some more information about the type of RV
 
-    bool result = true;
+//    bool result = true;
 
-    QJsonArray rvArray;
+//    QJsonArray rvArray;
 
-    auto tableModel = theRVTableView->getTableModel();
+//    auto tableModel = theRVTableView->getTableModel();
 
-    auto tableHeaders = tableModel->getHeaderStringList();
+//    auto tableHeaders = tableModel->getHeaderStringList();
 
-    for (int i = 0; i <theRVTableView->rowCount(); ++i)
-    {
-        QJsonObject rv;
+//    for (int i = 0; i <theRVTableView->rowCount(); ++i)
+//    {
+//        QJsonObject rv;
 
-        auto RVname = tableModel->item(i,0).toString();
+//        auto RVname = tableModel->item(i,0).toString();
 
-        for (int j = 0; j <tableHeaders.size(); ++j)
-        {
-            auto headerStr = tableHeaders.at(j);
+//        for (int j = 0; j <tableHeaders.size(); ++j)
+//        {
+//            auto headerStr = tableHeaders.at(j);
 
-            QString val = tableModel->item(i,j).toString();
+//            QString val = tableModel->item(i,j).toString();
 
-            rv.insert(headerStr,val);
-        }
+//            rv.insert(headerStr,val);
+//        }
 
-        rvObject.insert(RVname,rv);
-    }
-
-    auto par_name = this->parentWidget()->objectName();
+//        rvObject.insert(RVname,rv);
+//    }
 
     auto eqText =eqTypeCombo->currentText();
 
-//    QString path = "some_path";
-//    QString file_name = par_name+"some_filename";
-//    this->outputToCsv(path,file_name);
+    // get method params for generic model
+    auto genModMethodParamObj = this->getMethodAndParamJsonObj();
+    auto genModParams = genModMethodParamObj["Params"].toObject();
+    QString genModCat = genModParams.value("ReturnCategory").toString();
+    QString genModHaz = genModParams.value("ReturnHazard").toString();
 
-    return result;
+    QString genModCatAbbr;
+    if (genModCat == "EngineeringDemandParameter")
+        genModCatAbbr = "EDP";
+    else if (genModCat == "DamageMeasure")
+        genModCatAbbr = "DM";
+    else if (genModCat == "DecisionVariable")
+        genModCatAbbr = "DV";
+
+    // build path and file name for CSV export
+    QString fileDir =
+        OpenSRAPreferences::getInstance()->getLocalWorkDir() +
+        QDir::separator() + "analysis" +
+        QDir::separator() + "Input";
+    QFileInfo fileDirInfo(fileDir);
+    if (!fileDirInfo.exists())
+    {
+        fileDir =
+            OpenSRAPreferences::getInstance()->getLocalWorkDir() +
+            QDir::separator() + "Input";
+    }
+    fileDirInfo.setFile(fileDir);
+    if (!fileDirInfo.exists())
+    {
+//        this->errorMessage("Error: In \"GenericModel.cpp\" - cannot determine path to \"Input\" folder in working dir");
+        return false;
+    }
+    QString fileName = "genmod_" + genModCatAbbr + "_" + genModHaz + ".csv";
+    QString filePath = fileDir + QDir::separator() + fileName;
+    this->outputToCsv(filePath);
+
+    return true;
 }
 
 
@@ -285,7 +312,6 @@ void GenericModelWidget::reset(void)
 {
 
 }
-
 
 void GenericModelWidget::addParam(void)
 {
@@ -311,16 +337,24 @@ void GenericModelWidget::addParam(void)
 //    if(level > 3)
 //        level = 3;
 
-    newRV[0] = QVariant(name);
-    newRV[1] = QVariant(rand() % 2 + 1);
-    newRV[2] = QVariant(rand() % 5 + 1);
-    newRV[3] = rand() % 10 < 5 ? true : false;
-    newRV[4] = QVariant(rand() % 2);
-
-    newRV.setName(newRV[0].toString());
+    if (i == 0)
+    {
+        newRV[0] = QString("pga");
+        newRV[1] = QString("1");
+        newRV[2] = QString("0.5");
+        newRV[3] = QString("true");
+        newRV[4] = QString("2");
+    }
+    else
+    {
+        newRV[0] = QVariant(name);
+        newRV[1] = QVariant(rand() % 2 + 1);
+        newRV[2] = QVariant(rand() % 5 + 1);
+        newRV[3] = rand() % 10 < 5 ? true : false;
+        newRV[4] = QVariant(rand() % 2);
+    }
 
     data.append(newRV);
-
     this->sortData();
     RVTableModel* tableModel = theRVTableView->getTableModel();
     tableModel->populateData(data);
@@ -363,9 +397,9 @@ void GenericModelWidget::removeParam(void)
 }
 
 
-bool GenericModelWidget::inputFromJSON(QJsonObject &rvObject)
+bool GenericModelWidget::inputFromJSON(QJsonObject &jsonObj)
 {
-    Q_UNUSED(rvObject);
+    Q_UNUSED(jsonObj);
 
     bool result = true;
 
@@ -469,7 +503,7 @@ void GenericModelWidget::handleCellChanged(int row, int col)
 
     if(col == 0)
     {
-        this->sortData();
+//        this->sortData();
         tableModel->populateData(data);
     }
 
@@ -486,7 +520,7 @@ void GenericModelWidget::handleTypeChanged(int type)
 
 
 
-bool GenericModelWidget::outputToCsv(const QString& path, const QString& fileName)
+bool GenericModelWidget::outputToCsv(const QString& path)
 {
 
     // theRVTableView
@@ -499,10 +533,10 @@ bool GenericModelWidget::outputToCsv(const QString& path, const QString& fileNam
 
     CSVReaderWriter csvTool;
 
-    auto finalRVPath = path + QDir::separator() + "genmod_" + fileName + ".csv";
+//    auto finalRVPath = path + QDir::separator() + fileName;
 
     QString err;
-    csvTool.saveCSVFile(RVData,finalRVPath,err);
+    csvTool.saveCSVFile(RVData,path,err);
 
     if(!err.isEmpty())
         return false;
