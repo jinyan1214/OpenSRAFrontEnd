@@ -401,15 +401,11 @@ bool SimCenterJsonWidget::outputToJSON(QJsonObject &jsonObj)
         outputObj["OtherParameters"] = defPolyObj;
     }
 
-    jsonObj.insert(methodKey,outputObj);
-
-    // for generic models, also export table
+    // for generic models, run its own version of outputToJSON
     if (methodsObj.contains("GenericModel"))
-    {
-        QJsonObject someObj;
-        methodWidget->outputToJSON(someObj);
-        auto temp = 1;
-    }
+        methodWidget->outputToJSON(outputObj);
+
+    jsonObj.insert(methodKey,outputObj);
 
     return true;
 }
@@ -538,49 +534,48 @@ bool SimCenterJsonWidget::inputFromJSON(QJsonObject &jsonObject)
         else
             finalObj["Epistemic"] = QString("Preferred");
 
-        if (name == "GenericModel") {
-
-//            this->wid
-
-//            inputFromJSON(methodObj);
-            auto temp = 1;
+        // load generic model inputs
+        if (name == "GenericModel")
+        {
+//            bool res = GenericModelWidget::inputFromJSON(methodObj);
+            methodWidget->inputFromJSON(methodObj);
+//            methodWidget->GenericModelWidget::inputFromJSON(methodObj);
         }
 
-        else {
-            // Get the vars for the key
-            auto variablesObj = this->getVars(passedObj,key);
-            if(variablesObj.isEmpty())
+
+        // Get the vars for the key
+        auto variablesObj = this->getVars(passedObj,key);
+        if(variablesObj.isEmpty())
+        {
+            this->errorMessage("Error, could not get the variable for method "+name+" in "+this->objectName());
+            return false;
+        }
+
+        // There could be a model with no input parameters
+        if(!variablesObj.contains("N/A"))
+        {
+            QJsonObject variableTypesObj;
+            auto res = this->getVarTypes(variablesObj,passedObj,key,variableTypesObj);
+            if(res != 0)
             {
-                this->errorMessage("Error, could not get the variable for method "+name+" in "+this->objectName());
+                this->errorMessage("Error, could not get the variable types for method "+name+" in "+this->objectName());
                 return false;
             }
 
-            // There could be a model with no input parameters
-            if(!variablesObj.contains("N/A"))
+            finalObj["VarTypes"] = variableTypesObj;
+
+            // Object to store the uuid's of the parameters, where the key is the parameter name
+            QJsonObject uuidObjs;
+
+            auto res2 = this->addNewParametersToInputWidget(variablesObj,variableTypesObj, key, uuidObjs);
+
+            if(!res2)
             {
-                QJsonObject variableTypesObj;
-                auto res = this->getVarTypes(variablesObj,passedObj,key,variableTypesObj);
-                if(res != 0)
-                {
-                    this->errorMessage("Error, could not get the variable types for method "+name+" in "+this->objectName());
-                    return false;
-                }
-
-                finalObj["VarTypes"] = variableTypesObj;
-
-                // Object to store the uuid's of the parameters, where the key is the parameter name
-                QJsonObject uuidObjs;
-
-                auto res2 = this->addNewParametersToInputWidget(variablesObj,variableTypesObj, key, uuidObjs);
-
-                if(!res2)
-                {
-                    this->errorMessage("Error, adding the parameters to the input widget for the model "+name+" in "+methodKey);
-                    return false;
-                }
-
-                finalObj["Uuids"] = uuidObjs;
+                this->errorMessage("Error, adding the parameters to the input widget for the model "+name+" in "+methodKey);
+                return false;
             }
+
+            finalObj["Uuids"] = uuidObjs;
         }
 
         auto item = listWidget->addItem(finalObj);

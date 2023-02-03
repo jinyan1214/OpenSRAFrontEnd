@@ -56,13 +56,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QLineEdit>
 #include <QFileDialog>
 
-GenericModelWidget::GenericModelWidget(QString parName, QWidget *parent) : SimCenterAppWidget(parent), parentName(parName)
+GenericModelWidget::GenericModelWidget(QString parName, QJsonObject &methodObj, QWidget *parent) : SimCenterAppWidget(parent), parentName(parName)
 {
     this->setObjectName("Generic Model Widget of "+parName);
     verticalLayout = new QVBoxLayout(this);
     verticalLayout->setMargin(2);
     verticalLayout->setSpacing(2);
-    this->makeRVWidget();
+    this->makeRVWidget(methodObj);
 
     this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 }
@@ -74,8 +74,96 @@ GenericModelWidget::~GenericModelWidget()
 }
 
 
-void GenericModelWidget::makeRVWidget(void)
+void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
 {
+    // instructions section
+    QGroupBox* instructionsGB = new QGroupBox("Instructions");
+    QHBoxLayout *instructionsLayout = new QHBoxLayout(instructionsGB);
+    auto instructionsLabel = new QLabel(
+        "- Create equations by adding one term at a time using the following table."
+        "\n\t- The \"Add\" button adds the term to the equation. The term you added should show up under the \"Generic Equation\" section below."
+        "\n\t- The \"Remove\" button removes the term in the bottom row of the table."
+        "\n\t- To generate constants, set \"Power\" to \"0\" (the value under \"Variable Label\" will not be used when \"Power\" is set to \"0\")."
+        "\n- The three levels correspond to the levels of analysis users can create models for. OpenSRA decides the level to use based on data availability."
+        "\n\t- Ideally, the lower levels should contain the variables used by the upper levels (e.g., the level 2 model should contain the variables used by level 1)."
+    );
+    instructionsLayout->addWidget(instructionsLabel);
+    verticalLayout->addWidget(instructionsGB);
+
+    // model distribution type
+    QHBoxLayout *eqnTypeLayout = new QHBoxLayout();
+    QLabel* eqTypeLabel = new QLabel("Select model distribution type:");
+
+    eqTypeCombo = new QComboBox();
+    eqTypeCombo->addItems(QStringList({"lognormal","normal"}));
+    eqTypeCombo->setMinimumWidth(100);
+    eqTypeCombo->setMinimumHeight(25);
+
+    connect(eqTypeCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(handleTypeChanged(int)));
+
+    eqnTypeLayout->addWidget(eqTypeLabel);
+    eqnTypeLayout->addWidget(eqTypeCombo);
+    eqnTypeLayout->addStretch();
+    verticalLayout->addLayout(eqnTypeLayout);
+
+    // return param
+    QHBoxLayout *returnParamLayout = new QHBoxLayout();
+    QLabel* returnParamLabel = new QLabel("Enter label for return parameter (limited to one for now):");
+
+    returnParamLineEdit = new QLineEdit();
+    returnParamLineEdit->setText("pgdef");
+    returnParamLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+    returnParamLayout->addWidget(returnParamLabel);
+    returnParamLayout->addWidget(returnParamLineEdit);
+    returnParamLayout->setStretch(1,0);
+    verticalLayout->addLayout(returnParamLayout);
+
+    // upstream category
+    QHBoxLayout *upstreamCatLayout = new QHBoxLayout();
+    QLabel* upstreamCatLabel = new QLabel("Select upstream dependency:");
+
+//    auto genModMethodParamObj = this->getMethodAndParamJsonObj();
+    auto genModParams = methodObj["Params"].toObject();
+    QString genModCat = genModParams.value("ReturnCategory").toString();
+    if (genModCat == "EngineeringDemandParameter")
+        upstreamCatList.append("IM");
+    else if (genModCat == "DamageMeasure")
+    {
+        upstreamCatList.append("IM");
+        upstreamCatList.append("EDP");
+    }
+    else if (genModCat == "DecisionVariable")
+    {
+        upstreamCatList.append("IM");
+        upstreamCatList.append("EDP");
+        upstreamCatList.append("DM");
+    }
+
+    upstreamCatCombo = new QComboBox();
+    upstreamCatCombo->addItems(upstreamCatList);
+    upstreamCatCombo->setMinimumWidth(100);
+    upstreamCatCombo->setMinimumHeight(25);
+
+    upstreamCatLayout->addWidget(upstreamCatLabel);
+    upstreamCatLayout->addWidget(upstreamCatCombo);
+    upstreamCatLayout->addStretch();
+    verticalLayout->addLayout(upstreamCatLayout);
+
+    // upstream params
+    QHBoxLayout *upstreamParamLayout = new QHBoxLayout();
+    QLabel* upstreamParamLabel = new QLabel("Enter list of upstream parameters (leave empty if none):");
+
+    upstreamParamLineEdit = new QLineEdit();
+    upstreamParamLineEdit->setText("pga, mag");
+    upstreamParamLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+    upstreamParamLayout->addWidget(upstreamParamLabel);
+    upstreamParamLayout->addWidget(upstreamParamLineEdit);
+    upstreamParamLayout->setStretch(1,0);
+    verticalLayout->addLayout(upstreamParamLayout);
+
+    // model definition table
     // title & add button
     QHBoxLayout *titleLayout = new QHBoxLayout();
     //titleLayout->setMargin(10);
@@ -102,20 +190,6 @@ void GenericModelWidget::makeRVWidget(void)
     buttonLayout->addStretch();
 
     titleLayout->addWidget(title);
-
-    QGroupBox* instructionsGB = new QGroupBox("Instructions");
-    QHBoxLayout *instructionsLayout = new QHBoxLayout(instructionsGB);
-    auto instructionsLabel = new QLabel(
-        "- Create equations by adding one term at a time using the following table."
-        "\n\t- The \"Add\" button adds the term to the equation. The term you added should show up under the \"Generic Equation\" section below."
-        "\n\t- The \"Remove\" button removes the term in the bottom row of the table."
-        "\n- The first row in the table shows how to make the term 0.5*(ln(pga))^2"
-        "\n- To generate constants, set \"Power\" to \"0\" (the value under \"Variable Label\" will not be used when \"Power\" is set to \"0\")."
-        "\n- The three levels correspond to the levels of analysis users can create models for. OpenSRA decides the level to use based on data availability."
-        "\n\t- Ideally, the lower levels should contain the variables used by the upper levels (e.g., the level 2 model should contain the variables used by level 1)."
-    );
-    instructionsLayout->addWidget(instructionsLabel);
-    verticalLayout->addWidget(instructionsGB);
 
     verticalLayout->addLayout(titleLayout);
     theRVTableView = new RVTableView();
@@ -151,22 +225,6 @@ void GenericModelWidget::makeRVWidget(void)
 
     eqnLayout->addStretch();
 
-    QHBoxLayout *eqnTypeLayout = new QHBoxLayout();
-    QLabel* eqTypeLabel = new QLabel("Select model distribution type:");
-
-    eqTypeCombo = new QComboBox();
-    eqTypeCombo->addItems(QStringList({"lognormal","normal"}));
-    eqTypeCombo->setMinimumWidth(100);
-    eqTypeCombo->setMinimumHeight(25);
-
-    connect(eqTypeCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(handleTypeChanged(int)));
-
-    eqnTypeLayout->addWidget(eqTypeLabel);
-    eqnTypeLayout->addWidget(eqTypeCombo);
-
-    eqnTypeLayout->addStretch();
-
-    verticalLayout->addLayout(eqnTypeLayout);
     verticalLayout->addWidget(eqnGB);
 
     RVTableModel* tableModel = theRVTableView->getTableModel();
@@ -232,6 +290,11 @@ void GenericModelWidget::clear(void) {
     eqnLabelLevel1->clear();
     eqnLabelLevel2->clear();
     eqnLabelLevel3->clear();
+
+    eqTypeCombo->setCurrentIndex(0);
+    upstreamCatCombo->setCurrentIndex(0);
+    upstreamParamLineEdit->setText("pga, mag");
+    returnParamLineEdit->setText("pgdef");
 }
 
 
@@ -239,34 +302,6 @@ bool GenericModelWidget::outputToJSON(QJsonObject &jsonObj) {
 
     // Here we get the random variables and constants
     // At the same time we need to populate the methods json object to provide some more information about the type of RV
-
-//    bool result = true;
-
-//    QJsonArray rvArray;
-
-//    auto tableModel = theRVTableView->getTableModel();
-
-//    auto tableHeaders = tableModel->getHeaderStringList();
-
-//    for (int i = 0; i <theRVTableView->rowCount(); ++i)
-//    {
-//        QJsonObject rv;
-
-//        auto RVname = tableModel->item(i,0).toString();
-
-//        for (int j = 0; j <tableHeaders.size(); ++j)
-//        {
-//            auto headerStr = tableHeaders.at(j);
-
-//            QString val = tableModel->item(i,j).toString();
-
-//            rv.insert(headerStr,val);
-//        }
-
-//        rvObject.insert(RVname,rv);
-//    }
-
-    auto eqText =eqTypeCombo->currentText();
 
     // get method params for generic model
     auto genModMethodParamObj = this->getMethodAndParamJsonObj();
@@ -297,12 +332,21 @@ bool GenericModelWidget::outputToJSON(QJsonObject &jsonObj) {
     fileDirInfo.setFile(fileDir);
     if (!fileDirInfo.exists())
     {
-//        this->errorMessage("Error: In \"GenericModel.cpp\" - cannot determine path to \"Input\" folder in working dir");
+        SimCenterAppWidget::errorMessage("Error: In \"GenericModel.cpp\" - cannot determine path to \"Input\" folder in working dir");
         return false;
     }
     QString fileName = "genmod_" + genModCatAbbr + "_" + genModHaz + ".csv";
     QString filePath = fileDir + QDir::separator() + fileName;
-    this->outputToCsv(filePath);
+    auto res = this->outputToCsv(filePath);
+    if (!res)
+        SimCenterAppWidget::errorMessage("Error: In \"GenericModel.cpp\" - cannot export table to " + filePath);
+
+    // make jsonObj for return
+    jsonObj["DistType"] = eqTypeCombo->currentText();
+    jsonObj["ReturnParams"] = returnParamLineEdit->text();
+    jsonObj["UpstreamCategory"] = upstreamCatCombo->currentText();
+    jsonObj["UpstreamParams"] = upstreamParamLineEdit->text();
+    jsonObj["PathToModelInfo"] = filePath;
 
     return true;
 }
@@ -310,8 +354,9 @@ bool GenericModelWidget::outputToJSON(QJsonObject &jsonObj) {
 
 void GenericModelWidget::reset(void)
 {
-
+    this->clear();
 }
+
 
 void GenericModelWidget::addParam(void)
 {
@@ -324,7 +369,7 @@ void GenericModelWidget::addParam(void)
     auto fromModel = parentName;
     auto desc = "User-created parameter from the generic model widget";
 
-    auto name = "RV_"+QString::number(i);
+    auto name = "var_"+QString::number(i);
 
     RV newRV(5,uid,fromModel,desc);
 
@@ -339,19 +384,37 @@ void GenericModelWidget::addParam(void)
 
     if (i == 0)
     {
+        newRV[0] = QString("");
+        newRV[1] = QString("1");
+        newRV[2] = QString("2");
+        newRV[3] = QString("false");
+        newRV[4] = QString("0");
+    }
+    else if (i == 1)
+    {
         newRV[0] = QString("pga");
         newRV[1] = QString("1");
         newRV[2] = QString("0.5");
         newRV[3] = QString("true");
         newRV[4] = QString("2");
     }
+    else if (i == 2)
+    {
+        newRV[0] = QString("mag");
+        newRV[1] = QString("2");
+        newRV[2] = QString("0.5");
+        newRV[3] = QString("false");
+        newRV[4] = QString("1");
+    }
     else
     {
         newRV[0] = QVariant(name);
         newRV[1] = QVariant(rand() % 2 + 1);
         newRV[2] = QVariant(rand() % 5 + 1);
-        newRV[3] = rand() % 10 < 5 ? true : false;
-        newRV[4] = QVariant(rand() % 2);
+//        newRV[3] = rand() % 10 < 5 ? true : false;
+//        newRV[4] = QVariant(rand() % 2);
+        newRV[3] = QString("false");
+        newRV[4] = QVariant("1");
     }
 
     data.append(newRV);
@@ -399,11 +462,102 @@ void GenericModelWidget::removeParam(void)
 
 bool GenericModelWidget::inputFromJSON(QJsonObject &jsonObj)
 {
-    Q_UNUSED(jsonObj);
+    // dist type
+    if (jsonObj.contains("DistType"))
+    {
+        if (jsonObj["DistType"]=="lognormal")
+            eqTypeCombo->setCurrentIndex(0);
+        else if (jsonObj["DistType"]=="normal")
+            eqTypeCombo->setCurrentIndex(1);
+        else
+        {
+            SimCenterAppWidget::errorMessage(
+                "Error in \"GenericModelWidget::inputFromJSON\" - distribution type \"" +
+                jsonObj["DistType"].toString() + "\" is not supported"
+            );
+            return false;
+        }
+    }
+    else
+        eqTypeCombo->setCurrentIndex(0);
 
-    bool result = true;
+    // return param
+    if (jsonObj.contains("ReturnParams"))
+        returnParamLineEdit->setText(jsonObj["ReturnParams"].toString());
+    else
+        returnParamLineEdit->setText(jsonObj["ReturnParams"].toString());
 
-    return result;
+    // upstream category
+    if (jsonObj.contains("UpstreamCategory"))
+    {
+        if (upstreamCatList.contains(jsonObj["UpstreamCategory"].toString()))
+            upstreamCatCombo->setCurrentText(jsonObj["UpstreamCategory"].toString());
+        else
+        {
+            SimCenterAppWidget::errorMessage(
+                "Error in \"GenericModelWidget::inputFromJSON\" - upstream category is not valid"
+            );
+            return false;
+        }
+    }
+
+    // upstream params
+    if (jsonObj.contains("UpstreamParams"))
+        upstreamParamLineEdit->setText(jsonObj["UpstreamParams"].toString());
+    else
+        upstreamParamLineEdit->setText(jsonObj["UpstreamParams"].toString());
+
+    // path to model definition table
+    QString filePath;
+    if (jsonObj.contains("UpstreamParams"))
+        filePath = jsonObj["PathToModelInfo"].toString();
+    else
+    {
+        SimCenterAppWidget::errorMessage(
+            "Error in \"GenericModelWidget::inputFromJSON\" - cannot find attribute in setup_config with path to generic model CSV table"
+        );
+        return false;
+    }
+    QFileInfo filePathInfo(filePath);
+    if (!filePathInfo.exists())
+    {
+        // first try using work_dir/Input as reference
+        filePath =
+            OpenSRAPreferences::getInstance()->getLocalWorkDir() +
+            QDir::separator() + "analysis" +
+            QDir::separator() + "Input" +
+            filePath;
+    }
+    filePathInfo.setFile(filePath);
+    if (!filePathInfo.exists())
+    {
+        // first try using work_dir/analysis/Input as reference
+        filePath =
+            OpenSRAPreferences::getInstance()->getLocalWorkDir() +
+            QDir::separator() + "Input" +
+            filePath;
+    }
+    filePathInfo.setFile(filePath);
+    if (!filePathInfo.exists())
+    {
+        SimCenterAppWidget::errorMessage(
+            "Error in \"GenericModelWidget::inputFromJSON\" - path to generic model CSV table is not valid: " +
+            filePath
+        );
+        return false;
+    }
+
+    // load CSV table
+    if(!this->handleLoadVars(filePath,theRVTableView))
+    {
+        SimCenterAppWidget::errorMessage("Error in \"GenericModelWidget::inputFromJSON\", in loading the random variables table");
+        return false;
+    }
+
+    // make equation display
+    this->generateEquation();
+
+    return true;
 }
 
 
@@ -437,16 +591,19 @@ void GenericModelWidget::generateEquation(void)
 
         // The coefficient
         if(i==0)
-            str += "c";
+//            str += "c";
+            str += data[i][2].toString();
         else
-            str += "+ c";
+//            str += "+ c";
+            str += " + " + data[i][2].toString();
 
-        str += QString::number(i);
+//        str += QString::number(i);
 
         if(pow > 0 && !rvName.isEmpty())
         {
             if(pow>=1)
-                str += "*(";
+//                str += "*(";
+                str += "*";
 
             // If apply LN
             if(applyLn)
@@ -458,7 +615,7 @@ void GenericModelWidget::generateEquation(void)
 
             if(pow>=1)
             {
-                str += ")";
+//                str += ")";
                 if(pow>1)
                     str += "<sup>"+QString::number(pow)+"</sup>";
             }
@@ -540,6 +697,87 @@ bool GenericModelWidget::outputToCsv(const QString& path)
 
     if(!err.isEmpty())
         return false;
+
+    return true;
+}
+
+
+bool GenericModelWidget::handleLoadVars(const QString& filePath, RVTableView* parameterTable)
+{
+
+    CSVReaderWriter csvTool;
+
+    QString err;
+    auto paramData = csvTool.parseCSVFile(filePath,err);
+
+    if(paramData.isEmpty() || !err.isEmpty())
+    {
+        SimCenterAppWidget::errorMessage("Error in \"GenericModelWidget\", could not read the input file "+filePath);
+        return false;
+    }
+
+    auto headers = paramData.front();
+
+    auto indexOfName = headers.indexOf("Name");
+
+    if(indexOfName == -1)
+    {
+        SimCenterAppWidget::errorMessage("Error in \"GenericModelWidget\", could not find the required column 'Name' in  provided input file "+filePath);
+        return false;
+    }
+
+    // Pop the front
+    paramData.pop_front();
+
+    auto getMapFromVals = [=](const QStringList& vals){
+
+        QMap<QString, QString> result;
+
+        // Return an empty result if inconsistency in size
+        if(vals.size() != headers.size())
+            return result;
+
+        for(int i = 0; i<vals.size(); ++i)
+        {
+            auto header = headers.at(i);
+            auto val = vals.at(i);
+
+            result.insert(header,val);
+        }
+
+        return result;
+    };
+
+
+    auto numParams = parameterTable->rowCount();
+
+//    if(paramData.size() != numParams)
+//    {
+//        this->errorMessage("Error, the number of parameters loaded " + QString::number(numParams) + " is not equal the number of parameters in the input file " + QString::number(paramData.size()));
+//        return false;
+//    }
+
+
+    for(auto&& param : paramData)
+    {
+        if(param.isEmpty())
+        {
+            SimCenterAppWidget::errorMessage("Error, an empty variable row in the input file "+filePath);
+            return false;
+        }
+
+        auto name = param.at(indexOfName);
+
+        auto vals = getMapFromVals(param);
+
+        auto res = parameterTable->updateRV(name,vals);
+
+        if(!res)
+        {
+            SimCenterAppWidget::errorMessage("Error updating parameters "+name);
+            return false;
+        }
+    }
 
     return true;
 }

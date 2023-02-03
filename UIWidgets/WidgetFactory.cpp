@@ -173,7 +173,7 @@ QWidget* WidgetFactory::getComboBoxWidget(const QJsonObject& obj, const QString&
                 {
                     auto parentName = parent->objectName();
 
-                    auto genModelWidget = new GenericModelWidget(parentName);
+                    auto genModelWidget = new GenericModelWidget(parentName, itemObj);
                     genModelWidget->setMethodAndParamJsonObj(itemObj);
                     comboStackedWidget->addWidget(genModelWidget);
                 }

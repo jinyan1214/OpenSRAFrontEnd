@@ -57,10 +57,10 @@ class GenericModelWidget : public SimCenterAppWidget, public JsonSerializable
 {
     Q_OBJECT
 public:
-    explicit GenericModelWidget(QString parName, QWidget *parent = 0);
+    explicit GenericModelWidget(QString parName, QJsonObject &methodObj, QWidget *parent = 0);
     ~GenericModelWidget();
 
-    bool inputFromJSON(QJsonObject &rvObject) override;
+    bool inputFromJSON(QJsonObject &jsonObj) override;
     bool outputToJSON(QJsonObject &jsonObj) override;
 
     void reset(void) override;
@@ -81,8 +81,10 @@ private:
 
     void generateEquation(void);
 
+    bool handleLoadVars(const QString& filePath, RVTableView* parameterTable);
+
     QVector<RV> data;
-    void makeRVWidget(void);
+    void makeRVWidget(QJsonObject &methodObj);
     QVBoxLayout* verticalLayout = nullptr;
 
     QLabel* eqnLabelLevel1 = nullptr;
@@ -96,6 +98,10 @@ private:
     RVTableView* theRVTableView = nullptr;
 
     QComboBox* eqTypeCombo = nullptr;
+    QLineEdit* returnParamLineEdit = nullptr;
+    QComboBox* upstreamCatCombo = nullptr;
+    QLineEdit* upstreamParamLineEdit = nullptr;
+    QStringList upstreamCatList;
 
     QString parentName;
 };
