@@ -534,15 +534,6 @@ bool SimCenterJsonWidget::inputFromJSON(QJsonObject &jsonObject)
         else
             finalObj["Epistemic"] = QString("Preferred");
 
-        // load generic model inputs
-        if (name == "GenericModel")
-        {
-//            bool res = GenericModelWidget::inputFromJSON(methodObj);
-            methodWidget->inputFromJSON(methodObj);
-//            methodWidget->GenericModelWidget::inputFromJSON(methodObj);
-        }
-
-
         // Get the vars for the key
         auto variablesObj = this->getVars(passedObj,key);
         if(variablesObj.isEmpty())
@@ -551,8 +542,8 @@ bool SimCenterJsonWidget::inputFromJSON(QJsonObject &jsonObject)
             return false;
         }
 
-        // There could be a model with no input parameters
-        if(!variablesObj.contains("N/A"))
+        // There could be a model with no input parameters or it could be a generic model, in which case handle differently
+        if(!variablesObj.contains("N/A") && !key.contains("GenericModel"))
         {
             QJsonObject variableTypesObj;
             auto res = this->getVarTypes(variablesObj,passedObj,key,variableTypesObj);
@@ -650,9 +641,17 @@ void SimCenterJsonWidget::handleListItemSelected(const QModelIndex& index)
     }
 
     QJsonObject finalObj;
-//    finalObj["Method"] = methodObj;
 
-    finalObj["Method"] = itemKey;
+    if (itemKey == "GenericModel")
+    {
+        QJsonObject tempObj;
+        tempObj[itemKey] = modelListObj;
+        finalObj["Method"] = tempObj;
+    }
+    else
+    {
+        finalObj["Method"] = itemKey;
+    }
 
     // qDebug()<<"****";
     // qDebug()<<finalObj;

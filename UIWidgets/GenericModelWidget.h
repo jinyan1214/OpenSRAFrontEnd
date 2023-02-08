@@ -82,6 +82,7 @@ private:
     void generateEquation(void);
 
     bool handleLoadVars(const QString& filePath, RVTableView* parameterTable);
+    void addParamViaCSV(const QStringList &rvData);
 
     QVector<RV> data;
     void makeRVWidget(QJsonObject &methodObj);
@@ -102,6 +103,7 @@ private:
     QComboBox* upstreamCatCombo = nullptr;
     QLineEdit* upstreamParamLineEdit = nullptr;
     QStringList upstreamCatList;
+    QStringList headers;
 
     QString parentName;
 };

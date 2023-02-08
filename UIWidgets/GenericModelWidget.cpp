@@ -125,7 +125,8 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
 
 //    auto genModMethodParamObj = this->getMethodAndParamJsonObj();
     auto genModParams = methodObj["Params"].toObject();
-    QString genModCat = genModParams.value("ReturnCategory").toString();
+    auto genModCatObj = genModParams.value("ReturnCategory").toObject();
+    QString genModCat = genModCatObj.value("DefaultValue").toString();
     if (genModCat == "EngineeringDemandParameter")
         upstreamCatList.append("IM");
     else if (genModCat == "DamageMeasure")
@@ -228,7 +229,12 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
     verticalLayout->addWidget(eqnGB);
 
     RVTableModel* tableModel = theRVTableView->getTableModel();
-    QStringList headers = {"Variable Label","Level","Coefficient", "Apply Ln", "Power"};
+    headers.append("Variable");
+    headers.append("Level");
+    headers.append("Coefficient");
+    headers.append("Apply Ln");
+    headers.append("Power");
+//    {"Variable Label","Level","Coefficient", "Apply Ln", "Power"};
     tableModel->setHeaderStringList(headers);
     theRVTableView->show();
 
@@ -285,7 +291,10 @@ void GenericModelWidget::sortData(void)
 
 void GenericModelWidget::clear(void) {
 
-    theRVTableView->clear();
+//    theRVTableView->clear();
+    auto tableModel = theRVTableView->getTableModel();
+    tableModel->clear();
+    tableModel->setHeaderStringList(headers);
     data.clear();
     eqnLabelLevel1->clear();
     eqnLabelLevel2->clear();
@@ -306,8 +315,10 @@ bool GenericModelWidget::outputToJSON(QJsonObject &jsonObj) {
     // get method params for generic model
     auto genModMethodParamObj = this->getMethodAndParamJsonObj();
     auto genModParams = genModMethodParamObj["Params"].toObject();
-    QString genModCat = genModParams.value("ReturnCategory").toString();
-    QString genModHaz = genModParams.value("ReturnHazard").toString();
+    auto genModCatObj = genModParams.value("ReturnCategory").toObject();
+    QString genModCat = genModCatObj.value("DefaultValue").toString();
+    auto genModHazObj = genModParams.value("ReturnHazard").toObject();
+    QString genModHaz = genModHazObj.value("DefaultValue").toString();
 
     QString genModCatAbbr;
     if (genModCat == "EngineeringDemandParameter")
@@ -354,11 +365,11 @@ bool GenericModelWidget::outputToJSON(QJsonObject &jsonObj) {
 
 void GenericModelWidget::reset(void)
 {
-    this->clear();
+//    this->clear();
 }
 
 
-void GenericModelWidget::addParam(void)
+void GenericModelWidget::addParam()
 {
     auto i = data.size();
 
@@ -371,7 +382,7 @@ void GenericModelWidget::addParam(void)
 
     auto name = "var_"+QString::number(i);
 
-    RV newRV(5,uid,fromModel,desc);
+    RV newRV(headers.length(),uid,fromModel,desc);
 
 //    int level = 1;
 
@@ -396,7 +407,7 @@ void GenericModelWidget::addParam(void)
         newRV[1] = QString("1");
         newRV[2] = QString("0.5");
         newRV[3] = QString("true");
-        newRV[4] = QString("2");
+        newRV[4] = QString("1");
     }
     else if (i == 2)
     {
@@ -404,13 +415,15 @@ void GenericModelWidget::addParam(void)
         newRV[1] = QString("2");
         newRV[2] = QString("0.5");
         newRV[3] = QString("false");
-        newRV[4] = QString("1");
+        newRV[4] = QString("2");
     }
     else
     {
         newRV[0] = QVariant(name);
-        newRV[1] = QVariant(rand() % 2 + 1);
-        newRV[2] = QVariant(rand() % 5 + 1);
+//        newRV[1] = QVariant(rand() % 2 + 1);
+//        newRV[1] = QVariant(qMin(rand() % 2 + 2,3));
+        newRV[1] = QVariant(3);
+        newRV[2] = QVariant(QString(rand() % 10 < 5 ? "-" : "+") + QString::number(rand() % 5 + 1));
 //        newRV[3] = rand() % 10 < 5 ? true : false;
 //        newRV[4] = QVariant(rand() % 2);
         newRV[3] = QString("false");
@@ -548,9 +561,14 @@ bool GenericModelWidget::inputFromJSON(QJsonObject &jsonObj)
     }
 
     // load CSV table
+    theRVTableView->clear();
+    auto tableModel = theRVTableView->getTableModel();
+    tableModel->clear();
+    tableModel->setHeaderStringList(headers);
+    data.clear();
     if(!this->handleLoadVars(filePath,theRVTableView))
     {
-        SimCenterAppWidget::errorMessage("Error in \"GenericModelWidget::inputFromJSON\", in loading the random variables table");
+        SimCenterAppWidget::errorMessage("Error in \"GenericModelWidget::inputFromJSON\", in loading the variables table");
         return false;
     }
 
@@ -718,11 +736,11 @@ bool GenericModelWidget::handleLoadVars(const QString& filePath, RVTableView* pa
 
     auto headers = paramData.front();
 
-    auto indexOfName = headers.indexOf("Name");
+    auto indexOfName = headers.indexOf("Variable Label");
 
     if(indexOfName == -1)
     {
-        SimCenterAppWidget::errorMessage("Error in \"GenericModelWidget\", could not find the required column 'Name' in  provided input file "+filePath);
+        SimCenterAppWidget::errorMessage("Error in \"GenericModelWidget\", could not find the required column 'Variable Label' in  provided input file "+filePath);
         return false;
     }
 
@@ -748,8 +766,7 @@ bool GenericModelWidget::handleLoadVars(const QString& filePath, RVTableView* pa
         return result;
     };
 
-
-    auto numParams = parameterTable->rowCount();
+//    auto numParams = parameterTable->rowCount();
 
 //    if(paramData.size() != numParams)
 //    {
@@ -757,6 +774,7 @@ bool GenericModelWidget::handleLoadVars(const QString& filePath, RVTableView* pa
 //        return false;
 //    }
 
+//    QStringList rowData;
 
     for(auto&& param : paramData)
     {
@@ -766,18 +784,56 @@ bool GenericModelWidget::handleLoadVars(const QString& filePath, RVTableView* pa
             return false;
         }
 
-        auto name = param.at(indexOfName);
+        this->addParamViaCSV(param);
 
-        auto vals = getMapFromVals(param);
+//        auto name = param.at(indexOfName);
 
-        auto res = parameterTable->updateRV(name,vals);
+//        auto vals = getMapFromVals(param);
 
-        if(!res)
-        {
-            SimCenterAppWidget::errorMessage("Error updating parameters "+name);
-            return false;
-        }
+//        rowData.clear();
+//        auto res = parameterTable->updateRV(name,vals);
+
+//        if(!res)
+//        {
+//            SimCenterAppWidget::errorMessage("Error updating parameters "+name);
+//            return false;
+//        }
     }
 
     return true;
+}
+
+
+void GenericModelWidget::addParamViaCSV(const QStringList &rvData)
+{
+    auto i = data.size();
+
+    // Create a unique id to identify the specific instance of these parameters
+    auto uid = QUuid::createUuid().toString();
+
+    // From model
+    auto fromModel = parentName;
+    auto desc = "User-created parameter from the generic model widget";
+
+    auto name = "var_"+QString::number(i);
+
+    RV newRV(headers.length(),uid,fromModel,desc);
+
+    // get value by column
+    newRV[0] = rvData[0]; // variable label: string
+    newRV[1] = QString::number(rvData[1].toInt()); // level: int -> string
+    newRV[2] = QString::number(rvData[2].toFloat()); // coefficient: float -> string
+    newRV[3] = rvData[3].toLower(); // apply ln (true/false): boolean -> string
+    newRV[4] = QString::number(rvData[4].toInt()); // power: int -> string
+//    for (int j = 0; j < headers.length(); ++j)
+//        newRV[j] = rvData[j];
+
+    data.append(newRV);
+    this->sortData();
+    RVTableModel* tableModel = theRVTableView->getTableModel();
+    tableModel->populateData(data);
+
+    this->generateEquation();
+
+    theRVTableView->resizeEvent(nullptr);
 }
