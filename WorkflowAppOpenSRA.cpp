@@ -789,6 +789,7 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
     //
     // clear Results tab of loaded any results
     theResultsWidget->clear();
+    theCustomVisualizationWidget->quickClearForRun();
     //
 
     statusMessage("Set up done.  Now starting the analysis.");

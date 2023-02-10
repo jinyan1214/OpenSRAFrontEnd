@@ -67,6 +67,7 @@ public:
     int processResults(QString &filenameResults);
 
     void clear();
+    void quickClearForRun();
 
 signals:
 

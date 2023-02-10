@@ -175,6 +175,15 @@ int OpenSRAPostProcessor::importResultVisuals(const QString& pathToResults)
     listWidget->resizeColumnToContents(0);
 
     theVisualizationWidget->zoomToLayer(results_layers.value(0));
+    QString name;
+    for(auto&& it: results_layers)
+    {
+        name = it->name();
+        if (name == "deformation_polygons_crossed")
+            it->setOpacity(0.7);
+        if (name == "caprocks_with_crossings")
+            it->setOpacity(0.7);
+    }
 
     return 0;
 }

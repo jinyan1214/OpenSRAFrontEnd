@@ -44,6 +44,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // GIS headers
 #include <qgsvectorlayer.h>
+#include <qgsmaplayer.h>
+#include <qgslayertree.h>
+#include <qgslayertreemodel.h>
+#include <qgslayertreeview.h>
+#include <qgslayertreegroup.h>
+#include <qgisapp.h>
 
 #include <QListWidget>
 #include <QVBoxLayout>
@@ -329,5 +335,46 @@ void CustomVisualizationWidget::clear()
     CGS3Checkbox->setChecked(false);
 
     this->resultsShow(false);
+}
+
+
+void CustomVisualizationWidget::quickClearForRun()
+{
+//    theOpenSRAPostProcessor->clear();
+//    QgsLayerTreeView* layerTreeView = theVisualizationWidget->getLayerTreeView();
+//    layerTreeView->selectAll();
+//    const QList<QgsMapLayer *> selectedLayers = layerTreeView->selectedLayersRecursive();
+//    QString name;
+//    QgsLayerTreeGroup* resultsLayerGroup;
+//    for(auto&& it: selectedLayers)
+//    {
+//        name = it->name();
+////        if (count>0) // index 0 is world
+////        if (!name.contains("Contours") && name!="Rupture Plane" && )
+////            theVisualizationWidget->removeLayer(it); // this removes all gpkg layers
+//        if (name == "mean_fractile")
+//        {
+////            theVisualizationWidget->removeLayer(it); // remove OpenSRA results layer
+//            layerTreeView->setCurrentLayer(it);
+////            auto grpNode = layerTreeView->currentGroupNode();
+////            grpNode->removeChildrenGroupWithoutLayers();
+//            auto qgis = theVisualizationWidget->getQgis();
+//            // False to not show prompt asking user
+//            qgis->removeLayer(false);
+//            // Remove the empty groups
+//            qgis->layerTreeView()->layerTreeModel()->rootGroup()->removeChildrenGroupWithoutLayers();
+//            auto temp = 1;
+//            break;
+//        }
+//    }
+//    layerTreeView->clearSelection();
+
+//    QgsLayerTreeGroup* resultsLayerGroup = theVisualizationWidget->getLayerGroup("Results");
+//    if (resultsLayerGroup!=nullptr)
+//        resultsLayerGroup->removeChildrenGroupWithoutLayers();
+//    auto qgis = theVisualizationWidget->getQgis();
+//    qgis->delete
+//    resultsLayerGroup->
+//    theVisualizationWidget->remove
 }
 
