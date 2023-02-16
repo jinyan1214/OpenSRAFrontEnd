@@ -258,18 +258,7 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
     {
         auto paramObj = variablesObj.value(key).toObject();
 
-        QJsonObject newMethodObj;
-
-        auto keys = paramObj.keys();
-
-        foreach(auto&& key, keys)
-        {
-            newMethodObj.insert(key,"User-created generic model parameter");
-
-            variableTypesObj.insert(key,"random");
-        }
-
-        variablesObj = newMethodObj;
+        variablesObj = getGenericModelObj(paramObj,variableTypesObj);
     }
     else
     {
@@ -338,6 +327,36 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
     // qDebug()<<finalObj;
 
     listWidget->addItem(finalObj);
+}
+
+
+QJsonObject SimCenterJsonWidget::getGenericModelObj(QJsonObject& paramObj, QJsonObject& variableTypesObj)
+{
+    // Get the table parameters
+    auto tableParams = paramObj["TableParams"].toObject();
+
+    auto upstream_params_str = paramObj["UpstreamParams"].toString();
+
+    QStringList upstream_params_list = upstream_params_str.split(",");
+
+    QJsonObject newMethodObj;
+
+    auto keys = tableParams.keys();
+
+    foreach(auto&& key, keys)
+    {
+        if(key.isEmpty() || upstream_params_list.contains(key))
+            continue;
+
+        newMethodObj.insert(key,"User-created generic model parameter");
+
+        variableTypesObj.insert(key,"random");
+    }
+
+    newMethodObj["TableParams"] = tableParams;
+    variableTypesObj.insert("TableParams","UserInput");
+
+    return newMethodObj;
 }
 
 
@@ -569,6 +588,7 @@ bool SimCenterJsonWidget::inputFromJSON(QJsonObject &jsonObject)
             finalObj["Uuids"] = uuidObjs;
         }
 
+
         auto item = listWidget->addItem(finalObj);
 
         if(item == nullptr)
@@ -576,6 +596,44 @@ bool SimCenterJsonWidget::inputFromJSON(QJsonObject &jsonObject)
             this->errorMessage("Error, failed to add the model "+name+" in "+methodKey);
             return false;
         }
+
+
+        // Select the last row
+        auto numItems = listWidget->getNumberOfItems();
+        listWidget->selectRow(numItems-1);
+
+
+        // There could be a model with no input parameters or it could be a generic model, in which case handle differently
+        if(key.contains("GenericModel"))
+        {
+            QJsonObject variablesObj;
+            methodWidget->outputToJSON(variablesObj);
+
+            auto new_methodObj = variablesObj["Method"].toObject();
+
+            auto paramObj = new_methodObj.value(key).toObject();
+
+            // Object to store the variable types
+            QJsonObject variableTypesObj;
+
+            variablesObj = getGenericModelObj(paramObj,variableTypesObj);
+
+            // Object to store the uuid's of the parameters, where the key is the parameter name
+            QJsonObject uuidObjs;
+
+            auto res2 = this->addNewParametersToInputWidget(variablesObj,variableTypesObj, key, uuidObjs);
+
+            if(!res2)
+            {
+                this->errorMessage("Error, adding the parameters to the input widget for the model "+name+" in "+methodKey);
+                return false;
+            }
+
+            finalObj["Uuids"] = uuidObjs;
+
+            listWidget->updateItemJsonObject(item->getItemID(),finalObj);
+        }
+
     }
 
     // landslide only
@@ -596,10 +654,6 @@ bool SimCenterJsonWidget::inputFromJSON(QJsonObject &jsonObject)
             }
         }
     }
-
-    // Select the last row
-    auto numItems = listWidget->getNumberOfItems();
-    listWidget->selectRow(numItems-1);
 
     return true;
 }

@@ -166,11 +166,14 @@ bool EngineeringDemandParameterWidget::inputFromJSON(QJsonObject &jsonObject)
             return false;
         }
 
-        auto res = thisComponent->inputFromJSON(obj);
-
-        if(!res )
+        if(!thisComponent->inputFromJSON(obj))
             return false;
 
+        if(obj["ToInclude"].toBool() == true)
+        {
+            auto idx = vecWidgets.indexOf(thisComponent);
+            theComponentSelection->displayComponent(idx);
+        }
     }
 
     return true;

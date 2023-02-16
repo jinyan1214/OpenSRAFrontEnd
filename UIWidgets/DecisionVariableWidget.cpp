@@ -164,6 +164,12 @@ bool DecisionVariableWidget::inputFromJSON(QJsonObject &jsonObject)
 
         if(!theDVType->inputFromJSON(inputObj))
             return false;
+
+        if(inputObj["ToInclude"].toBool() == true)
+        {
+            auto idx = vecWidgets.indexOf(theDVType);
+            theComponentSelection->displayComponent(idx);
+        }
     }
 
 

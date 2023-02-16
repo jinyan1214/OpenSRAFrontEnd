@@ -163,6 +163,12 @@ bool DamageMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
 
         if(!theDMType->inputFromJSON(inputObj))
             return false;
+
+        if(inputObj["ToInclude"].toBool() == true)
+        {
+            auto idx = vecWidgets.indexOf(theDMType);
+            theComponentSelection->displayComponent(idx);
+        }
     }
 
     return true;

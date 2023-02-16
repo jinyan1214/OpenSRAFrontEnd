@@ -78,6 +78,8 @@ public slots:
 
 private:
 
+    QJsonObject getGenericModelObj(QJsonObject& paramObj, QJsonObject& variableTypesObj);
+
     QString methodKey;
     QString nameToDisplay;
 

@@ -83,6 +83,8 @@ bool GeospatialDataWidget::inputFromJSON(QJsonObject &jsonObject)
         auto res =  GISMapInputWidget->inputFromJSON(GISObject);
         if(res == false)
             return false;
+
+        this->selectApp("GISDatasets");
     }
 
 
@@ -94,6 +96,8 @@ bool GeospatialDataWidget::inputFromJSON(QJsonObject &jsonObject)
         auto res =  cptInputWidget->inputFromJSON(CPTObject);
         if(res == false)
             return false;
+
+        this->selectApp("CPTParameters");
     }
 
     return true;

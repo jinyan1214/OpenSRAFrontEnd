@@ -80,13 +80,13 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
     QGroupBox* instructionsGB = new QGroupBox("Instructions");
     QHBoxLayout *instructionsLayout = new QHBoxLayout(instructionsGB);
     auto instructionsLabel = new QLabel(
-        "- Create equations by adding one term at a time using the following table."
-        "\n\t- The \"Add\" button adds the term to the equation. The term you added should show up under the \"Generic Equation\" section below."
-        "\n\t- The \"Remove\" button removes the term in the bottom row of the table."
-        "\n\t- To generate constants, set \"Power\" to \"0\" (the value under \"Variable Label\" will not be used when \"Power\" is set to \"0\")."
-        "\n- The three levels correspond to the levels of analysis users can create models for. OpenSRA decides the level to use based on data availability."
-        "\n\t- Ideally, the lower levels should contain the variables used by the upper levels (e.g., the level 2 model should contain the variables used by level 1)."
-    );
+                "- Create equations by adding one term at a time using the following table."
+                "\n\t- The \"Add\" button adds the term to the equation. The term you added should show up under the \"Generic Equation\" section below."
+                "\n\t- The \"Remove\" button removes the term in the bottom row of the table."
+                "\n\t- To generate constants, set \"Power\" to \"0\" (the value under \"Variable Label\" will not be used when \"Power\" is set to \"0\")."
+                "\n- The three levels correspond to the levels of analysis users can create models for. OpenSRA decides the level to use based on data availability."
+                "\n\t- Ideally, the lower levels should contain the variables used by the upper levels (e.g., the level 2 model should contain the variables used by level 1)."
+                );
     instructionsLayout->addWidget(instructionsLabel);
     verticalLayout->addWidget(instructionsGB);
 
@@ -123,7 +123,7 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
     QHBoxLayout *upstreamCatLayout = new QHBoxLayout();
     QLabel* upstreamCatLabel = new QLabel("Select upstream dependency:");
 
-//    auto genModMethodParamObj = this->getMethodAndParamJsonObj();
+    //    auto genModMethodParamObj = this->getMethodAndParamJsonObj();
     auto genModParams = methodObj["Params"].toObject();
     auto genModCatObj = genModParams.value("ReturnCategory").toObject();
     QString genModCat = genModCatObj.value("DefaultValue").toString();
@@ -234,7 +234,7 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
     headers.append("Coefficient");
     headers.append("Apply Ln");
     headers.append("Power");
-//    {"Variable Label","Level","Coefficient", "Apply Ln", "Power"};
+    //    {"Variable Label","Level","Coefficient", "Apply Ln", "Power"};
     tableModel->setHeaderStringList(headers);
     theRVTableView->show();
 
@@ -266,7 +266,7 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
 
     this->generateEquation();
 
-//    verticalLayout->addStretch(1);
+    //    verticalLayout->addStretch(1);
 }
 
 
@@ -291,7 +291,7 @@ void GenericModelWidget::sortData(void)
 
 void GenericModelWidget::clear(void) {
 
-//    theRVTableView->clear();
+    //    theRVTableView->clear();
     auto tableModel = theRVTableView->getTableModel();
     tableModel->clear();
     tableModel->setHeaderStringList(headers);
@@ -330,15 +330,15 @@ bool GenericModelWidget::outputToJSON(QJsonObject &jsonObj) {
 
     // build path and file name for CSV export
     QString fileDir =
-        OpenSRAPreferences::getInstance()->getLocalWorkDir() +
-        QDir::separator() + "analysis" +
-        QDir::separator() + "Input";
+            OpenSRAPreferences::getInstance()->getLocalWorkDir() +
+            QDir::separator() + "analysis" +
+            QDir::separator() + "Input";
     QFileInfo fileDirInfo(fileDir);
     if (!fileDirInfo.exists())
     {
         fileDir =
-            OpenSRAPreferences::getInstance()->getLocalWorkDir() +
-            QDir::separator() + "Input";
+                OpenSRAPreferences::getInstance()->getLocalWorkDir() +
+                QDir::separator() + "Input";
     }
     fileDirInfo.setFile(fileDir);
     if (!fileDirInfo.exists())
@@ -359,13 +359,40 @@ bool GenericModelWidget::outputToJSON(QJsonObject &jsonObj) {
     jsonObj["UpstreamParams"] = upstreamParamLineEdit->text();
     jsonObj["PathToModelInfo"] = filePath;
 
+
+    QJsonObject rvObject;
+
+    auto tableModel = theRVTableView->getTableModel();
+
+    auto tableHeaders = tableModel->getHeaderStringList();
+
+    for (int i = 0; i <theRVTableView->rowCount(); ++i)
+    {
+        QJsonObject rv;
+
+        auto RVname = tableModel->item(i,0).toString();
+
+        for (int j = 0; j <tableHeaders.size(); ++j)
+        {
+            auto headerStr = tableHeaders.at(j);
+
+            QString val = tableModel->item(i,j).toString();
+
+            rv.insert(headerStr,val);
+        }
+
+        rvObject.insert(RVname,rv);
+    }
+
+    jsonObj["TableParams"] = rvObject;
+
     return true;
 }
 
 
 void GenericModelWidget::reset(void)
 {
-//    this->clear();
+    //    this->clear();
 }
 
 
@@ -384,14 +411,14 @@ void GenericModelWidget::addParam()
 
     RV newRV(headers.length(),uid,fromModel,desc);
 
-//    int level = 1;
+    //    int level = 1;
 
-//    if(i>0)
-//        level = data.back().at(0).toInt() + 1;
+    //    if(i>0)
+    //        level = data.back().at(0).toInt() + 1;
 
-//    // maximum level is 3
-//    if(level > 3)
-//        level = 3;
+    //    // maximum level is 3
+    //    if(level > 3)
+    //        level = 3;
 
     if (i == 0)
     {
@@ -420,12 +447,12 @@ void GenericModelWidget::addParam()
     else
     {
         newRV[0] = QVariant(name);
-//        newRV[1] = QVariant(rand() % 2 + 1);
-//        newRV[1] = QVariant(qMin(rand() % 2 + 2,3));
+        //        newRV[1] = QVariant(rand() % 2 + 1);
+        //        newRV[1] = QVariant(qMin(rand() % 2 + 2,3));
         newRV[1] = QVariant(3);
         newRV[2] = QVariant(QString(rand() % 10 < 5 ? "-" : "+") + QString::number(rand() % 5 + 1));
-//        newRV[3] = rand() % 10 < 5 ? true : false;
-//        newRV[4] = QVariant(rand() % 2);
+        //        newRV[3] = rand() % 10 < 5 ? true : false;
+        //        newRV[4] = QVariant(rand() % 2);
         newRV[3] = QString("false");
         newRV[4] = QVariant("1");
     }
@@ -485,9 +512,9 @@ bool GenericModelWidget::inputFromJSON(QJsonObject &jsonObj)
         else
         {
             SimCenterAppWidget::errorMessage(
-                "Error in \"GenericModelWidget::inputFromJSON\" - distribution type \"" +
-                jsonObj["DistType"].toString() + "\" is not supported"
-            );
+                        "Error in \"GenericModelWidget::inputFromJSON\" - distribution type \"" +
+                        jsonObj["DistType"].toString() + "\" is not supported"
+                    );
             return false;
         }
     }
@@ -508,8 +535,8 @@ bool GenericModelWidget::inputFromJSON(QJsonObject &jsonObj)
         else
         {
             SimCenterAppWidget::errorMessage(
-                "Error in \"GenericModelWidget::inputFromJSON\" - upstream category is not valid"
-            );
+                        "Error in \"GenericModelWidget::inputFromJSON\" - upstream category is not valid"
+                        );
             return false;
         }
     }
@@ -520,56 +547,97 @@ bool GenericModelWidget::inputFromJSON(QJsonObject &jsonObj)
     else
         upstreamParamLineEdit->setText(jsonObj["UpstreamParams"].toString());
 
-    // path to model definition table
-    QString filePath;
-    if (jsonObj.contains("UpstreamParams"))
-        filePath = jsonObj["PathToModelInfo"].toString();
+    if (!jsonObj.contains("TableParams"))
+    {
+
+        // path to model definition table
+        QString filePath;
+        if (jsonObj.contains("UpstreamParams"))
+            filePath = jsonObj["PathToModelInfo"].toString();
+        else
+        {
+            SimCenterAppWidget::errorMessage(
+                        "Error in \"GenericModelWidget::inputFromJSON\" - cannot find attribute in setup_config with path to generic model CSV table"
+                        );
+            return false;
+        }
+        QFileInfo filePathInfo(filePath);
+        if (!filePathInfo.exists())
+        {
+            // first try using work_dir/Input as reference
+            filePath =
+                    OpenSRAPreferences::getInstance()->getLocalWorkDir() +
+                    QDir::separator() + "analysis" +
+                    QDir::separator() + "Input" +
+                    filePath;
+        }
+        filePathInfo.setFile(filePath);
+        if (!filePathInfo.exists())
+        {
+            // first try using work_dir/analysis/Input as reference
+            filePath =
+                    OpenSRAPreferences::getInstance()->getLocalWorkDir() +
+                    QDir::separator() + "Input" +
+                    filePath;
+        }
+        filePathInfo.setFile(filePath);
+        if (!filePathInfo.exists())
+        {
+            SimCenterAppWidget::errorMessage(
+                        "Error in \"GenericModelWidget::inputFromJSON\" - path to generic model CSV table is not valid: " +
+                        filePath
+                        );
+            return false;
+        }
+
+        this->loadCsvTable(filePath);
+    }
     else
     {
-        SimCenterAppWidget::errorMessage(
-            "Error in \"GenericModelWidget::inputFromJSON\" - cannot find attribute in setup_config with path to generic model CSV table"
-        );
-        return false;
-    }
-    QFileInfo filePathInfo(filePath);
-    if (!filePathInfo.exists())
-    {
-        // first try using work_dir/Input as reference
-        filePath =
-            OpenSRAPreferences::getInstance()->getLocalWorkDir() +
-            QDir::separator() + "analysis" +
-            QDir::separator() + "Input" +
-            filePath;
-    }
-    filePathInfo.setFile(filePath);
-    if (!filePathInfo.exists())
-    {
-        // first try using work_dir/analysis/Input as reference
-        filePath =
-            OpenSRAPreferences::getInstance()->getLocalWorkDir() +
-            QDir::separator() + "Input" +
-            filePath;
-    }
-    filePathInfo.setFile(filePath);
-    if (!filePathInfo.exists())
-    {
-        SimCenterAppWidget::errorMessage(
-            "Error in \"GenericModelWidget::inputFromJSON\" - path to generic model CSV table is not valid: " +
-            filePath
-        );
-        return false;
+        auto tableObj = jsonObj["TableParams"].toObject();
+        this->loadJsonTable(tableObj);
     }
 
+
+    return true;
+}
+
+
+bool GenericModelWidget::loadCsvTable(const QString& filePath)
+{
     // load CSV table
     theRVTableView->clear();
     auto tableModel = theRVTableView->getTableModel();
     tableModel->clear();
     tableModel->setHeaderStringList(headers);
     data.clear();
+
     if(!this->handleLoadVars(filePath,theRVTableView))
     {
         SimCenterAppWidget::errorMessage("Error in \"GenericModelWidget::inputFromJSON\", in loading the variables table");
         return false;
+    }
+
+    // make equation display
+    this->generateEquation();
+
+    return true;
+}
+
+
+bool GenericModelWidget::loadJsonTable(const QJsonObject& obj)
+{
+    theRVTableView->clear();
+    auto tableModel = theRVTableView->getTableModel();
+    tableModel->clear();
+    tableModel->setHeaderStringList(headers);
+    data.clear();
+
+    for (auto v : obj) {
+        QJsonObject rv_obj = v.toObject();
+
+        this->addParamViaJson(rv_obj);
+
     }
 
     // make equation display
@@ -609,18 +677,18 @@ void GenericModelWidget::generateEquation(void)
 
         // The coefficient
         if(i==0)
-//            str += "c";
+            //            str += "c";
             str += data[i][2].toString();
         else
-//            str += "+ c";
+            //            str += "+ c";
             str += " + " + data[i][2].toString();
 
-//        str += QString::number(i);
+        //        str += QString::number(i);
 
         if(pow > 0 && !rvName.isEmpty())
         {
             if(pow>=1)
-//                str += "*(";
+                //                str += "*(";
                 str += "*";
 
             // If apply LN
@@ -633,7 +701,7 @@ void GenericModelWidget::generateEquation(void)
 
             if(pow>=1)
             {
-//                str += ")";
+                //                str += ")";
                 if(pow>1)
                     str += "<sup>"+QString::number(pow)+"</sup>";
             }
@@ -678,7 +746,7 @@ void GenericModelWidget::handleCellChanged(int row, int col)
 
     if(col == 0)
     {
-//        this->sortData();
+        //        this->sortData();
         tableModel->populateData(data);
     }
 
@@ -708,7 +776,7 @@ bool GenericModelWidget::outputToCsv(const QString& path)
 
     CSVReaderWriter csvTool;
 
-//    auto finalRVPath = path + QDir::separator() + fileName;
+    //    auto finalRVPath = path + QDir::separator() + fileName;
 
     QString err;
     csvTool.saveCSVFile(RVData,path,err);
@@ -766,15 +834,15 @@ bool GenericModelWidget::handleLoadVars(const QString& filePath, RVTableView* pa
         return result;
     };
 
-//    auto numParams = parameterTable->rowCount();
+    //    auto numParams = parameterTable->rowCount();
 
-//    if(paramData.size() != numParams)
-//    {
-//        this->errorMessage("Error, the number of parameters loaded " + QString::number(numParams) + " is not equal the number of parameters in the input file " + QString::number(paramData.size()));
-//        return false;
-//    }
+    //    if(paramData.size() != numParams)
+    //    {
+    //        this->errorMessage("Error, the number of parameters loaded " + QString::number(numParams) + " is not equal the number of parameters in the input file " + QString::number(paramData.size()));
+    //        return false;
+    //    }
 
-//    QStringList rowData;
+    //    QStringList rowData;
 
     for(auto&& param : paramData)
     {
@@ -786,18 +854,18 @@ bool GenericModelWidget::handleLoadVars(const QString& filePath, RVTableView* pa
 
         this->addParamViaCSV(param);
 
-//        auto name = param.at(indexOfName);
+        //        auto name = param.at(indexOfName);
 
-//        auto vals = getMapFromVals(param);
+        //        auto vals = getMapFromVals(param);
 
-//        rowData.clear();
-//        auto res = parameterTable->updateRV(name,vals);
+        //        rowData.clear();
+        //        auto res = parameterTable->updateRV(name,vals);
 
-//        if(!res)
-//        {
-//            SimCenterAppWidget::errorMessage("Error updating parameters "+name);
-//            return false;
-//        }
+        //        if(!res)
+        //        {
+        //            SimCenterAppWidget::errorMessage("Error updating parameters "+name);
+        //            return false;
+        //        }
     }
 
     return true;
@@ -825,8 +893,38 @@ void GenericModelWidget::addParamViaCSV(const QStringList &rvData)
     newRV[2] = QString::number(rvData[2].toFloat()); // coefficient: float -> string
     newRV[3] = rvData[3].toLower(); // apply ln (true/false): boolean -> string
     newRV[4] = QString::number(rvData[4].toInt()); // power: int -> string
-//    for (int j = 0; j < headers.length(); ++j)
-//        newRV[j] = rvData[j];
+    //    for (int j = 0; j < headers.length(); ++j)
+    //        newRV[j] = rvData[j];
+
+    data.append(newRV);
+    this->sortData();
+    RVTableModel* tableModel = theRVTableView->getTableModel();
+    tableModel->populateData(data);
+
+    this->generateEquation();
+
+    theRVTableView->resizeEvent(nullptr);
+}
+
+
+void GenericModelWidget::addParamViaJson(const QJsonObject &rvData)
+{
+
+    // Create a unique id to identify the specific instance of these parameters
+    auto uid = QUuid::createUuid().toString();
+
+    // From model
+    auto fromModel = parentName;
+    auto desc = "User-created parameter from the generic model widget";
+
+    RV newRV(headers.length(),uid,fromModel,desc);
+
+    // get value by column
+    newRV[0] = rvData["Variable"].toString(); // variable label: string
+    newRV[1] = QString::number(rvData["Level"].toInt()); // level: int -> string
+    newRV[2] = QString::number(rvData["Coefficient"].toDouble()); // coefficient: float -> string
+    newRV[3] = rvData["Apply Ln"].toString().toLower(); // apply ln (true/false): boolean -> string
+    newRV[4] = QString::number(rvData["Power"].toInt()); // power: int -> string
 
     data.append(newRV);
     this->sortData();

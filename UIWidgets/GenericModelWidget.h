@@ -60,6 +60,9 @@ public:
     explicit GenericModelWidget(QString parName, QJsonObject &methodObj, QWidget *parent = 0);
     ~GenericModelWidget();
 
+    bool loadCsvTable(const QString& path);
+    bool loadJsonTable(const QJsonObject& obj);
+
     bool inputFromJSON(QJsonObject &jsonObj) override;
     bool outputToJSON(QJsonObject &jsonObj) override;
 
@@ -83,6 +86,7 @@ private:
 
     bool handleLoadVars(const QString& filePath, RVTableView* parameterTable);
     void addParamViaCSV(const QStringList &rvData);
+    void addParamViaJson(const QJsonObject &rvData);
 
     QVector<RV> data;
     void makeRVWidget(QJsonObject &methodObj);
