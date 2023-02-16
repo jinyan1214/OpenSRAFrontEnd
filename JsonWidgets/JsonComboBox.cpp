@@ -69,7 +69,6 @@ bool JsonComboBox::outputToJSON(QJsonObject &jsonObject)
     else
     {
         QJsonObject finalObj;
-
         finalObj[data] = outputObj;
         jsonObject[key] = finalObj;
     }

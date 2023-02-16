@@ -268,6 +268,7 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
         {
             QVector<QPair<double,double>>classBreaks;
             QVector<QColor> colors;
+            QVector<QString> labels;
 
             if (this->IMSourceType == "UCERF")
             {
@@ -295,8 +296,8 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
             else
             {
                 // generally showing just probabilities from 0 to 1 (rate = 1)
-                classBreaks.append(QPair<double,double>(1.0     , 1.00E+03));
-                classBreaks.append(QPair<double,double>(0.8     , 1.      ));
+//                classBreaks.append(QPair<double,double>(1.0     , 1.00E+03));
+                classBreaks.append(QPair<double,double>(0.8     , 1.00E+03));
                 classBreaks.append(QPair<double,double>(0.6     , 0.8     ));
                 classBreaks.append(QPair<double,double>(0.4     , 0.6     ));
                 classBreaks.append(QPair<double,double>(0.2     , 0.4     ));
@@ -306,16 +307,24 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
                 colors.push_back(QColor(158,   1,  66));
                 colors.push_back(QColor(233,  92,  71));
                 colors.push_back(QColor(253, 190, 110));
-                colors.push_back(QColor(254, 254, 190));
+//                colors.push_back(QColor(254, 254, 190));
                 colors.push_back(QColor(190, 229, 160));
                 colors.push_back(QColor( 83, 173, 173));
                 colors.push_back(QColor( 94,  79, 162));
+
+                labels.append("0.8 - 1.0");
+                labels.append("0.6 - 0.8");
+                labels.append("0.4 - 0.6");
+                labels.append("0.2 - 0.4");
+                labels.append("0.001 - 0.2");
+                labels.append("0 - 0.001");
             }
 
             // if below ground, use line as symbol, otherwise use marker as symbol (e.g., wells, above ground components)
             if (this->infraType == "below_ground")
                 // createCustomClassBreakRenderer(const QString attrName, const QVector<QPair<double,double>>& classBreaks, const QVector<QColor>& colors, QgsVectorLayer * vlayer)
-                theVisualizationWidget->createCustomClassBreakRenderer(headerString,vector_layer,Qgis::SymbolType::Line,classBreaks,colors,QVector<QString>(),1.0);
+//                theVisualizationWidget->createCustomClassBreakRenderer(headerString,vector_layer,Qgis::SymbolType::Line,classBreaks,colors,QVector<QString>(),1.0);
+                theVisualizationWidget->createCustomClassBreakRenderer(headerString,vector_layer,Qgis::SymbolType::Line,classBreaks,colors,labels,1.0);
             else
                 theVisualizationWidget->createCustomClassBreakRenderer(headerString,vector_layer,Qgis::SymbolType::Marker,classBreaks,colors,QVector<QString>(),2.0);
 

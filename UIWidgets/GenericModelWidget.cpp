@@ -153,7 +153,7 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
 
     // upstream params
     QHBoxLayout *upstreamParamLayout = new QHBoxLayout();
-    QLabel* upstreamParamLabel = new QLabel("Enter list of upstream parameters (leave empty if none):");
+    QLabel* upstreamParamLabel = new QLabel("Enter list of upstream parameters (use \",\" to separate labels and leave empty if none):");
 
     upstreamParamLineEdit = new QLineEdit();
     upstreamParamLineEdit->setText("pga, mag");
@@ -874,7 +874,6 @@ bool GenericModelWidget::handleLoadVars(const QString& filePath, RVTableView* pa
 
 void GenericModelWidget::addParamViaCSV(const QStringList &rvData)
 {
-    auto i = data.size();
 
     // Create a unique id to identify the specific instance of these parameters
     auto uid = QUuid::createUuid().toString();
@@ -882,8 +881,6 @@ void GenericModelWidget::addParamViaCSV(const QStringList &rvData)
     // From model
     auto fromModel = parentName;
     auto desc = "User-created parameter from the generic model widget";
-
-    auto name = "var_"+QString::number(i);
 
     RV newRV(headers.length(),uid,fromModel,desc);
 

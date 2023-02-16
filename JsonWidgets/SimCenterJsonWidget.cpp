@@ -422,7 +422,21 @@ bool SimCenterJsonWidget::outputToJSON(QJsonObject &jsonObj)
 
     // for generic models, run its own version of outputToJSON
     if (methodsObj.contains("GenericModel"))
+    {
         methodWidget->outputToJSON(outputObj);
+        // Add the model weight, epistemic uncertainty, aleatory variability to json obj for this method
+        QJsonObject methodRunObj;
+        addRunListWidget->outputToJSON(methodRunObj);
+        // get current jsonObj for GenericModel and add runList obj to it
+        auto newMethodObj = outputObj["Method"].toObject();
+        auto finalObj = newMethodObj["GenericModel"].toObject();
+        auto keys = methodRunObj.keys();
+        for(auto&& key : keys)
+            finalObj[key] = methodRunObj[key];
+        // update outputObj with added keys
+        newMethodObj["GenericModel"] = finalObj;
+        outputObj["Method"] = newMethodObj;
+    }
 
     jsonObj.insert(methodKey,outputObj);
 
