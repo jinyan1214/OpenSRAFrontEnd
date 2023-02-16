@@ -124,9 +124,6 @@ void RandomVariablesWidget::makeRVWidget(void)
 
     theRVTableView = new RVTableView();
 
-    theRVTableView->setWordWrap(true);
-    theRVTableView->setTextElideMode(Qt::ElideNone);
-
     RVTableModel* tableModel = theRVTableView->getTableModel();
     tableModel->setHeaderStringList(RVTableHeaders);
 
@@ -205,9 +202,6 @@ void RandomVariablesWidget::makeRVWidget(void)
     verticalLayout->addWidget(constLabel,0,Qt::AlignHCenter);
 
     theConstantTableView = new RVTableView();
-
-    theConstantTableView->setWordWrap(true);
-    theConstantTableView->setTextElideMode(Qt::ElideNone);
 
     RVTableModel* constTableModel = theConstantTableView->getTableModel();
     constTableModel->setHeaderStringList(constantTableHeaders);
@@ -347,6 +341,7 @@ bool RandomVariablesWidget::addRandomVariable(RV& newRV)
     // Dist type column
     auto distTypeIndex = RVtableModel->index(rowRV,4);
     RVtableModel->setData(distTypeIndex,QVariant("Normal"));
+
 
     return true;
 }

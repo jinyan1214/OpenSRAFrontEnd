@@ -112,7 +112,7 @@ const QStringList RV::getDataAsStringList(void) const
         else if (val.type() == QVariant::String)
              result.append(val.toString());
         else if (val.type() == QVariant::StringList)
-             result.append(val.toStringList().join(","));
+             result.append(val.toStringList().join(", "));
         else if (val.type() == QVariant::Invalid) // unknown
              result.append("");
         else
@@ -194,7 +194,7 @@ void RV::addModelToList(const QStringList& modelNames)
     fromModelList.append(modelNames);
     fromModelList.removeDuplicates();
 
-    data[2] = QVariant(fromModelList.join(", "));
+    data[2] = QVariant(fromModelList.join(",  \n"));
 }
 
 
@@ -209,7 +209,7 @@ int RV::removeModelFromList(const QString& modelName)
 
     if(!fromModelList.isEmpty())
     {
-        data[2] = QVariant(fromModelList.join(", "));
+        data[2] = QVariant(fromModelList.join(",  \n"));
     }
     else
     {

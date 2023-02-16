@@ -52,14 +52,18 @@ RVTableView::RVTableView(QWidget *parent) : QTableView(parent)
     this->setModel(tableModel);
     this->setToolTip("Specify the input parameters");
     this->verticalHeader()->setVisible(false);
-    this->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    this->setWordWrap(true);
+    this->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    this->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    this->horizontalHeader()->setStretchLastSection(true);
 
-    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    this->setWordWrap(true);
+    this->setTextElideMode(Qt::ElideNone);
+
+    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     this->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
-    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     this->setEditTriggers(EditTrigger::DoubleClicked);
     this->setSelectionMode(SelectionMode::SingleSelection);
@@ -70,17 +74,24 @@ void RVTableView::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event);
 
-    //    auto height = this->horizontalHeader()->height();
+//    int numRows = this->rowCount();
+//    int numCols = this->columnCount();
 
-    //    for(int i = 0; i<this->rowCount(); ++i)
-    //    {
-    //        height += this->rowHeight(i);
-    //    }
+//    for(int i = 0; i<numRows; ++i)
+//    {
+//        auto height = this->rowHeight(i);
+//        this->setRowHeight(i,height + 2);
+//    }
 
-    //    if (this->horizontalScrollBar()->isVisible())
-    //        height += this->horizontalScrollBar()->height();
+//    for(int j = 0; j<numCols; ++j)
+//    {
 
-    //    this->setFixedHeight(height + 2);
+//        auto width = this->columnWidth(j);
+//        this->setColumnWidth(j,width+2);
+
+//    }
+
+    //    QTableView::resizeEvent(event);
 }
 
 
@@ -137,5 +148,5 @@ void RVTableView::updateTable(void)
 
 bool RVTableView::updateRV(const QString& RVName, const QMap<QString, QString>& values)
 {
-   return tableModel->updateRV(RVName,values);
+    return tableModel->updateRV(RVName,values);
 }
