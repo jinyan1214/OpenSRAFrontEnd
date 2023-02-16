@@ -65,8 +65,8 @@ RandomVariablesWidget::RandomVariablesWidget(QWidget *parent) : SimCenterWidget(
     verticalLayout->setMargin(2);
     verticalLayout->setSpacing(2);
 
-    RVTableHeaders = QStringList({"Name","Description","From Model","Source","Distribution Type","Mean or Median","Sigma","CoV","Distribution Min","Distribution Max"});
-    constantTableHeaders = QStringList({"Name","Description","From Model","Source","Value"});
+    RVTableHeaders = QStringList({"Name","Description","Source","Distribution Type","Mean or Median","Sigma","CoV","Distribution Min","Distribution Max","From Model"});
+    constantTableHeaders = QStringList({"Name","Description","Source","Value","From Model"});
 
     this->makeRVWidget();
 }
@@ -162,7 +162,7 @@ void RandomVariablesWidget::makeRVWidget(void)
 
     //    StringListDelegate* SLDelegate = new StringListDelegate(this);
 
-    // "Name","Description","From Model","Source","Distribution Type","Mean or Median","Sigma","CoV","Distribution Min","Distribution Max"
+    // "Name","Description","Source","Distribution Type","Mean or Median","Sigma","CoV","Distribution Min","Distribution Max","From Model"
 
     // Name
     theRVTableView->setItemDelegateForColumn(0, labDelegate);
@@ -170,27 +170,27 @@ void RandomVariablesWidget::makeRVWidget(void)
     // Description
     theRVTableView->setItemDelegateForColumn(1, labDelegate);
 
-    // From Model
-    theRVTableView->setItemDelegateForColumn(2, labDelegate);
-
     // Source
-    theRVTableView->setItemDelegateForColumn(3, sourceComboDelegate);
+    theRVTableView->setItemDelegateForColumn(2, sourceComboDelegate);
 
     // Distribution Type
-    theRVTableView->setItemDelegateForColumn(4, distTypeComboDelegate);
+    theRVTableView->setItemDelegateForColumn(3, distTypeComboDelegate);
 
     // Mean or Median
-    theRVTableView->setItemDelegateForColumn(5, colDataComboDelegate);
+    theRVTableView->setItemDelegateForColumn(4, colDataComboDelegate);
 
     // Sigma
-    theRVTableView->setItemDelegateForColumn(6, colDataComboDelegate);
+    theRVTableView->setItemDelegateForColumn(5, colDataComboDelegate);
 
     // Cov
-    theRVTableView->setItemDelegateForColumn(7, colDataComboDelegate);
+    theRVTableView->setItemDelegateForColumn(6, colDataComboDelegate);
 
     // Min/max distribution
+    theRVTableView->setItemDelegateForColumn(7, LEDelegate);
     theRVTableView->setItemDelegateForColumn(8, LEDelegate);
-    theRVTableView->setItemDelegateForColumn(9, LEDelegate);
+
+    // From Model
+    theRVTableView->setItemDelegateForColumn(2, labDelegate);
 
     theRVTableView->setEditTriggers(QAbstractItemView::AllEditTriggers);
 //    theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
@@ -213,15 +213,14 @@ void RandomVariablesWidget::makeRVWidget(void)
     // Description
     theConstantTableView->setItemDelegateForColumn(1, labDelegate);
 
-    // From Model
-    theConstantTableView->setItemDelegateForColumn(2, labDelegate);
-
     // Source
-    theConstantTableView->setItemDelegateForColumn(3, sourceComboDelegate);
+    theConstantTableView->setItemDelegateForColumn(2, sourceComboDelegate);
 
     // "Value"
-    theConstantTableView->setItemDelegateForColumn(4, colDataComboDelegate);
+    theConstantTableView->setItemDelegateForColumn(3, colDataComboDelegate);
 
+    // From Model
+    theConstantTableView->setItemDelegateForColumn(4, labDelegate);
 
     verticalLayout->addWidget(theConstantTableView);
 
@@ -628,17 +627,17 @@ RV RandomVariablesWidget::createNewRV(const QString& name, const QString& fromMo
 
     RV newRV(numCols,uuid,fromModel,desc);
 
-    // "Name","Description","From Model","Source","Distribution Type","Mean or Median","Sigma","CoV","Distribution Min","Distribution Max"
+    // "Name","Description","Source","Distribution Type","Mean or Median","Sigma","CoV","Distribution Min","Distribution Max","From Model"
     newRV[0] = name;
     newRV[1] = QVariant(desc);
-    newRV[2] = QVariant(QStringList(fromModel));
+    newRV[2] = QVariant();
     newRV[3] = QVariant();
     newRV[4] = QVariant();
     newRV[5] = QVariant();
     newRV[6] = QVariant();
     newRV[7] = QVariant();
     newRV[8] = QVariant();
-    newRV[9] = QVariant();
+    newRV[9] = QVariant(QStringList(fromModel));
 
     newRV.setName(name);
 
@@ -654,12 +653,13 @@ RV RandomVariablesWidget::createNewConstant(const QString& name, const QString& 
 
     RV newRV(numCols,uuid,fromModel,desc);
 
-    // "Name","Description","From Model","Source","Value"
+    // "Name","Description","Source","Value","From Model"
     newRV[0] = name;
     newRV[1] = QVariant(desc);
-    newRV[2] = QVariant(QStringList(fromModel));
+    newRV[2] = QVariant();
     newRV[3] = QVariant();
-    newRV[4] = QVariant();
+    newRV[4] = QVariant(QStringList(fromModel));
+
 
     newRV.setName(name);
 
@@ -698,7 +698,7 @@ void RandomVariablesWidget::handleSourceChanged(int val)
 {
     if(val == 0 || val == 1)
     {
-        // "Name","Description","From Model","Source","Distribution Type","Mean or Median","Sigma","CoV","Distribution Min","Distribution Max"
+        // "Name","Description","Source","Distribution Type","Mean or Median","Sigma","CoV","Distribution Min","Distribution Max","From Model"
 
         // "Mean or Median"
         theRVTableView->setItemDelegateForColumn(5, colDataComboDelegate);
