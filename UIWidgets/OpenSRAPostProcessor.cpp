@@ -301,8 +301,8 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
                 classBreaks.append(QPair<double,double>(0.6     , 0.8     ));
                 classBreaks.append(QPair<double,double>(0.4     , 0.6     ));
                 classBreaks.append(QPair<double,double>(0.2     , 0.4     ));
-                classBreaks.append(QPair<double,double>(1.00E-03, 0.2     ));
-                classBreaks.append(QPair<double,double>(0.0     , 1.00E-03));
+                classBreaks.append(QPair<double,double>(1.00E-02, 0.2     ));
+                classBreaks.append(QPair<double,double>(0.0     , 1.00E-02));
 
                 colors.push_back(QColor(158,   1,  66));
                 colors.push_back(QColor(233,  92,  71));
@@ -312,12 +312,12 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
                 colors.push_back(QColor( 83, 173, 173));
                 colors.push_back(QColor( 94,  79, 162));
 
-                labels.append("0.8 - 1.0");
-                labels.append("0.6 - 0.8");
-                labels.append("0.4 - 0.6");
-                labels.append("0.2 - 0.4");
-                labels.append("0.001 - 0.2");
-                labels.append("0 - 0.001");
+                labels.append(">0.8");
+                labels.append("0.6-0.8");
+                labels.append("0.4-0.6");
+                labels.append("0.2-0.4");
+                labels.append("0.01-0.2");
+                labels.append("<0.01");
             }
 
             // if below ground, use line as symbol, otherwise use marker as symbol (e.g., wells, above ground components)
