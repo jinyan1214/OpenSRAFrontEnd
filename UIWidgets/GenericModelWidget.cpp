@@ -76,17 +76,36 @@ GenericModelWidget::~GenericModelWidget()
 
 void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
 {
+
+    // warning section
+    QGroupBox* warningGB = new QGroupBox("Notes and Warnings");
+    QHBoxLayout *warningLayout = new QHBoxLayout(warningGB);
+    auto warningLabel = new QLabel(
+        "The Performance Based Earthquake Engineering (PBEE) methodology for seismic risk follows this order for analysis: IM->EDP->DM->DV (e.g., IM and EDP are upstream dependencies to DM and DV). While IM and DV are necessary to run in OpenSRA, EDP and DM can be optional (e.g., IM->EDP->DV)."
+        "\nThe generic model is a powerful feature that allows users to create and use any method that can be described by a mathematical equation. However, in order to make the model flexible to accommodate the PBEE methodology, this model may require trials and errors for users to get their desired response."
+    );
+    warningLayout->addWidget(warningLabel);
+    verticalLayout->addWidget(warningGB);
+
     // instructions section
-    QGroupBox* instructionsGB = new QGroupBox("Instructions");
+    QGroupBox* instructionsGB = new QGroupBox("Instructions to Create a Generic Model");
     QHBoxLayout *instructionsLayout = new QHBoxLayout(instructionsGB);
     auto instructionsLabel = new QLabel(
-                "- Create equations by adding one term at a time using the following table."
-                "\n\t- The \"Add\" button adds the term to the equation. The term you added should show up under the \"Generic Equation\" section below."
-                "\n\t- The \"Remove\" button removes the term in the bottom row of the table."
-                "\n\t- To generate constants, set \"Power\" to \"0\" (the value under \"Variable Label\" will not be used when \"Power\" is set to \"0\")."
-                "\n- The three levels correspond to the levels of analysis users can create models for. OpenSRA decides the level to use based on data availability."
-                "\n\t- Ideally, the lower levels should contain the variables used by the upper levels (e.g., the level 2 model should contain the variables used by level 1)."
-                );
+        "1) Select whether the model follows a normal or lognormal distribution"
+        "\n2) Enter the label for the return variable (e.g., eps_pipe). If the generid model being built falls under the \"Decision Variable\" tab, the return variable label should start with the primary upstream dependent variable label and end with \"_crit\" (e.g., pga_crit)."
+        "\n3) Select the upstream dependency category."
+        "\n4) Enter a list of parameters (separated by commas) that are generated/computed from upstream categories (e.g., pga and mag from IM tab, or the labels of a return variable for an upstream generic model)."
+        "\n\t- For the IM category, internally parameters that are always available include pga, pgv, mag."
+        "\n\t- For existing methods in the EDP and DM tabs, the return parameters available for use are listed within each method's description page."
+        "\n5) Create equations by adding one term at a time using the following table."
+        "\n\t- The \"Add\" button adds the term to the equation. The term you added should show up under the \"Generic Equation\" section below."
+        "\n\t- The \"Remove\" button removes the term in the bottom row of the table."
+        "\n\t- To generate constants, set \"Power\" to \"0\" (the value under \"Variable Label\" will not be used when \"Power\" is set to \"0\")."
+        "\n\t- The three levels correspond to the levels of analysis users can create models for. OpenSRA decides the level to use based on data availability."
+        "\n\t- Ideally, the lower levels should contain the variables used by the upper levels (e.g., the level 2 model should contain the variables used by level 1)."
+        "\n6) Assign values to aleatory variability and epistemic uncertainty."
+        "\n7) Click \"add to list of methods to run\"."
+    );
     instructionsLayout->addWidget(instructionsLabel);
     verticalLayout->addWidget(instructionsGB);
 
@@ -194,6 +213,7 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
 
     verticalLayout->addLayout(titleLayout);
     theRVTableView = new RVTableView();
+//    theRVTableView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     theRVTableView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     verticalLayout->addWidget(theRVTableView);
@@ -236,6 +256,16 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
     headers.append("Power");
     //    {"Variable Label","Level","Coefficient", "Apply Ln", "Power"};
     tableModel->setHeaderStringList(headers);
+
+//    theRVTableView->setColumnWidth(0,300);
+//    theRVTableView->setColumnWidth(1,300);
+//    theRVTableView->setColumnWidth(2,300);
+//    theRVTableView->setColumnWidth(3,300);
+//    theRVTableView->setColumnWidth(4,300);
+
+    theRVTableView->horizontalHeader()->setMaximumWidth(400);
+//    theRVTableView->resizeColumnToContents(4);
+
     theRVTableView->show();
 
     // Level
@@ -257,8 +287,7 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
     QStringList powerTypes = {"0","1","2"};
     powerComboDelegate->setItems(powerTypes);
     theRVTableView->setItemDelegateForColumn(4, powerComboDelegate);
-
-    //    theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+//    theRVTableView->horizontalHeader()->setMaximumWidth(300);
 
     // Add five random parameters to start with
     for(int i = 0; i<5; ++i)
@@ -343,8 +372,9 @@ bool GenericModelWidget::outputToJSON(QJsonObject &jsonObj) {
     fileDirInfo.setFile(fileDir);
     if (!fileDirInfo.exists())
     {
-        SimCenterAppWidget::errorMessage("Error: In \"GenericModel.cpp\" - cannot determine path to \"Input\" folder in working dir");
-        return false;
+        return true;
+//        SimCenterAppWidget::errorMessage("Error: In \"GenericModel.cpp\" - cannot determine path to \"Input\" folder in working dir");
+//        return false;
     }
     QString fileName = "genmod_" + genModCatAbbr + "_" + genModHaz + ".csv";
     QString filePath = fileDir + QDir::separator() + fileName;

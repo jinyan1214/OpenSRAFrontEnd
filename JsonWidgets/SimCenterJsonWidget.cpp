@@ -80,7 +80,7 @@ SimCenterJsonWidget::SimCenterJsonWidget(QString methodName, QJsonObject jsonObj
     QSplitter *splitter = new QSplitter();
     splitter->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    listWidget = new CustomListWidget("List of Cases to Run");
+    listWidget = new CustomListWidget("List of Methods to Run");
 
     connect(listWidget,&QAbstractItemView::clicked,this,&SimCenterJsonWidget::handleListItemSelected);
     connect(listWidget,&CustomListWidget::itemRemoved,this,&SimCenterJsonWidget::handleItemRemoved);

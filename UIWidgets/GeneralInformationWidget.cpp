@@ -259,18 +259,18 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
 
         "4. \"Decision Variable\":\n"
         "\t- Pick the decision metric to run from the secondary list of tabs\n"
-        "\t- From the dropdown menu, pick the model to run\n"
+        "\t- From the dropdown menu, pick the method to run\n"
         "\t- Review the descriptions on the outputs, inputs, and additional requirements from other tabs\n"
-        "\t- Click \"Add run to list\" to the include this model in the run\n"
-        "\tNote 1: The input parameters will be displayed under the \"Input Variables\" tab for users to edit\n"
-        "\tNote 2: While you can use more than one model, we advise to stay with one model per run as combinations of models may not be appropriate for Polynomial Chaos\n"
+        "\t- Click \"Add to list of methods to run\" to the include this method in the run\n"
+        "\tNote: The input parameters will be displayed under the \"Input Variables\" tab for users to edit\n"
+        "\tWarning: While you can use more than one method, we advise to use one method per run as combinations of methods may not be appropriate for the current implemention of Polynomial Chaos\n"
 
         "5. \"Damage Measure\":\n"
-        "\t- Only required if requested by one of the models under the \"Decision Variable\" tab\n"
+        "\t- Only required if requested by one of the methods under the \"Decision Variable\" tab\n"
         "\t- Follow the same instructions as those under \"Decision Variable\"\n"
 
         "6. \"Engineering Demand Parameters\":\n"
-        "\t- Only required if requested by one of the models under the \"Decision Variable\" and/or the \"Damage Measure\" tab\n"
+        "\t- Only required if requested by one of the methods under the \"Decision Variable\" and/or the \"Damage Measure\" tab\n"
         "\t- Follow the same instructions as those under \"Decision Variable\"\n"
 
         "6. \"Intensity Measure\":\n"
@@ -286,7 +286,7 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
         "\nClick \"PREPROCESS\" once Steps 1 through 7 have been reviewed\n"
 
         "When prompted, click \"PERFORM ANALYSIS\" to perform the analysis\n\n"
-        "\t- If the analysis is successful, the program will switch to the \"Results\" tab automatically\n";
+        "\t- If the analysis is successful, a new layer named \"Results\" will be populated in the \"Visualization\" tab\n";
 
     auto setupDetailLabel = new QLabel(setupDetailString, this);
 

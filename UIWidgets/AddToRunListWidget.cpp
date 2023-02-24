@@ -54,11 +54,20 @@ AddToRunListWidget::AddToRunListWidget(QWidget* parent) : QWidget(parent)
     QDoubleValidator* validator1 = new QDoubleValidator(this);
     validator1->setRange(0.0,1.0,5);
 
+    QHBoxLayout* warningLayout = new QHBoxLayout();
+    auto warningLabel = new QLabel(
+        "Warning: Current implementation of polynomial chaos assumes models as (log)normally distributed. "
+        "Combining multiple methods may not be necessarily yield a model that is (log)normally distributed. Please limit to using just one method."
+    );
+    warningLayout->setMargin(0);
+    warningLayout->addWidget(warningLabel);
+
     auto weightLabel = new QLabel("Model Weight:");
     weightLineEdit = new QLineEdit(this);
     weightLineEdit->setText("1.0");
     weightLineEdit->setValidator(validator1);
     weightLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+    weightLineEdit->setEnabled(false);
 
     // Aleatory uncertainty
     auto aleatLabel = new QLabel("Aleatory Variability:");
@@ -79,6 +88,7 @@ AddToRunListWidget::AddToRunListWidget(QWidget* parent) : QWidget(parent)
     episLE->setEnabled(true);
 
     QHBoxLayout* inputLayout = new QHBoxLayout();
+
     inputLayout->setMargin(0);
     inputLayout->addWidget(weightLabel);
     inputLayout->addWidget(weightLineEdit);
@@ -92,7 +102,7 @@ AddToRunListWidget::AddToRunListWidget(QWidget* parent) : QWidget(parent)
     auto smallVSpacer = new QSpacerItem(0,20);
 
     QPushButton *addRunListButton = new QPushButton(this);
-    addRunListButton->setText(tr("Add run to list"));
+    addRunListButton->setText(tr("Add to list of methods to run"));
     addRunListButton->setMinimumWidth(250);
 
     connect(addRunListButton,&QPushButton::clicked, this, [=](){emit addToRunListButtonPressed();});
@@ -101,6 +111,8 @@ AddToRunListWidget::AddToRunListWidget(QWidget* parent) : QWidget(parent)
     mainLayout->setMargin(0);
 
     mainLayout->addItem(smallVSpacer);
+
+    mainLayout->addLayout(warningLayout,Qt::AlignLeft);
 
     mainLayout->addLayout(inputLayout,Qt::AlignCenter);
 
