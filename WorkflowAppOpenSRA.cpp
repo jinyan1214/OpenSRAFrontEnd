@@ -626,6 +626,16 @@ void WorkflowAppOpenSRA::clearResultsDir(void)
 }
 
 
+void  WorkflowAppOpenSRA::removeResultsLayer(void)
+{
+    if(!theVisualizationWidget->getLayerGroup("Results"))
+        return;
+
+    theVisualizationWidget->removeLayerGroup("Results");
+
+    theCustomVisualizationWidget->clearResults();
+}
+
 
 bool WorkflowAppOpenSRA::inputFromJSON(QJsonObject &jsonObject)
 {
@@ -704,12 +714,16 @@ void WorkflowAppOpenSRA::onRunButtonClicked(QPushButton* button)
     //    theRunWidget->setMinimumWidth(this->width()*0.5);
     //    theRunWidget->showLocalApplication();
 
+    this->removeResultsLayer();
+
     localApp->onRunButtonPressed(button);
 }
 
 
 void WorkflowAppOpenSRA::onPreprocessButtonClicked(QPushButton* button)
 {
+    this->removeResultsLayer();
+
     localApp->onPreprocessButtonPressed(button);
 }
 
@@ -789,7 +803,6 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
     //
     // clear Results tab of loaded any results
     theResultsWidget->clear();
-    theCustomVisualizationWidget->quickClearForRun();
     //
 
     statusMessage("Set up done.  Now starting the analysis.");

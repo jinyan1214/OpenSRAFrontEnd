@@ -82,8 +82,9 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
     QHBoxLayout *warningLayout = new QHBoxLayout(warningGB);
     auto warningLabel = new QLabel(
         "The Performance Based Earthquake Engineering (PBEE) methodology for seismic risk follows this order for analysis: IM->EDP->DM->DV (e.g., IM and EDP are upstream dependencies to DM and DV). While IM and DV are necessary to run in OpenSRA, EDP and DM can be optional (e.g., IM->EDP->DV)."
-        "\nThe generic model is a powerful feature that allows users to create and use any method that can be described by a mathematical equation. However, in order to make the model flexible to accommodate the PBEE methodology, this model may require trials and errors for users to get their desired response."
+        "The generic model is a powerful feature that allows users to create and use any method that can be described by a mathematical equation. However, in order to make the model flexible to accommodate the PBEE methodology, this model may require trials and errors for users to get their desired response."
     );
+    warningLabel->setWordWrap(true);
     warningLayout->addWidget(warningLabel);
     verticalLayout->addWidget(warningGB);
 
@@ -106,6 +107,7 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
         "\n6) Assign values to aleatory variability and epistemic uncertainty."
         "\n7) Click \"add to list of methods to run\"."
     );
+    instructionsLabel->setWordWrap(true);
     instructionsLayout->addWidget(instructionsLabel);
     verticalLayout->addWidget(instructionsGB);
 
@@ -213,8 +215,9 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
 
     verticalLayout->addLayout(titleLayout);
     theRVTableView = new RVTableView();
-//    theRVTableView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     theRVTableView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    theRVTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    theRVTableView->horizontalHeader()->setStretchLastSection(false);
 
     verticalLayout->addWidget(theRVTableView);
     verticalLayout->addLayout(buttonLayout);
@@ -249,22 +252,13 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
     verticalLayout->addWidget(eqnGB);
 
     RVTableModel* tableModel = theRVTableView->getTableModel();
+    //    {"Variable Label","Level","Coefficient", "Apply Ln", "Power"};
     headers.append("Variable");
     headers.append("Level");
     headers.append("Coefficient");
     headers.append("Apply Ln");
     headers.append("Power");
-    //    {"Variable Label","Level","Coefficient", "Apply Ln", "Power"};
     tableModel->setHeaderStringList(headers);
-
-//    theRVTableView->setColumnWidth(0,300);
-//    theRVTableView->setColumnWidth(1,300);
-//    theRVTableView->setColumnWidth(2,300);
-//    theRVTableView->setColumnWidth(3,300);
-//    theRVTableView->setColumnWidth(4,300);
-
-    theRVTableView->horizontalHeader()->setMaximumWidth(400);
-//    theRVTableView->resizeColumnToContents(4);
 
     theRVTableView->show();
 
@@ -287,7 +281,6 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
     QStringList powerTypes = {"0","1","2"};
     powerComboDelegate->setItems(powerTypes);
     theRVTableView->setItemDelegateForColumn(4, powerComboDelegate);
-//    theRVTableView->horizontalHeader()->setMaximumWidth(300);
 
     // Add five random parameters to start with
     for(int i = 0; i<5; ++i)
@@ -295,7 +288,6 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
 
     this->generateEquation();
 
-    //    verticalLayout->addStretch(1);
 }
 
 
