@@ -192,7 +192,7 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &/
     auto pathToPreprocessScript = appDir + QDir::separator() + "Preprocess.py";
 
     QDir scriptDir(appDir);
-    scriptDir.cd("OpenSRABackend");
+    scriptDir.cd("OpenSRA");
     pySCRIPT = scriptDir.absoluteFilePath(pathToPreprocessScript);
 
     QFileInfo check_script(pySCRIPT);
@@ -340,7 +340,7 @@ bool LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &i
     QString pySCRIPT;
 
     QDir scriptDir(appDir);
-    scriptDir.cd("OpenSRABackend");
+    scriptDir.cd("OpenSRA");
     pySCRIPT = scriptDir.absoluteFilePath(workflowScript);
 
     QFileInfo check_script(pySCRIPT);

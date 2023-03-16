@@ -6,7 +6,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
 
 TARGET = OpenSRA
 TEMPLATE = app
-VERSION=0.4.0
+VERSION=1.0.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\" OpenSRA
 
 # C++17 support
