@@ -1,0 +1,74 @@
+.wy-nav-content {
+    max-width: 1200px !important;
+}
+
+
+.math {
+    text-align: left;
+}
+
+.eqno {
+    float: right;
+}
+
+table {
+  display: block;
+  max-height: 400px;
+  overflow-y: scroll;
+}
+
+.literalinclude {
+  display: block;
+  max-height: 400px;
+  overflow-y: scroll;
+}
+
+#div.wy-side-scroll{
+#	background:#cb463f;
+#}
+
+div.wy-menu.wy-menu-vertical > .caption {
+	 color: #cb463f;
+}
+
+# LIGHT BLUE  background:#0099ff
+# BLUE: background:#0B619C
+# ADAM RED: background:#cb463f;
+
+span.caption.caption-text{
+	color: #000000;
+}
+
+td{
+	white-space: normal !important;
+}
+
+.blue{
+	color: blue;
+}
+
+table.tight-table {
+    white-space: normal !important;
+    max-height: none;
+    overflow-y: auto;
+    vertical-align: top;
+}
+
+.uqblue {
+    color:#0B619C;
+    font-size: 130%;
+    font-weight: bold;
+}
+
+div.leftside {
+  width: 75%;
+  padding: 0px 3px 0px 0px;
+  float: left;
+  font-size: 90%;
+}
+
+div.rightside {
+  margin-left: 72%;
+  vertical-align: text-bottom;
+  /* float: right; */
+}

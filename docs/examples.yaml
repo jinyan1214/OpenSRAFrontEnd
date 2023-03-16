@@ -1,0 +1,13 @@
+OpenSRA:
+  include-item:
+    - OSRA-0001
+    - OSRA-0002
+    - OSRA-0003
+    - OSRA-0004
+    - OSRA-0005
+    - OSRA-0006
+    - OSRA-0007
+
+
+requirements: []
+
