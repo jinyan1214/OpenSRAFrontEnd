@@ -242,6 +242,7 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &/
     procEnv.insert("PATH", python);
     procEnv.insert("PYTHONPATH", python);
     procEnv.insert("USERNAME", "opensra_user");
+    procEnv.insert("LOCALAPPDATA", QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
 
     thePreprocessHandler->setProcessEnv(procEnv);
 
@@ -393,6 +394,7 @@ bool LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &i
 
     procEnv.insert("PATH", python);
     procEnv.insert("PYTHONPATH", python);
+    procEnv.insert("LOCALAPPDATA", QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
 
     theMainProcessHandler->setProcessEnv(procEnv);
 
