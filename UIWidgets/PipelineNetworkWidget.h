@@ -60,7 +60,7 @@ class PipelineNetworkWidget : public  MultiComponentR2D
     Q_OBJECT
 
 public:
-    explicit PipelineNetworkWidget(QWidget *parent, VisualizationWidget* visWidget);
+    explicit PipelineNetworkWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~PipelineNetworkWidget();
 
     bool outputToJSON(QJsonObject &rvObject);

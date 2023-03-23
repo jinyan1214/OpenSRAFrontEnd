@@ -45,7 +45,7 @@ win32 {
 
 # GIS plugin
 DEFINES +=  Q_GIS
-PATH_TO_QGIS_PLUGIN=../QGISPlugin
+PATH_TO_QGIS_PLUGIN=../../qgisplugin
 include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 
 #DEFINES += ARC_GIS
@@ -53,14 +53,14 @@ include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 #include($$PWD/arcgisruntime.pri)
 
 # Specify the path to R2D and common
-PATH_TO_R2D=../R2DTool
-PATH_TO_COMMON=../SimCenterCommon
-PATH_TO_BACKEND=../OpenSRA_dev
-#PATH_TO_BACKEND=../../../OneDrive - SlateGeotech/CEC/OpenSRA
+PATH_TO_R2D=../../R2DTool/R2DTool
+PATH_TO_COMMON=../../SimCenterCommon
+PATH_TO_BACKEND=../../OpenSRA
 
 # To avoid code copying, include the common SimCenter code
 include(OpenSRACommon.pri)
 include($$PATH_TO_COMMON/Common/Common.pri)
+
 
 SOURCES += main.cpp \
     JsonWidgets/JsonDefinedWidget.cpp \
@@ -97,6 +97,7 @@ SOURCES += main.cpp \
     UIWidgets/CustomVisualizationWidget.cpp \
     UIWidgets/PipelineNetworkWidget.cpp \
     UIWidgets/EngDemandParamWidget.cpp \
+    UIWidgets/OpenSRAComponentSelection.cpp \
     UIWidgets/EngineeringDemandParameterWidget.cpp \
     UIWidgets/MultiComponentEDPWidget.cpp \
     UIWidgets/MultiComponentDMWidget.cpp \
@@ -163,6 +164,7 @@ HEADERS  += \
     UIWidgets/CustomVisualizationWidget.h \
     UIWidgets/PipelineNetworkWidget.h \
     UIWidgets/EngDemandParamWidget.h \
+    UIWidgets/OpenSRAComponentSelection.h \
     UIWidgets/EngineeringDemandParameterWidget.h \
     UIWidgets/MultiComponentEDPWidget.h \
     UIWidgets/MultiComponentDMWidget.h \
@@ -221,10 +223,3 @@ INCLUDEPATH += $$PWD/Utils \
 #export(copyBackEnd.commands)
 
 #QMAKE_EXTRA_TARGETS += first copyExamples copyBackEnd
-
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/'../../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/'../../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
-else:unix: LIBS += -L$$PWD/'../../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
-
-INCLUDEPATH += $$PWD/'../../../../../../../Program Files (x86)/GnuWin32/include'
-DEPENDPATH += $$PWD/'../../../../../../../Program Files (x86)/GnuWin32/include'

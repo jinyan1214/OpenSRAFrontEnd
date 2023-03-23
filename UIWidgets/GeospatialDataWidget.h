@@ -49,7 +49,7 @@ class GeospatialDataWidget : public  SimCenterAppSelection
     Q_OBJECT
 
 public:
-    explicit GeospatialDataWidget(QWidget *parent, VisualizationWidget* visWidget);
+    explicit GeospatialDataWidget(VisualizationWidget* visWidget, QWidget *parent=nullptr);
     ~GeospatialDataWidget();
 
     bool inputFromJSON(QJsonObject &rvObject);

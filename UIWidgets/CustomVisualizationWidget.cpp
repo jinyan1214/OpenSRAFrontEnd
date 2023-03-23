@@ -69,7 +69,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QToolButton>
 
 
-CustomVisualizationWidget::CustomVisualizationWidget(QWidget *parent,  QGISVisualizationWidget* visWidget)
+CustomVisualizationWidget::CustomVisualizationWidget(QGISVisualizationWidget* visWidget, QWidget *parent)
     : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
     this->setContentsMargins(0,0,0,0);

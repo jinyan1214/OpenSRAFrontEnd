@@ -59,6 +59,7 @@ AddToRunListWidget::AddToRunListWidget(QWidget* parent) : QWidget(parent)
         "Warning: Current implementation of polynomial chaos assumes models as (log)normally distributed. "
         "Combining multiple methods may not be necessarily yield a model that is (log)normally distributed. Please limit to using just one method."
     );
+    warningLabel->setWordWrap(true);
     warningLayout->setMargin(0);
     warningLayout->addWidget(warningLabel);
 

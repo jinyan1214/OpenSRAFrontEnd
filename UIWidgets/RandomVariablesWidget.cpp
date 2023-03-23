@@ -265,9 +265,13 @@ void RandomVariablesWidget::makeRVWidget(void)
         "</html>"
     );
 
+
     instructionsDesc->setWordWrap(true);
 
-    verticalLayout->addWidget(instructionsDesc);
+    auto scrollArea = new QScrollArea;
+    scrollArea->setWidget(instructionsDesc);
+
+    verticalLayout->addWidget(scrollArea);
 }
 
 

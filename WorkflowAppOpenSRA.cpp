@@ -49,7 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "RunLocalWidget.h"
 #include "RunWidget.h"
 #include "UIWidgets/ResultsWidget.h"
-#include "SimCenterComponentSelection.h"
+#include "OpenSRAComponentSelection.h"
 #include "UIWidgets/CustomVisualizationWidget.h"
 #include "QGISVisualizationWidget.h"
 #include "LineAssetInputWidget.h"
@@ -260,20 +260,20 @@ void WorkflowAppOpenSRA::initialize(void)
     theVisualizationWidget = new QGISVisualizationWidget(theMainWindow);
 
     // Create the various widgets
-    theRandomVariableWidget = new RandomVariablesWidget(this);
-    thePipelineNetworkWidget = new PipelineNetworkWidget(this,theVisualizationWidget);
+    theRandomVariableWidget = new RandomVariablesWidget();
+    thePipelineNetworkWidget = new PipelineNetworkWidget(theVisualizationWidget);
 
     theWidgetFactory = std::make_unique<WidgetFactory>(thePipelineNetworkWidget->getTheBelowGroundInputWidget());
 
-    theGenInfoWidget = new GeneralInformationWidget(this);
-    //theUQWidget = new UncertaintyQuantificationWidget(this);
-    theIntensityMeasureWidget = new IntensityMeasureWidget(theVisualizationWidget, this);
-    theDamageMeasureWidget = new MultiComponentDMWidget(this);
-    theEDPWidget = new MultiComponentEDPWidget(this);
-    theCustomVisualizationWidget = new CustomVisualizationWidget(this,theVisualizationWidget);
-    theDecisionVariableWidget = new MultiComponentDVWidget(this);
-    theResultsWidget = new ResultsWidget(this,theVisualizationWidget);
-    theGISDataWidget = new GeospatialDataWidget(nullptr,theVisualizationWidget);
+    theGenInfoWidget = new GeneralInformationWidget();
+    //theUQWidget = new UncertaintyQuantificationWidget();
+    theIntensityMeasureWidget = new IntensityMeasureWidget(theVisualizationWidget);
+    theDamageMeasureWidget = new MultiComponentDMWidget();
+    theEDPWidget = new MultiComponentEDPWidget();
+    theCustomVisualizationWidget = new CustomVisualizationWidget(theVisualizationWidget);
+    theDecisionVariableWidget = new MultiComponentDVWidget();
+//    theResultsWidget = new ResultsWidget(nullptr,theVisualizationWidget);
+    theGISDataWidget = new GeospatialDataWidget(theVisualizationWidget);
 
     SimCenterWidget *theWidgets[1];
 
@@ -306,7 +306,7 @@ void WorkflowAppOpenSRA::initialize(void)
     horizontalLayout->setMargin(0);
 
     // Create the component selection & add the components to it
-    theComponentSelection = new SimCenterComponentSelection();
+    theComponentSelection = new OpenSRAComponentSelection(this);
     theComponentSelection->setContentsMargins(0,0,0,0);
     horizontalLayout->addWidget(theComponentSelection);
 
@@ -321,8 +321,10 @@ void WorkflowAppOpenSRA::initialize(void)
     theComponentSelection->addComponent(QString("Intensity\nMeasure"), theIntensityMeasureWidget);
     theComponentSelection->addComponent(QString("Input\nVariables"), theRandomVariableWidget);
 //    theComponentSelection->addComponent(QString("Results"), theResultsWidget);
-    theComponentSelection->setWidth(120);
-    theComponentSelection->setItemWidthHeight(120,70);
+
+    theComponentSelection->setMinWidth(150);
+    theComponentSelection->setMaxWidth(300);
+    theComponentSelection->setItemWidthHeight(300,70);
 
     theComponentSelection->displayComponent("Visualization");
 
@@ -579,7 +581,7 @@ void WorkflowAppOpenSRA::clear(void)
     theDamageMeasureWidget->clear();
     theEDPWidget->clear();
     theCustomVisualizationWidget->clear();
-    theResultsWidget->clear();
+//    theResultsWidget->clear();
     localApp->clear();
 }
 
@@ -622,7 +624,7 @@ void WorkflowAppOpenSRA::clearResultsDir(void)
         resultsDirectory.removeRecursively();
     }
 
-    theResultsWidget->clear();
+//    theResultsWidget->clear();
 }
 
 
@@ -802,7 +804,7 @@ void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &su
 
     //
     // clear Results tab of loaded any results
-    theResultsWidget->clear();
+//    theResultsWidget->clear();
     //
 
     statusMessage("Set up done.  Now starting the analysis.");

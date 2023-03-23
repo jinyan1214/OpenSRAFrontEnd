@@ -42,7 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include "UserInputCPTWidget.h"
 
-GeospatialDataWidget::GeospatialDataWidget(QWidget *parent, VisualizationWidget* visWidget) : SimCenterAppSelection(QString("Geospatial Data"),QString("UserSpecifiedData"), parent), visualizationWidget(visWidget)
+GeospatialDataWidget::GeospatialDataWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppSelection(QString("Geospatial Data"),QString("UserSpecifiedData"), parent), visualizationWidget(visWidget)
 {
     cptInputWidget = new UserInputCPTWidget(visualizationWidget);
 

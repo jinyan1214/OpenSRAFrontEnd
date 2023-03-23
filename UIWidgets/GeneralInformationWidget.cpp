@@ -61,7 +61,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 GeneralInformationWidget::GeneralInformationWidget(QWidget *parent) : SimCenterAppWidget(parent)
 {
 
-
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setMargin(0);
     mainLayout->setSpacing(0);
@@ -84,7 +83,7 @@ GeneralInformationWidget::GeneralInformationWidget(QWidget *parent) : SimCenterA
     auto infoWidget = new QWidget();
     infoWidget->setLayout(infoLayout);
 
-    QScrollArea *scrollWidget = new QScrollArea;
+    QScrollArea *scrollWidget = new QScrollArea();
     scrollWidget->setWidgetResizable(true);
     scrollWidget->setLineWidth(0);
     scrollWidget->setWidget(infoWidget);
@@ -96,6 +95,7 @@ GeneralInformationWidget::GeneralInformationWidget(QWidget *parent) : SimCenterA
 //    mainLayout->addStretch();
 
     this->setLayout(mainLayout);
+
 }
 
 
@@ -184,20 +184,20 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     // Get a rectangular message box on this window that could be help text box
 
 
-    auto analysisLabel = new QLabel("Analysis ID:", this);
+    auto analysisLabel = new QLabel("Analysis ID:");
     analysisLineEdit = new QLineEdit();
     analysisLineEdit->setText("Analysis_ID");
     analysisLineEdit->setMaximumWidth(500);
 
-//    auto unitSystemLabel = new QLabel("Unit System:", this);
-//    unitsCombo = new QComboBox();
-//    unitsCombo->addItem("SI (km)");
-//    unitsCombo->setCurrentIndex(0);
-//    unitsCombo->setMaximumWidth(500);
-//    unitsCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
-//    unitsCombo->setToolTip("This is an example tool tip. It can be long or short. I dont know what else to write here -Steve");
+    auto unitSystemLabel = new QLabel("Unit System:");
+    unitsCombo = new QComboBox();
+    unitsCombo->addItem("SI (km)");
+    unitsCombo->setCurrentIndex(0);
+    unitsCombo->setMaximumWidth(500);
+    unitsCombo->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Maximum);
+    unitsCombo->setToolTip("Set the units here");
 
-    QPushButton *loadFileButton = new QPushButton(this);
+    QPushButton *loadFileButton = new QPushButton();
     loadFileButton->setText(tr("Browse"));
     loadFileButton->setMaximumWidth(150);
     auto workingDirectoryLabel = new QLabel("Working Directory:");
@@ -212,7 +212,7 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     connect(loadFileButton,&QPushButton::clicked, this, &GeneralInformationWidget::chooseDirectoryDialog);
 
     // overview
-    auto assessmentLabel = new QLabel("General Comments:", this);
+    auto assessmentLabel = new QLabel("General Comments:");
     assessmentLabel->setStyleSheet("font-weight: bold; color: black");
 
     const char *assessmentDetailString =
@@ -221,10 +221,10 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
         "2. Note that the first time you click \"PREPROCESS\" and \"PERFORM ANALYSIS\" after installation will take some time for OpenSRA to perform some behind-the-scene tasks.\n"
 
         "3. If you are not familiar with OpenSRA, it is best to pick the example that best match your problem and adjust the analysis parameters from there (see \"Examples\" on the menu bar at the top).";
-    auto assessmentDetailLabel = new QLabel(assessmentDetailString, this);
+    auto assessmentDetailLabel = new QLabel(assessmentDetailString);
 
     // examples
-    auto exampleLabel = new QLabel("Instructions for Examples:", this);
+    auto exampleLabel = new QLabel("Instructions for Examples:");
     exampleLabel->setStyleSheet("font-weight: bold; color: black");
 
     const char *exampleDetailString =
@@ -234,10 +234,10 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
         "2. To run an example:\n"
         "\t- Select an example from the dropdown menu at the top of the screen\n"
         "\t- Follow the pop-up prompts";
-    auto exampleDetailLabel = new QLabel(exampleDetailString, this);
+    auto exampleDetailLabel = new QLabel(exampleDetailString);
 
     // instructions
-    auto setupLabel = new QLabel("Program Overview and Setup Details:", this);
+    auto setupLabel = new QLabel("Program Overview and Setup Details:");
     setupLabel->setStyleSheet("font-weight: bold; color: black");
 
     const char *setupDetailString =
@@ -288,16 +288,16 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
         "When prompted, click \"PERFORM ANALYSIS\" to perform the analysis\n\n"
         "\t- If the analysis is successful, a new layer named \"Results\" will be populated in the \"Visualization\" tab\n";
 
-    auto setupDetailLabel = new QLabel(setupDetailString, this);
+    auto setupDetailLabel = new QLabel(setupDetailString);
 
 
-//    QRadioButton *button1 = new QRadioButton("Pre-configured setup for risk assessment (preferred)", this);
-//    QRadioButton *button2 = new QRadioButton("Allow for user customization (e.g., source models, evaluation methods to use)", this);
-//    button1->setChecked(true);
+    QRadioButton *button1 = new QRadioButton("Pre-configured setup for risk assessment (preferred)");
+    QRadioButton *button2 = new QRadioButton("Allow for user customization (e.g., source models, evaluation methods to use)");
+    button1->setChecked(true);
 
-//    auto warningLabel = new QLabel(this);
-//    warningLabel->setText("Warning: Only choose this option if you have read the user manual and are familiar with the program");
-//    warningLabel->setStyleSheet("color: red");
+    auto warningLabel = new QLabel();
+    warningLabel->setText("Warning: Only choose this option if you have read the user manual and are familiar with the program");
+    warningLabel->setStyleSheet("color: red");
 
     // Layout the UI components in a grid
     QVBoxLayout* layout = new QVBoxLayout();
@@ -321,18 +321,18 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     workingDirLayout->addWidget(helpLabel2);
     workingDirLayout->addStretch();
 
-//    ClickableLabel* helpLabel3 = new ClickableLabel("  ?");
-//    helpLabel3->setToolTip("Select the analysis unit system.");
+    ClickableLabel* helpLabel3 = new ClickableLabel("  ?");
+    helpLabel3->setToolTip("Select the analysis unit system.");
 
-//    QHBoxLayout* unitsLayout = new QHBoxLayout();
-//    unitsLayout->addWidget(unitSystemLabel);
-//    unitsLayout->addWidget(unitsCombo);
-//    unitsLayout->addWidget(helpLabel3);
-//    unitsLayout->addStretch();
+    QHBoxLayout* unitsLayout = new QHBoxLayout();
+    unitsLayout->addWidget(unitSystemLabel);
+    unitsLayout->addWidget(unitsCombo);
+    unitsLayout->addWidget(helpLabel3);
+    unitsLayout->addStretch();
 
     layout->addLayout(analysisNameLayout);
     layout->addLayout(workingDirLayout);
-//    layout->addLayout(unitsLayout);
+    layout->addLayout(unitsLayout);
 
     // add spacer
     QSpacerItem *vSpacer = new QSpacerItem(0,20);
@@ -343,19 +343,21 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     layout->addWidget(assessmentDetailLabel);
 
     // example text
-    layout->addItem(vSpacer);
+    QSpacerItem *vSpacer2 = new QSpacerItem(0,20);
+    layout->addItem(vSpacer2);
     layout->addWidget(exampleLabel);
     layout->addWidget(exampleDetailLabel);
 
     // setup text
-    layout->addItem(vSpacer);
+    QSpacerItem *vSpacer3 = new QSpacerItem(0,20);
+    layout->addItem(vSpacer3);
     layout->addWidget(setupLabel);
     layout->addWidget(setupDetailLabel);
 
-//    layout->addWidget(button1);
-//    layout->addWidget(button2);
+    layout->addWidget(button1);
+    layout->addWidget(button2);
 
-//    layout->addWidget(warningLabel);
+    layout->addWidget(warningLabel);
 
     return layout;
 }
