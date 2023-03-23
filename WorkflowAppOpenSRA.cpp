@@ -277,7 +277,7 @@ void WorkflowAppOpenSRA::initialize(void)
 
     SimCenterWidget *theWidgets[1];
 
-    localApp = new LocalApplication("OpenSRA.py",theMainWindow);
+    localApp = new LocalApplication("OpenSRA.py");
     theRunWidget = new RunWidget(localApp, theWidgets, 0);
 
     connect(thePipelineNetworkWidget,&MultiComponentR2D::selectionChangedSignal,theEDPWidget,&MultiComponentEDPWidget::handleWidgetSelected);
@@ -323,8 +323,8 @@ void WorkflowAppOpenSRA::initialize(void)
 //    theComponentSelection->addComponent(QString("Results"), theResultsWidget);
 
     theComponentSelection->setMinWidth(150);
-    theComponentSelection->setMaxWidth(300);
-    theComponentSelection->setItemWidthHeight(300,70);
+    theComponentSelection->setMaxWidth(175);
+    theComponentSelection->setItemWidthHeight(175,70);
 
     theComponentSelection->displayComponent("Visualization");
 
