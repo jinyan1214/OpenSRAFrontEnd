@@ -64,8 +64,6 @@ SourceCharacterizationWidget::SourceCharacterizationWidget(QWidget *parent)
     mainLayout->addStretch();
 
     this->setLayout(mainLayout);
-//    this->setMinimumWidth(640);
-    this->setMaximumWidth(1000);
 }
 
 SourceCharacterizationWidget::~SourceCharacterizationWidget()
@@ -114,34 +112,34 @@ QGridLayout* SourceCharacterizationWidget::getSourceLayout(void)
     QLabel* segmentsPathText = new QLabel("List of Segments:", this);
 
     auto segementsPathLineEdit = new QLineEdit();
-    segementsPathLineEdit->setMaximumWidth(750);
-    segementsPathLineEdit->setMinimumWidth(400);
+//    segementsPathLineEdit->setMaximumWidth(750);
+    segementsPathLineEdit->setMinimumWidth(200);
     segementsPathLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
     QPushButton *segmentsBrowseButton = new QPushButton(this);
     segmentsBrowseButton->setText(tr("Browse"));
-    segmentsBrowseButton->setMaximumWidth(150);
+    segmentsBrowseButton->setMaximumWidth(100);
 
     QPushButton *segmentsFileButton = new QPushButton(this);
     segmentsFileButton->setText(tr("Import"));
-    segmentsFileButton->setMaximumWidth(150);
+    segmentsFileButton->setMaximumWidth(100);
 
     // Ruptures import objects
     QLabel* RupturesPathText = new QLabel(this);
     RupturesPathText->setText("List of Ruptures:");
 
     auto rupturesPathLineEdit = new QLineEdit(this);
-    rupturesPathLineEdit->setMaximumWidth(750);
-    rupturesPathLineEdit->setMinimumWidth(400);
+//    rupturesPathLineEdit->setMaximumWidth(750);
+    rupturesPathLineEdit->setMinimumWidth(200);
     rupturesPathLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
     QPushButton *RupturesBrowseButton = new QPushButton(this);
     RupturesBrowseButton->setText(tr("Browse"));
-    RupturesBrowseButton->setMaximumWidth(150);
+    RupturesBrowseButton->setMaximumWidth(100);
 
     QPushButton *RupturesFileButton = new QPushButton(this);
     RupturesFileButton->setText(tr("Import"));
-    RupturesFileButton->setMaximumWidth(150);
+    RupturesFileButton->setMaximumWidth(100);
 
     // Add a horizontal spacer after the browse and load buttons
     auto hspacer = new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -176,8 +174,8 @@ QGridLayout* SourceCharacterizationWidget::getSourceLayout(void)
     QLabel* exportLabel = new QLabel("Export folder:", this);
 
     auto exportPathLineEdit = new QLineEdit(this);
-    exportPathLineEdit->setMaximumWidth(750);
-    exportPathLineEdit->setMinimumWidth(400);
+//    exportPathLineEdit->setMaximumWidth(750);
+    exportPathLineEdit->setMinimumWidth(200);
     exportPathLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
     QPushButton *exportBrowseFileButton = new QPushButton(this);

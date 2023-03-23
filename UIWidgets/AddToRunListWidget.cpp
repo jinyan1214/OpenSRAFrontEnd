@@ -104,7 +104,7 @@ AddToRunListWidget::AddToRunListWidget(QWidget* parent) : QWidget(parent)
 
     QPushButton *addRunListButton = new QPushButton(this);
     addRunListButton->setText(tr("Add to list of methods to run"));
-    addRunListButton->setMinimumWidth(250);
+//    addRunListButton->setMinimumWidth(250);
 
     connect(addRunListButton,&QPushButton::clicked, this, [=](){emit addToRunListButtonPressed();});
 

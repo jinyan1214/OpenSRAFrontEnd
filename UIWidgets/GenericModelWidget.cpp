@@ -192,7 +192,7 @@ void GenericModelWidget::makeRVWidget(QJsonObject &methodObj)
 
     SectionTitle *title=new SectionTitle();
     title->setText(tr("Generic Model Definition"));
-    title->setMinimumWidth(250);
+    title->setMinimumWidth(200);
 
     QPushButton *addParam = new QPushButton();
     addParam->setMinimumWidth(75);

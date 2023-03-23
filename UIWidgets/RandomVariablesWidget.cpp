@@ -112,7 +112,7 @@ void RandomVariablesWidget::makeRVWidget(void)
 
     SectionTitle *title=new SectionTitle();
     title->setText(tr("Input Variables"));
-    title->setMinimumWidth(250);
+    title->setMinimumWidth(150);
 
     titleLayout->addWidget(title);
 
