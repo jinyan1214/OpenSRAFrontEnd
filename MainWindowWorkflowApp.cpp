@@ -88,21 +88,8 @@ MainWindowWorkflowApp::MainWindowWorkflowApp(QString appName, WorkflowAppWidget 
     header->setHeadingText(appName);
     layout->addWidget(header);
 
-    // place a location for messages;
-    QHBoxLayout *layoutMessages = new QHBoxLayout();
-    header->appendLayout(layoutMessages);
 
     // place login info
-    QHBoxLayout *layoutLogin = new QHBoxLayout();
-    //    QLabel *name = new QLabel();
-    //    //name->setText("");
-    //    loginButton = new QPushButton();
-    //    loginButton->setText("Login");
-    //    layoutLogin->addWidget(name);
-    //    layoutLogin->addWidget(loginButton);
-    layoutLogin->setAlignment(Qt::AlignLeft);
-    header->appendLayout(layoutLogin);
-
     layout->addWidget(inputWidget);
 
     //

@@ -45,7 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QWidget>
 #include <QJsonObject>
 
-class SimCenterComponentSelection;
+class OpenSRAComponentSelection;
 class InputWidgetBIM;
 class InputWidgetUQ;
 class PipelineNetworkWidget;
@@ -149,7 +149,7 @@ private:
     std::unique_ptr<WidgetFactory> theWidgetFactory;
 
     // sidebar container selection
-    SimCenterComponentSelection *theComponentSelection = nullptr;
+    OpenSRAComponentSelection *theComponentSelection = nullptr;
 
     // objects that go in sidebar
     GeospatialDataWidget* theGISDataWidget = nullptr;
@@ -163,7 +163,7 @@ private:
     MultiComponentEDPWidget* theEDPWidget = nullptr;
     CustomVisualizationWidget* theCustomVisualizationWidget = nullptr;
     QGISVisualizationWidget* theVisualizationWidget = nullptr;
-    ResultsWidget* theResultsWidget = nullptr;
+//    ResultsWidget* theResultsWidget = nullptr;
 
     // objects for running the workflow and obtaining results
     RunWidget* theRunWidget = nullptr;

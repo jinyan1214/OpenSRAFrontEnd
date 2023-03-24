@@ -59,6 +59,7 @@ AddToRunListWidget::AddToRunListWidget(QWidget* parent) : QWidget(parent)
         "Warning: Current implementation of polynomial chaos assumes models as (log)normally distributed. "
         "Combining multiple methods may not be necessarily yield a model that is (log)normally distributed. Please limit to using just one method."
     );
+    warningLabel->setWordWrap(true);
     warningLayout->setMargin(0);
     warningLayout->addWidget(warningLabel);
 
@@ -103,7 +104,7 @@ AddToRunListWidget::AddToRunListWidget(QWidget* parent) : QWidget(parent)
 
     QPushButton *addRunListButton = new QPushButton(this);
     addRunListButton->setText(tr("Add to list of methods to run"));
-    addRunListButton->setMinimumWidth(250);
+//    addRunListButton->setMinimumWidth(250);
 
     connect(addRunListButton,&QPushButton::clicked, this, [=](){emit addToRunListButtonPressed();});
 

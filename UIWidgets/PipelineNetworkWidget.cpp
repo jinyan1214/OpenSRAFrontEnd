@@ -73,7 +73,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileDialog>
 #include <QPushButton>
 
-PipelineNetworkWidget::PipelineNetworkWidget(QWidget *parent, VisualizationWidget* visWidget)
+PipelineNetworkWidget::PipelineNetworkWidget(VisualizationWidget* visWidget, QWidget *parent)
     : MultiComponentR2D("NaturalGasNetwork",parent), theVisualizationWidget(visWidget)
 {
     this->setContentsMargins(0,0,0,0);

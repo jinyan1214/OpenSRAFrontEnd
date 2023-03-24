@@ -97,6 +97,7 @@ SOURCES += main.cpp \
     UIWidgets/CustomVisualizationWidget.cpp \
     UIWidgets/PipelineNetworkWidget.cpp \
     UIWidgets/EngDemandParamWidget.cpp \
+    UIWidgets/OpenSRAComponentSelection.cpp \
     UIWidgets/EngineeringDemandParameterWidget.cpp \
     UIWidgets/MultiComponentEDPWidget.cpp \
     UIWidgets/MultiComponentDMWidget.cpp \
@@ -163,6 +164,7 @@ HEADERS  += \
     UIWidgets/CustomVisualizationWidget.h \
     UIWidgets/PipelineNetworkWidget.h \
     UIWidgets/EngDemandParamWidget.h \
+    UIWidgets/OpenSRAComponentSelection.h \
     UIWidgets/EngineeringDemandParameterWidget.h \
     UIWidgets/MultiComponentEDPWidget.h \
     UIWidgets/MultiComponentDMWidget.h \

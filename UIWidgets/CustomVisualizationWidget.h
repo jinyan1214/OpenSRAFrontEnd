@@ -58,7 +58,7 @@ class CustomVisualizationWidget : public SimCenterAppWidget
 
 public:
 
-    explicit CustomVisualizationWidget(QWidget *parent, QGISVisualizationWidget* visWidget);
+    explicit CustomVisualizationWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
     virtual ~CustomVisualizationWidget();
 
     virtual bool outputToJSON(QJsonObject &rvObject);

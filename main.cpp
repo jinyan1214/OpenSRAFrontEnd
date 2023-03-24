@@ -173,6 +173,7 @@ int main(int argc, char *argv[])
 
     mainWindowApp.setWindowState((mainWindowApp.windowState() & ~(Qt::WindowMinimized | Qt::WindowFullScreen))| Qt::WindowMaximized);
     mainWindowApp.show();
+//    mainWindowApp.activateWindow();
     // mainWindowApp.statusBar()->showMessage("Ready", 5000);
 
 #ifdef Q_OS_WIN

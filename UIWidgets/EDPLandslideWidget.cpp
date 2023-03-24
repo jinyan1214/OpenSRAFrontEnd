@@ -165,6 +165,9 @@ EDPLandslideWidget::EDPLandslideWidget(QJsonObject obj, QWidget* parent) : SimCe
 
     splitter->addWidget(listWidget);
 
+    auto idx = splitter->indexOf(listWidget);
+    splitter->setCollapsible(idx,false);
+
     mainLayout->addWidget(splitter);
 }
 
