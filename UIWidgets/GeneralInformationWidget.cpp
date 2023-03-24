@@ -250,14 +250,7 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
         "\t- Fill out the inputs as requested\n"
         "\tNote: for \"Pipelines\", users can choose to use the prepackaged state pipeline network, which has been heavily preprocessed internally to reduce runtime; however, state-wide analysis can still take a long time to complete (over 1 hour)\n"
 
-        "3. \"GIS and CPT Data\":\n"
-        "\t- \"User Provided GIS Data\"\n"\
-        "\t\t- Browse for folder with datasets - the menu on the right should populate with the GIS maps found in the folder\n"
-        "\t- \"Site Investigation Data (currently supporting CPTs only)\"\n"\
-        "\t\t- Follow the on-screen instructions to fill out the inputs as requested\n"
-        "\t\tNote: only used by below ground pipelines with lateral spread and settlement as geohazards\n"
-
-        "4. \"Decision Variable\":\n"
+        "3. \"Decision Variable\":\n"
         "\t- Pick the decision metric to run from the secondary list of tabs\n"
         "\t- From the dropdown menu, pick the method to run\n"
         "\t- Review the descriptions on the outputs, inputs, and additional requirements from other tabs\n"
@@ -265,11 +258,11 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
         "\tNote: The input parameters will be displayed under the \"Input Variables\" tab for users to edit\n"
         "\tWarning: While you can use more than one method, we advise to use one method per run as combinations of methods may not be appropriate for the current implemention of Polynomial Chaos\n"
 
-        "5. \"Damage Measure\":\n"
+        "4. \"Damage Measure\":\n"
         "\t- Only required if requested by one of the methods under the \"Decision Variable\" tab\n"
         "\t- Follow the same instructions as those under \"Decision Variable\"\n"
 
-        "6. \"Engineering Demand Parameters\":\n"
+        "5. \"Engineering Demand Parameters\":\n"
         "\t- Only required if requested by one of the methods under the \"Decision Variable\" and/or the \"Damage Measure\" tab\n"
         "\t- Follow the same instructions as those under \"Decision Variable\"\n"
 
@@ -277,7 +270,14 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
         "\t- From the dropdown menu, choose the type of seismic source to use\n"
         "\t- Follow the on-screen instructions to fill out the inputs as requested\n"
 
-        "7. \"Input Variables\":\n"
+        "7. \"GIS and CPT Data\":\n"
+        "\t- \"User Provided GIS Data\"\n"\
+        "\t\t- Browse for folder with datasets - the menu on the right should populate with the GIS maps found in the folder\n"
+        "\t- \"Site Investigation Data (currently supporting CPTs only)\"\n"\
+        "\t\t- Follow the on-screen instructions to fill out the inputs as requested\n"
+        "\t\tNote: only used by below ground pipelines with lateral spread and settlement as geohazards\n"
+
+        "8. \"Input Variables\":\n"
         "\t- This tab contains two tables:\n"
         "\t\t- (a) random variables that can sampled for epistemic uncertainty\n"
         "\t\t- (a) fixed variables that holds a singular value\n"

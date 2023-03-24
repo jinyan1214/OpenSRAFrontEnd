@@ -129,7 +129,10 @@ int OpenSRAPreProcessor::loadPreprocessingResults(const QString path)
 //    }
 
     QString msgText("Preprocess step complete. Click the \"PERFORM ANALYSIS\" button to perform the analysis.");
-    this->statusMessage(msgText);
+    this->infoMessage(msgText);
+
+    QString msgText2("~~~~~~~~~~\n");
+    this->statusMessage(msgText2);
 
     QMessageBox msgBox;
     msgBox.setText(msgText);

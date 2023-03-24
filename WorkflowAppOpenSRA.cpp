@@ -228,7 +228,8 @@ void WorkflowAppOpenSRA::initialize(void)
                 {
                     QJsonObject exObj = it->toObject();
                     auto name = exObj.value("name").toString();
-                    auto fullName = "Example " + QString::number(count) + " - " + name;
+//                    auto fullName = "Example " + QString::number(count) + " - " + name;
+                    auto fullName = name;
                     auto inputFile = exObj.value("inputFile").toString();
                     // Set the path to the input file
                     auto action = currExMenu->addAction(fullName, this, &WorkflowAppOpenSRA::loadExamples);
@@ -314,11 +315,11 @@ void WorkflowAppOpenSRA::initialize(void)
     theComponentSelection->addComponent(QString("General\nInformation"), theGenInfoWidget);
     //    theComponentSelection->addComponent(QString("Sampling\nMethod"), theUQWidget);
     theComponentSelection->addComponent(QString("Infrastructure"), thePipelineNetworkWidget);
-    theComponentSelection->addComponent(QString("GIS and CPT Data"), theGISDataWidget);
     theComponentSelection->addComponent(QString("Decision\nVariable"), theDecisionVariableWidget);
     theComponentSelection->addComponent(QString("Damage\nMeasure"), theDamageMeasureWidget);
     theComponentSelection->addComponent(QString("Engineering\nDemand\nParameter"), theEDPWidget);
     theComponentSelection->addComponent(QString("Intensity\nMeasure"), theIntensityMeasureWidget);
+    theComponentSelection->addComponent(QString("GIS and\nCPT Data"), theGISDataWidget);
     theComponentSelection->addComponent(QString("Input\nVariables"), theRandomVariableWidget);
 //    theComponentSelection->addComponent(QString("Results"), theResultsWidget);
 
@@ -448,7 +449,10 @@ void WorkflowAppOpenSRA::loadExamples()
     progressDialog->hideProgressBar();
 
     QString msgText("Done loading setup configuration for the example. Click the \"PREPROCESS\" button to perform preprocessing on this setup.");
-    this->statusMessage(msgText);
+    this->infoMessage(msgText);
+
+    QString msgText2("~~~~~~~~~~\n");
+    this->statusMessage(msgText2);
 
     QMessageBox msgBox;
     msgBox.setText(msgText);
@@ -540,7 +544,9 @@ void WorkflowAppOpenSRA::postprocessResults(QString resultsDirectory, QString /*
 
     if(res == 0)
     {
-        this->infoMessage("Analysis complete. Results loaded.\n");
+        this->infoMessage("Analysis complete. Results loaded in the \"Visualization\" tab.");
+        this->statusMessage("~~~~~~~~~~\n");
+        theComponentSelection->displayComponent("Visualization");
 //        theComponentSelection->displayComponent("Results");
     }
     else

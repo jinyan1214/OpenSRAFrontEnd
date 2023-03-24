@@ -209,7 +209,7 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &/
     auto procEnv = QProcessEnvironment();
     procEnv.clear();
 
-    statusMessage("Running script: " + pySCRIPT);
+    statusMessage("Script to run: " + pySCRIPT);
 
     QString python;
 
@@ -240,6 +240,9 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &/
             return false;
         }
     }
+
+    errorMessage("First time after installation of OpenSRA, this step will take an additional 1 minute (approx.) to complete background tasks...");
+    statusMessage(""); // switch back to status message format
 
     procEnv.insert("PATH", python);
     procEnv.insert("PYTHONPATH", python);
@@ -361,7 +364,7 @@ bool LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &i
     procEnv.clear();
 
 
-    statusMessage("Running script: " + pySCRIPT);
+    statusMessage("Script to run: " + pySCRIPT);
 
 
     QString python;
@@ -394,7 +397,9 @@ bool LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &i
         }
     }
 
-    statusMessage("Starting the analysis... this may take a while!");
+//    statusMessage("Starting the analysis... this may take a while!");
+    errorMessage("First time after installation of OpenSRA, this step will take an additional 10 minutes (approx.) to complete background tasks...");
+    statusMessage(""); // switch back to status message format
 
     procEnv.insert("PATH", python);
     procEnv.insert("PYTHONPATH", python);
