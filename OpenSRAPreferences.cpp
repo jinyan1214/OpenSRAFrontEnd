@@ -432,11 +432,13 @@ QString OpenSRAPreferences::getAppDir(void) {
     auto OpenSRAPyPath = currentAppDir + QDir::separator() + "OpenSRA.py";
     QFileInfo OpenSRAPyPathInfo(OpenSRAPyPath);
     if (!OpenSRAPyPathInfo.exists())
-        currentAppDir = currentAppDir + currentAppDir + QDir::separator() + "OpenSRA";
-    OpenSRAPyPath = currentAppDir + QDir::separator() + "OpenSRA.py";
-    OpenSRAPyPathInfo.setFile(OpenSRAPyPath);
-    if (!OpenSRAPyPathInfo.exists())
-        currentAppDir = QCoreApplication::applicationDirPath();
+    {
+        currentAppDir = currentAppDir + QDir::separator() + "OpenSRA";
+        OpenSRAPyPath = currentAppDir + QDir::separator() + "OpenSRA.py";
+        OpenSRAPyPathInfo.setFile(OpenSRAPyPath);
+        if (!OpenSRAPyPathInfo.exists())
+            currentAppDir = QCoreApplication::applicationDirPath();
+    }
 
     //If custom is checked we will try to get the custom app dir defined
     if (customAppDirCheckBox->checkState() == Qt::CheckState::Checked)
