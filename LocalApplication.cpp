@@ -223,11 +223,13 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &/
 
     if(python.isEmpty())
     {
+        QString pythonEnvStr = "python_env";
+        QString rootDir = QCoreApplication::applicationDirPath();
 
 #ifdef Q_OS_WIN
-        python = appDir+QDir::separator()+"PythonEnv"+QDir::separator()+"python.exe";
+        python = rootDir+QDir::separator()+pythonEnvStr+QDir::separator()+"python.exe";
 #else
-        python = appDir+QDir::separator()+"PythonEnv"+QDir::separator()+"bin"+QDir::separator()+"python";
+        python = rootDir+QDir::separator()+pythonEnvStr+QDir::separator()+"bin"+QDir::separator()+"python";
 #endif
 
         QFileInfo checkPython(python);
@@ -374,11 +376,13 @@ bool LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &i
 
     if(python.isEmpty())
     {
+        QString pythonEnvStr = "python_env";
+        QString rootDir = QCoreApplication::applicationDirPath();
 
 #ifdef Q_OS_WIN
-        python = appDir+QDir::separator()+"PythonEnv"+QDir::separator()+"python.exe";
+        python = rootDir+QDir::separator()+pythonEnvStr+QDir::separator()+"python.exe";
 #else
-        python = appDir+QDir::separator()+"PythonEnv"+QDir::separator()+"bin"+QDir::separator()+"python";
+        python = rootDir+QDir::separator()+pythonEnvStr+QDir::separator()+"bin"+QDir::separator()+"python";
 #endif
 
         QFileInfo checkPython(python);

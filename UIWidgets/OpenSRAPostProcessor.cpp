@@ -273,15 +273,25 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
             if (this->IMSourceType == "UCERF")
             {
                 // rates can be on the order of 1e-6, -7, use log scale
-                classBreaks.append(QPair<double,double>(1.00E+01, 1.00E+03));
-                classBreaks.append(QPair<double,double>(1.00E-00, 1.00E+01));
-                classBreaks.append(QPair<double,double>(1.00E-01, 1.00E+00));
+//                classBreaks.append(QPair<double,double>(1.00E+01, 1.00E+03));
+//                classBreaks.append(QPair<double,double>(1.00E-00, 1.00E+01));
+//                classBreaks.append(QPair<double,double>(1.00E-01, 1.00E+00));
+//                classBreaks.append(QPair<double,double>(1.00E-02, 1.00E-01));
+//                classBreaks.append(QPair<double,double>(1.00E-03, 1.00E-02));
+//                classBreaks.append(QPair<double,double>(1.00E-04, 1.00E-03));
+//                classBreaks.append(QPair<double,double>(1.00E-05, 1.00E-04));
+//                classBreaks.append(QPair<double,double>(1.00E-06, 1.00E-05));
+//                classBreaks.append(QPair<double,double>(0.0     , 1.00E-06));
+
+                classBreaks.append(QPair<double,double>(1.00E-01, 1.00E+05));
                 classBreaks.append(QPair<double,double>(1.00E-02, 1.00E-01));
                 classBreaks.append(QPair<double,double>(1.00E-03, 1.00E-02));
                 classBreaks.append(QPair<double,double>(1.00E-04, 1.00E-03));
                 classBreaks.append(QPair<double,double>(1.00E-05, 1.00E-04));
                 classBreaks.append(QPair<double,double>(1.00E-06, 1.00E-05));
-                classBreaks.append(QPair<double,double>(0.0     , 1.00E-06));
+                classBreaks.append(QPair<double,double>(1.00E-07, 1.00E-06));
+                classBreaks.append(QPair<double,double>(1.00E-08, 1.00E-07));
+                classBreaks.append(QPair<double,double>(0.0     , 1.00E-08));
 
                 colors.push_back(QColor(158,   1,  66));
                 colors.push_back(QColor(220,  73,  75));
@@ -292,6 +302,16 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
                 colors.push_back(QColor(134, 206, 164));
                 colors.push_back(QColor( 61, 148, 183));
                 colors.push_back(QColor( 94,  79, 162));
+
+                labels.append(">1e-1 failure per year");
+                labels.append("1e-2 - 1e-1");
+                labels.append("1e-3 - 1e-2");
+                labels.append("1e-4 - 1e-3");
+                labels.append("1e-5 - 1e-4");
+                labels.append("1e-6 - 1e-5");
+                labels.append("1e-7 - 1e-6");
+                labels.append("1e-8 - 1e-7");
+                labels.append("<1e-8 failure per year");
             }
             else
             {

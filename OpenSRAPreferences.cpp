@@ -53,6 +53,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QFileInfo>
 #include <QCoreApplication>
 #include <QFileInfo>
+#include <QMessageBox>
 
 QString logFilePath;
 
@@ -427,6 +428,15 @@ QString OpenSRAPreferences::getAppDir(void) {
 
     //Default appDir is the location of the application
     auto currentAppDir = QCoreApplication::applicationDirPath();
+    // check for OpenSRA.py
+    auto OpenSRAPyPath = currentAppDir + QDir::separator() + "OpenSRA.py";
+    QFileInfo OpenSRAPyPathInfo(OpenSRAPyPath);
+    if (!OpenSRAPyPathInfo.exists())
+        currentAppDir = currentAppDir + currentAppDir + QDir::separator() + "OpenSRA";
+    OpenSRAPyPath = currentAppDir + QDir::separator() + "OpenSRA.py";
+    OpenSRAPyPathInfo.setFile(OpenSRAPyPath);
+    if (!OpenSRAPyPathInfo.exists())
+        currentAppDir = QCoreApplication::applicationDirPath();
 
     //If custom is checked we will try to get the custom app dir defined
     if (customAppDirCheckBox->checkState() == Qt::CheckState::Checked)
