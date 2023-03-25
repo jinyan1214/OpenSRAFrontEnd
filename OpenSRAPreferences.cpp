@@ -377,7 +377,8 @@ void OpenSRAPreferences::loadPreferences()
 
 
     // appDir
-    QString currentAppDir = QCoreApplication::applicationDirPath();
+//    QString currentAppDir = QCoreApplication::applicationDirPath();
+    QString currentAppDir = this->getAppDir();
     auto customAppDir = settingsApplication.value("customAppDir", false);
 
     if(customAppDir.isValid() && customAppDir.toBool() == true)
