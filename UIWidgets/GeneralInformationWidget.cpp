@@ -291,13 +291,13 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     auto setupDetailLabel = new QLabel(setupDetailString);
 
 
-    QRadioButton *button1 = new QRadioButton("Pre-configured setup for risk assessment (preferred)");
-    QRadioButton *button2 = new QRadioButton("Allow for user customization (e.g., source models, evaluation methods to use)");
-    button1->setChecked(true);
+//    QRadioButton *button1 = new QRadioButton("Pre-configured setup for risk assessment (preferred)");
+//    QRadioButton *button2 = new QRadioButton("Allow for user customization (e.g., source models, evaluation methods to use)");
+//    button1->setChecked(true);
 
-    auto warningLabel = new QLabel();
-    warningLabel->setText("Warning: Only choose this option if you have read the user manual and are familiar with the program");
-    warningLabel->setStyleSheet("color: red");
+//    auto warningLabel = new QLabel();
+//    warningLabel->setText("Warning: Only choose this option if you have read the user manual and are familiar with the program");
+//    warningLabel->setStyleSheet("color: red");
 
     // Layout the UI components in a grid
     QVBoxLayout* layout = new QVBoxLayout();
@@ -354,10 +354,12 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
     layout->addWidget(setupLabel);
     layout->addWidget(setupDetailLabel);
 
-    layout->addWidget(button1);
-    layout->addWidget(button2);
+    layout->addStretch(1);
 
-    layout->addWidget(warningLabel);
+//    layout->addWidget(button1);
+//    layout->addWidget(button2);
+
+//    layout->addWidget(warningLabel);
 
     return layout;
 }
