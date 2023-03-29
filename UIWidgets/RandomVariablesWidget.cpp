@@ -266,7 +266,7 @@ void RandomVariablesWidget::makeRVWidget(void)
     );
 
 
-    instructionsDesc->setWordWrap(true);
+//    instructionsDesc->setWordWrap(true);
 
     auto scrollArea = new QScrollArea;
     scrollArea->setWidget(instructionsDesc);
