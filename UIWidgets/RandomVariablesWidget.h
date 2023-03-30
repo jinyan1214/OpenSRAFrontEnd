@@ -85,6 +85,9 @@ public slots:
     // Function to check if an input parameter exists, returns a UUID string if exists and empty string if it does not    
     QString checkIfParameterExists(const QString& name, bool& OK);
 
+private slots:
+    void instructionsDialog(void);
+
 private:
 
     bool addRandomVariable(const QString& name, const QString& fromModel, const QString& desc, const QString& uuid);

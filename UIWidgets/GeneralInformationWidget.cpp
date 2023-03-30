@@ -245,15 +245,15 @@ QVBoxLayout* GeneralInformationWidget::getInfoLayout(void)
         "\t- Define analysis ID (optional) and select the path for the working directory\n"
 
         "2. \"Infrastructure\":\n"
-        "\t- Click on the tab with the type of infrastructure to run\n"
+        "\t- Click on the button with the type of infrastructure to run\n"
         "\t- From the dropdown menu, choose the file type to import\n"
         "\t- Fill out the inputs as requested\n"
         "\tNote: for \"Pipelines\", users can choose to use the prepackaged state pipeline network, which has been heavily preprocessed internally to reduce runtime; however, state-wide analysis can still take a long time to complete (over 1 hour)\n"
 
         "3. \"Decision Variable\":\n"
-        "\t- Pick the decision metric to run from the secondary list of tabs\n"
+        "\t- Pick the decision metric to run from the secondary list of buttons\n"
         "\t- From the dropdown menu, pick the method to run\n"
-        "\t- Review the descriptions on the outputs, inputs, and additional requirements from other tabs\n"
+        "\t- Review the descriptions of the outputs, inputs, and additional requirements from tabs on the left side-bar\n"
         "\t- Click \"Add to list of methods to run\" to the include this method in the run\n"
         "\tNote: The input parameters will be displayed under the \"Input Variables\" tab for users to edit\n"
         "\tWarning: While you can use more than one method, we advise to use one method per run as combinations of methods may not be appropriate for the current implemention of Polynomial Chaos\n"
