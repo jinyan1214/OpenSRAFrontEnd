@@ -111,14 +111,13 @@ int OpenSRAPreProcessor::loadPreprocessingResults(const QString path)
 //    this->statusMessage(jsonString);
 
     // Now load the fault traces
-    auto faultPath = path + QDir::separator() + "IM" + QDir::separator() + "RUPTURE_METADATA.csv";
+//    auto faultPath = path + QDir::separator() + "IM" + QDir::separator() + "RUPTURE_METADATA.csv";
 
-    if(!QFile::exists(faultPath))
-    {
-        this->errorMessage("Error, the file containing the fault traces: "+faultPath+" does not exist");
-        return -1;
-    }
-
+//    if(!QFile::exists(faultPath))
+//    {
+//        this->errorMessage("Error, the file containing the fault traces: "+faultPath+" does not exist");
+//        return -1;
+//    }
 
 //    auto res = this->importFaultTraces(faultPath);
 

@@ -239,7 +239,8 @@ QWidget* WidgetFactory::getLineEditWidget(const QJsonObject& obj, const QString&
     // for method parameters
     if (obj.contains("DescToDisplay"))
     {
-        auto descTxt = "\t" + obj.value("DescToDisplay").toString();
+//        auto descTxt = "\t" + obj.value("DescToDisplay").toString();
+        auto descTxt = obj.value("DescToDisplay").toString();
         // not using as intended - proxy attribute to store description text
         lineEditWidget->setToolTip(descTxt);
     }
@@ -254,7 +255,8 @@ QWidget* WidgetFactory::getLabelWidget(const QJsonObject& obj, const QString& pa
     if(obj.value("ToDisplay").toBool() == false)
         return nullptr;
 
-    auto defVal = "\t" + obj.value("DescToDisplay").toString();
+//    auto defVal = "\t" + obj.value("DescToDisplay").toString();
+    auto defVal = obj.value("DescToDisplay").toString();
 
     JsonLabel* labelWidget = new JsonLabel(parent);
     labelWidget->setObjectName(parentKey);

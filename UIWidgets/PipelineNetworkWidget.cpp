@@ -364,12 +364,20 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
 bool PipelineNetworkWidget::copyFiles(QString &destDir)
 {    
 
-    auto theCurrInputWidget = this->getCurrentComponent();
+    /*
+    - when loading setup from an analysis that was performed previously, the program loads in the assets that are already in the input folder
+      this leads to error when trying to write files over themselves when the files are being occupied by the program
+    -> this is a problem embedded in SimCenter commons. For OpenSRA, turn off copy of files for component and have program always refer to original source
+    */
 
-    if(theCurrInputWidget == nullptr)
-        return false;
+    return true;
 
-    return theCurrInputWidget->copyFiles(destDir);
+//    auto theCurrInputWidget = this->getCurrentComponent();
+
+//    if(theCurrInputWidget == nullptr)
+//        return false;
+
+//    return theCurrInputWidget->copyFiles(destDir);
 }
 
 

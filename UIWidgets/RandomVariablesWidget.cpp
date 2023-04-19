@@ -204,6 +204,7 @@ void RandomVariablesWidget::makeRVWidget(void)
     verticalLayout->addWidget(constLabel,0,Qt::AlignHCenter);
 
     theConstantTableView = new RVTableView();
+    theConstantTableView->setMinimumHeight(150);
 
     RVTableModel* constTableModel = theConstantTableView->getTableModel();
     constTableModel->setHeaderStringList(constantTableHeaders);
@@ -232,15 +233,23 @@ void RandomVariablesWidget::makeRVWidget(void)
 
     // click here for popup box with instructions
     QLabel* instructionsLabel = new QLabel();
-    instructionsLabel->setText("Instructions for modifying these tables:");
+//    instructionsLabel->setText("Instructions for modifying these tables:");
+    instructionsLabel->setText("Notes:");
     QFont fontInstructionsLabel = instructionsLabel->font();
     fontInstructionsLabel.setWeight(QFont::Bold);
     instructionsLabel->setFont(fontInstructionsLabel);
     verticalLayout->addWidget(instructionsLabel);
 
+    QLabel* widthAdjustLabel = new QLabel();
+    widthAdjustLabel->setText("- If the texts in the tables are not showing correctly due to column spacing, double-click on any column header to auto-adjust the table column widths.");
+    QLabel* missingRowsLabel = new QLabel();
+    missingRowsLabel->setText("- Known issue: Sometimes the tables may not showing the contents from all rows. To refresh the tables, please switch over to a different tab on the left sidebar and back.");
+    verticalLayout->addWidget(widthAdjustLabel);
+    verticalLayout->addWidget(missingRowsLabel);
+
     QPushButton *loadDialogButton = new QPushButton();
-    loadDialogButton->setText(tr("Click here to open a new window with instructions"));
-    loadDialogButton->setMaximumWidth(400);
+    loadDialogButton->setText(tr("Click here for detailed instructions on using these tables"));
+    loadDialogButton->setMaximumWidth(500);
 
     connect(loadDialogButton,&QPushButton::clicked, this, &RandomVariablesWidget::instructionsDialog);
 
