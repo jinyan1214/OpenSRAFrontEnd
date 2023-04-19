@@ -192,7 +192,7 @@ void RandomVariablesWidget::makeRVWidget(void)
     theRVTableView->setItemDelegateForColumn(8, LEDelegate);
 
     // From Model
-    theRVTableView->setItemDelegateForColumn(2, labDelegate);
+    theRVTableView->setItemDelegateForColumn(9, labDelegate);
 
     theRVTableView->setEditTriggers(QAbstractItemView::AllEditTriggers);
 //    theRVTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
@@ -310,11 +310,11 @@ bool RandomVariablesWidget::addRandomVariable(RV& newRV)
     auto rowRV = RVtableModel->rowCount() - 1;
 
     // Source column
-    auto RvIndex = RVtableModel->index(rowRV,3);
+    auto RvIndex = RVtableModel->index(rowRV,2);
     RVtableModel->setData(RvIndex,QVariant("Preferred"));
 
     // Dist type column
-    auto distTypeIndex = RVtableModel->index(rowRV,4);
+    auto distTypeIndex = RVtableModel->index(rowRV,3);
     RVtableModel->setData(distTypeIndex,QVariant("Normal"));
 
 
@@ -350,7 +350,7 @@ bool RandomVariablesWidget::addConstant(RV& newConstant)
     auto rowConst = constanTableModel->rowCount() - 1;
 
     // Source column
-    auto constIndex = constanTableModel->index(rowConst,3);
+    auto constIndex = constanTableModel->index(rowConst,2);
     constanTableModel->setData(constIndex,QVariant("Preferred"));
 
     return true;
@@ -426,16 +426,17 @@ void RandomVariablesWidget::handleCellChanged(int row, int col)
 {
     RVTableModel* tableModel = theRVTableView->getTableModel();
 
-    if(col == 6)
+    // for sigma vs Cov input, only 1 active at a time
+    if(col == 5)
     {
-        auto index = theRVTableView->getTableModel()->index(row,7);
+        auto index = theRVTableView->getTableModel()->index(row,6);
         tableModel->blockSignals(true);
         tableModel->setData(index,QVariant(),Qt::EditRole);
         tableModel->blockSignals(false);
     }
-    else if(col == 7)
+    else if(col == 6)
     {
-        auto index = theRVTableView->getTableModel()->index(row,6);
+        auto index = theRVTableView->getTableModel()->index(row,5);
         tableModel->blockSignals(true);
         tableModel->setData(index,QVariant(),Qt::EditRole);
         tableModel->blockSignals(false);
@@ -677,24 +678,24 @@ void RandomVariablesWidget::handleSourceChanged(int val)
         // "Name","Description","Source","Distribution Type","Mean or Median","Sigma","CoV","Distribution Min","Distribution Max","From Model"
 
         // "Mean or Median"
-        theRVTableView->setItemDelegateForColumn(5, colDataComboDelegate);
+        theRVTableView->setItemDelegateForColumn(4, colDataComboDelegate);
 
         // "Sigma"
-        theRVTableView->setItemDelegateForColumn(6, colDataComboDelegate);
+        theRVTableView->setItemDelegateForColumn(5, colDataComboDelegate);
 
         // "CoV"
-        theRVTableView->setItemDelegateForColumn(7, colDataComboDelegate);
+        theRVTableView->setItemDelegateForColumn(6, colDataComboDelegate);
 
-        // "Name","Description","From Model","Source","Value"
-        theConstantTableView->setItemDelegateForColumn(4, colDataComboDelegate);
+        // "Name","Description","Source","Value","From Model"
+        theConstantTableView->setItemDelegateForColumn(3, colDataComboDelegate);
     }
     else if(val == 2)
     {
-        theRVTableView->setItemDelegateForColumn(5, gisMapsComboDelegate);
+        theRVTableView->setItemDelegateForColumn(4, gisMapsComboDelegate);
+        theRVTableView->setItemDelegateForColumn(5, LEDelegate);
         theRVTableView->setItemDelegateForColumn(6, LEDelegate);
-        theRVTableView->setItemDelegateForColumn(7, LEDelegate);
 
-        theConstantTableView->setItemDelegateForColumn(4, gisMapsComboDelegate);
+        theConstantTableView->setItemDelegateForColumn(3, gisMapsComboDelegate);
     }
     else
     {
