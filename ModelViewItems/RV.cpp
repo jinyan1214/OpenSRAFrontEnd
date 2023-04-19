@@ -185,7 +185,9 @@ void RV::addModelToList(const QString& modelName)
         return;
 
     fromModelList.append(modelName);
-    data[2] = QVariant(fromModelList);
+    // find index of "From Model" from parameterNames
+    auto idxFromModel = parameterNames.indexOf("From Model");
+    data[idxFromModel] = QVariant(fromModelList);
 }
 
 
@@ -194,13 +196,17 @@ void RV::addModelToList(const QStringList& modelNames)
     fromModelList.append(modelNames);
     fromModelList.removeDuplicates();
 
-    data[2] = QVariant(fromModelList.join(",  \n"));
+    // find index of "From Model" from parameterNames
+    auto idxFromModel = parameterNames.indexOf("From Model");
+    data[idxFromModel] = QVariant(fromModelList.join(",  \n"));
 }
 
 
 int RV::removeModelFromList(const QString& modelName)
 {
     auto idx = fromModelList.indexOf(modelName);
+    // find index of "From Model" from parameterNames
+    auto idxFromModel = parameterNames.indexOf("From Model");
 
     if(idx == -1)
         return -1;
@@ -209,11 +215,11 @@ int RV::removeModelFromList(const QString& modelName)
 
     if(!fromModelList.isEmpty())
     {
-        data[2] = QVariant(fromModelList.join(",  \n"));
+        data[idxFromModel] = QVariant(fromModelList.join(",  \n"));
     }
     else
     {
-        data[2] = QVariant("");
+        data[idxFromModel] = QVariant("");
         return 1;
     }
 
