@@ -45,7 +45,7 @@ win32 {
 
 # GIS plugin
 DEFINES +=  Q_GIS
-PATH_TO_QGIS_PLUGIN=../QGISPlugin
+PATH_TO_QGIS_PLUGIN=../../qgisplugin
 include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 
 #DEFINES += ARC_GIS
@@ -53,10 +53,10 @@ include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 #include($$PWD/arcgisruntime.pri)
 
 # Specify the path to R2D and common
-PATH_TO_R2D=../R2DTool
-PATH_TO_COMMON=../SimCenterCommon
-PATH_TO_BACKEND=../OpenSRA_dev
-#PATH_TO_BACKEND=../../../OneDrive - SlateGeotech/CEC/OpenSRA
+PATH_TO_R2D=../../R2DTool/R2DTool
+PATH_TO_COMMON=../../SimCenterCommon
+#PATH_TO_BACKEND=../OpenSRA_dev
+PATH_TO_BACKEND=../../../../OneDrive - SlateGeotech/CEC/OpenSRA
 
 # To avoid code copying, include the common SimCenter code
 include(OpenSRACommon.pri)
@@ -81,6 +81,7 @@ SOURCES += main.cpp \
     UIWidgets/MonteCarloSamplingWidget.cpp \
     UIWidgets/FixedResidualsSamplingWidget.cpp \
     UIWidgets/OpenSHAWidget.cpp \
+    UIWidgets/OpenSRAComponentSelection.cpp \
     UIWidgets/OpenSRAPostProcessor.cpp \
     UIWidgets/OpenSRAPreProcessor.cpp \
     UIWidgets/ResultsWidget.cpp \
@@ -140,6 +141,7 @@ HEADERS  += \
     UIWidgets/MonteCarloSamplingWidget.h \
     UIWidgets/FixedResidualsSamplingWidget.h \
     UIWidgets/OpenSHAWidget.h \
+    UIWidgets/OpenSRAComponentSelection.h \
     UIWidgets/OpenSRAPostProcessor.h \
     UIWidgets/OpenSRAPreProcessor.h \
     UIWidgets/ResultsWidget.h \

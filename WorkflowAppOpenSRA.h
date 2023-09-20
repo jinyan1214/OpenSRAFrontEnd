@@ -144,7 +144,7 @@ public slots:
 
 private:
 
-    QJsonObject getMethodAndParamsObj(const QString& path);
+    QJsonObject getMethodAndParamsObj(const QString& path, bool usingDefault=false);
 
     std::unique_ptr<WidgetFactory> theWidgetFactory;
 

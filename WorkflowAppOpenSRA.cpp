@@ -126,58 +126,90 @@ void WorkflowAppOpenSRA::initialize(void)
     QString appDir = OpenSRAPreferences::getInstance()->getAppDir();
     auto backEndFilePath = appDir + QDir::separator();
 
+    // check config.ini to see which version of OpenSRA to run
+    auto configIniFilePath = backEndFilePath + QDir::separator() + "config.ini";
+    QString versionToRun = "";
+    if(QFile(configIniFilePath).exists())
+    {
+        QSettings settings(configIniFilePath, QSettings::IniFormat);
+        settings.beginGroup("General");
+        versionToRun = settings.value("VersionToRun").toString();
+        settings.endGroup();
+    }
+    else
+        versionToRun = "Default";
+
+    // check if versionToRun under backend.nda contains methods_param json files
+    QString methodParamsDir;
+    if (versionToRun == "Default")
+        methodParamsDir = backEndFilePath + QDir::separator() + "methods_params_doc";
+    else
+        methodParamsDir = backEndFilePath + QDir::separator() + "nda" + QDir::separator() + versionToRun + QDir::separator() + "methods_params_doc";
+    auto defaultMethodParamsDir = backEndFilePath + QDir::separator() + "methods_params_doc";
+
+    // first try loading from versionToRun path, if can't find file, then load from default path
+
     // Load the common methods and params json file
-    QString commonPath = backEndFilePath + QDir::separator() + "methods_params_doc" + QDir::separator() + "common.json";
-
-    methodsAndParamsObj = getMethodAndParamsObj(commonPath);
-
+    QString commonPath = methodParamsDir + QDir::separator() + "common.json";
+    auto methodsAndParamsObj = getMethodAndParamsObj(commonPath);
     if(methodsAndParamsObj.empty())
     {
-        this->errorMessage("Error loading the methods and params file!");
-        return;
+        // try default path
+        commonPath = defaultMethodParamsDir + QDir::separator() + "common.json";
+        methodsAndParamsObj = getMethodAndParamsObj(commonPath, true);
+        if(methodsAndParamsObj.empty())
+        {
+            this->errorMessage("Error loading the methods and params file!");
+            return;
+        }
     }
-
 
     // Load the below ground methods and params json file
-    QString belowGroundPath = backEndFilePath + QDir::separator() + "methods_params_doc" + QDir::separator() + "below_ground.json";
-
+    QString belowGroundPath = methodParamsDir + QDir::separator() + "below_ground.json";
     auto belowGroundObj = getMethodAndParamsObj(belowGroundPath);
-
-
     if(belowGroundObj.empty())
     {
-        this->errorMessage("Error loading the below ground object file!");
-        return;
+        // try default path
+        belowGroundPath = defaultMethodParamsDir + QDir::separator() + "below_ground.json";
+        belowGroundObj = getMethodAndParamsObj(belowGroundPath, true);
+        if(belowGroundObj.empty())
+        {
+            this->errorMessage("Error loading the below ground object file!");
+            return;
+        }
     }
-
-
     methodsAndParamsObj.insert("BelowGround",belowGroundObj);
 
     // Load the above ground methods and params
-    QString aboveGroundPath = backEndFilePath + QDir::separator() + "methods_params_doc" + QDir::separator() + "above_ground.json";
-
+    QString aboveGroundPath = methodParamsDir + QDir::separator() + "above_ground.json";
     auto aboveGroundObj = getMethodAndParamsObj(aboveGroundPath);
-
     if(aboveGroundObj.empty())
     {
-        this->errorMessage("Error loading the above ground object file!");
-        return;
+        // try default path
+        aboveGroundPath = defaultMethodParamsDir + QDir::separator() + "above_ground.json";
+        aboveGroundObj = getMethodAndParamsObj(aboveGroundPath, true);
+        if(aboveGroundObj.empty())
+        {
+            this->errorMessage("Error loading the above ground object file!");
+            return;
+        }
     }
-
     methodsAndParamsObj.insert("AboveGround",aboveGroundObj);
 
     // Load the wells and caprocks methods and params
-    QString wellsAndCaprocksPath = backEndFilePath + QDir::separator() + "methods_params_doc" + QDir::separator() + "wells_caprocks.json";
-
+    QString wellsAndCaprocksPath = methodParamsDir + QDir::separator() + "wells_caprocks.json";
     auto wellsCaprocksObj = getMethodAndParamsObj(wellsAndCaprocksPath);
-
-
     if(wellsCaprocksObj.empty())
     {
-        this->errorMessage("Error loading the wells and caprocks object file!");
-        return;
+        // try default path
+        wellsAndCaprocksPath = defaultMethodParamsDir + QDir::separator() + "wells_caprocks.json";
+        wellsCaprocksObj = getMethodAndParamsObj(wellsAndCaprocksPath, true);
+        if(wellsCaprocksObj.empty())
+        {
+            this->errorMessage("Error loading the wells and caprocks object file!");
+            return;
+        }
     }
-
     methodsAndParamsObj.insert("WellsCaprocks",wellsCaprocksObj);
 
     // Create the edit menu with the clear action
@@ -336,11 +368,12 @@ void WorkflowAppOpenSRA::initialize(void)
 }
 
 
-QJsonObject WorkflowAppOpenSRA::getMethodAndParamsObj(const QString& path)
+QJsonObject WorkflowAppOpenSRA::getMethodAndParamsObj(const QString& path, bool usingDefault)
 {
     QFileInfo fileInfo(path);
     if (!fileInfo.exists()){
-        this->errorMessage(QString("The methods and params file does not exist! ") + path);
+        if (usingDefault == true)
+            this->errorMessage(QString("The methods and params file does not exist! ") + path);
         return QJsonObject();
     }
 
