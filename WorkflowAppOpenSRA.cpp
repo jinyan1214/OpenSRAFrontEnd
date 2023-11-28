@@ -127,12 +127,12 @@ void WorkflowAppOpenSRA::initialize(void)
     auto backEndFilePath = appDir + QDir::separator();
 
     // check config.ini to see which version of OpenSRA to run
-    auto configIniFilePath = backEndFilePath + QDir::separator() + "config.ini";
+    auto configIniFilePath = backEndFilePath + "config.ini";
     QString versionToRun = "";
     if(QFile(configIniFilePath).exists())
     {
         QSettings settings(configIniFilePath, QSettings::IniFormat);
-        settings.beginGroup("General");
+        settings.beginGroup("GeneralSettings");
         versionToRun = settings.value("VersionToRun").toString();
         settings.endGroup();
     }
@@ -142,16 +142,16 @@ void WorkflowAppOpenSRA::initialize(void)
     // check if versionToRun under backend.nda contains methods_param json files
     QString methodParamsDir;
     if (versionToRun == "Default")
-        methodParamsDir = backEndFilePath + QDir::separator() + "methods_params_doc";
+        methodParamsDir = backEndFilePath + "methods_params_doc";
     else
-        methodParamsDir = backEndFilePath + QDir::separator() + "nda" + QDir::separator() + versionToRun + QDir::separator() + "methods_params_doc";
-    auto defaultMethodParamsDir = backEndFilePath + QDir::separator() + "methods_params_doc";
+        methodParamsDir = backEndFilePath + "nda" + QDir::separator() + versionToRun + QDir::separator() + "methods_params_doc";
+    auto defaultMethodParamsDir = backEndFilePath + "methods_params_doc";
 
     // first try loading from versionToRun path, if can't find file, then load from default path
 
     // Load the common methods and params json file
     QString commonPath = methodParamsDir + QDir::separator() + "common.json";
-    auto methodsAndParamsObj = getMethodAndParamsObj(commonPath);
+    methodsAndParamsObj = getMethodAndParamsObj(commonPath);
     if(methodsAndParamsObj.empty())
     {
         // try default path
@@ -220,8 +220,7 @@ void WorkflowAppOpenSRA::initialize(void)
     editMenu->addAction("Clear Results Directory", this, &WorkflowAppOpenSRA::clearResultsDir);
 
     // Load the examples
-    auto backendLocation = OpenSRAPreferences::getInstance()->getAppDir();
-    auto pathToExamplesJson = backendLocation + QDir::separator() + "examples" + QDir::separator() + "Examples.json";
+    auto pathToExamplesJson = backEndFilePath + "examples" + QDir::separator() + "Examples.json";
 
     QFile jsonFile(pathToExamplesJson);
     jsonFile.open(QFile::ReadOnly);
@@ -447,9 +446,8 @@ void WorkflowAppOpenSRA::loadExamples()
     if(senderObj == nullptr)
         return;
 
-    auto backendLocation = OpenSRAPreferences::getInstance()->getAppDir();
-
-    QString pathToExample = backendLocation + QDir::separator() + "examples" + QDir::separator();
+    auto appDir = OpenSRAPreferences::getInstance()->getAppDir();
+    QString pathToExample = appDir + QDir::separator() + "examples" + QDir::separator();
 
     pathToExample += QObject::sender()->property("InputFile").toString();
 

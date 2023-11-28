@@ -113,6 +113,7 @@ SOURCES += main.cpp \
     UIWidgets/StateWidePipelineWidget.cpp \
     UIWidgets/BayAreaPipelineWidget.cpp \
     UIWidgets/LosAngelesPipelineWidget.cpp \
+    UIWidgets/UserDefinedGroundMotionWidget.cpp \
     ModelViewItems/RVTableView.cpp \
     ModelViewItems/RVTableModel.cpp \
     ModelViewItems/MixedDelegate.cpp \
@@ -174,6 +175,7 @@ HEADERS  += \
     UIWidgets/GeneralInformationWidget.h \
     UIWidgets/IntensityMeasureWidget.h \
     UIWidgets/DamageMeasureWidget.h \
+    UIWidgets/UserDefinedGroundMotionWidget.h \
     ModelViewItems/RVTableView.h \
     ModelViewItems/RVTableModel.h \
     ModelViewItems/MixedDelegate.h \
@@ -226,9 +228,9 @@ INCLUDEPATH += $$PWD/Utils \
 
 #QMAKE_EXTRA_TARGETS += first copyExamples copyBackEnd
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/'../../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/'../../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
-else:unix: LIBS += -L$$PWD/'../../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/'../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/'../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
+else:unix: LIBS += -L$$PWD/'../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
 
-INCLUDEPATH += $$PWD/'../../../../../../../Program Files (x86)/GnuWin32/include'
-DEPENDPATH += $$PWD/'../../../../../../../Program Files (x86)/GnuWin32/include'
+INCLUDEPATH += $$PWD/'../../../../../../Program Files (x86)/GnuWin32/include'
+DEPENDPATH += $$PWD/'../../../../../../Program Files (x86)/GnuWin32/include'

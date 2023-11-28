@@ -44,6 +44,7 @@ class VisualizationWidget;
 class OpenSHAWidget;
 class JsonGroupBoxWidget;
 class ShakeMapWidget;
+class UserDefinedGroundMotionWidget;
 class UserDefinedApplication;
 class UserInputFaultWidget;
 
@@ -92,6 +93,8 @@ private:
     JsonGroupBoxWidget* corrWidget = nullptr;
 
     UserInputFaultWidget* userFaultWidget = nullptr;
+
+    UserDefinedGroundMotionWidget* userGMWidget = nullptr;
 
 };
 

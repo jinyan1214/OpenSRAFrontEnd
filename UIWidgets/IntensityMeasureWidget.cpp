@@ -40,6 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "sectiontitle.h"
 #include "OpenSHAWidget.h"
 #include "ShakeMapWidget.h"
+#include "UserDefinedGroundMotionWidget.h"
 #include "WorkflowAppOpenSRA.h"
 #include "JsonDefinedWidget.h"
 #include "UserInputFaultWidget.h"
@@ -74,6 +75,7 @@ IntensityMeasureWidget::IntensityMeasureWidget(VisualizationWidget* visWidget, Q
     IMSelectCombo->addItem("UCERF3 (Preferred)","UCERF");
     IMSelectCombo->addItem("ShakeMap","ShakeMap");
     IMSelectCombo->addItem("User-defined Rupture","UserDefinedRupture");
+    IMSelectCombo->addItem("User-defined Ground Motions","UserDefinedGM");
 
     //    IMSelectCombo->addItem("User-defined");
     IMSelectCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
@@ -109,6 +111,8 @@ IntensityMeasureWidget::IntensityMeasureWidget(VisualizationWidget* visWidget, Q
 
     userFaultWidget = new UserInputFaultWidget(visWidget, this);
 
+    userGMWidget = new UserDefinedGroundMotionWidget(visWidget, this);
+
     mainPanel = new QStackedWidget();
     mainPanel->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     mainPanel->setContentsMargins(5,0,0,0);
@@ -118,6 +122,7 @@ IntensityMeasureWidget::IntensityMeasureWidget(VisualizationWidget* visWidget, Q
     mainPanel->addWidget(openSHA);
     mainPanel->addWidget(shakeMapStackedWidget);
     mainPanel->addWidget(userFaultWidget);
+    mainPanel->addWidget(userGMWidget);
 
     mainLayout->addLayout(theHeaderLayout);
     mainLayout->addWidget(mainPanel);
@@ -182,6 +187,19 @@ bool IntensityMeasureWidget::outputToJSON(QJsonObject &jsonObject)
         }
 
         sourceIM["UserDefinedRupture"] = outObject;
+    }
+    else if(index == 3)
+    {
+        QJsonObject outObject;
+        res = userGMWidget->outputToJSON(outObject);
+
+        if(!res)
+        {
+            this->errorMessage("Error in the json output of UserDefinedGroundMtion widget");
+            return false;
+        }
+
+        sourceIM["UserDefinedGM"] = outObject;
     }
     else
     {
@@ -281,6 +299,12 @@ bool IntensityMeasureWidget::inputFromJSON(QJsonObject &jsonObject)
         if(res == false)
             return false;
     }
+    else if(IMSourceType == "UserDefinedGM")
+    {
+        auto res =  userGMWidget->inputFromJSON(IMSourceObject);
+        if(res == false)
+            return false;
+    }
     else
     {
         this->errorMessage("Cannot find the intensity measure object of type " + IMSourceType);
@@ -313,7 +337,10 @@ void IntensityMeasureWidget::IMSelectionChanged(int index)
     {
         mainPanel->setCurrentWidget(userFaultWidget);
     }
-
+    else if(index == 3)
+    {
+        mainPanel->setCurrentWidget(userGMWidget);
+    }
 }
 
 
