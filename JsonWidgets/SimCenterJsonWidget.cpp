@@ -288,11 +288,10 @@ void SimCenterJsonWidget::handleAddButtonPressed(void)
     finalObj["Key"] = key;
     finalObj["ModelName"] = name;
 
+    // Object to store the uuid's of the parameters, where the key is the parameter name
 
     if(!variablesObj.contains("N/A"))
     {
-
-        // Object to store the uuid's of the parameters, where the key is the parameter name
         QJsonObject uuidObjs;
 
         auto res2 = this->addNewParametersToInputWidget(variablesObj,variableTypesObj, key, uuidObjs);
@@ -366,7 +365,9 @@ void SimCenterJsonWidget::handleItemRemoved(QJsonObject removedObj)
 
     if(uuids.isEmpty())
     {
+#ifndef OpenSRA
         this->errorMessage("Error, the object uuids are empty");
+#endif
         return;
     }
 

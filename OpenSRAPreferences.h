@@ -62,22 +62,26 @@ public:
     QString getAppDir(void);
     QString getLocalWorkDir(void);
     QString getAppDataDir(void);
+    QString getNDADataDir(void);
 
     void setLocalWorkDir(const QString &value);
     void setAppDataDir(const QString &value);
+    void setNDADataDir(const QString &value);
 
 public slots:
     void savePreferences(bool);
     void resetPreferences(bool);
     void quitPreferences(bool);
     void loadPreferences(void);
-    void handleBrowseButtonClicked(void);
+    void handleAppDataDirBrowseButtonClicked(void);
+    void handleNDADataDirBrowseButtonClicked(void);
 
 signals:
 
 private:
 
     QLineEdit *appDataDirLineEdit;
+    QLineEdit *NDADataDirLineEdit;
 
     QLineEdit *customPythonLineEdit;
     QLineEdit *customAppDirLineEdit;

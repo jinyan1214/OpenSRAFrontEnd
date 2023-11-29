@@ -114,6 +114,7 @@ bool GeneralInformationWidget::outputToJSON(QJsonObject &jsonObj)
     QDir workDir(workingDirectoryLineEdit->text());
     directoryObj.insert("Working",workDir.absolutePath());
     directoryObj.insert("OpenSRAData",OpenSRAPreferences::getInstance()->getAppDataDir());
+    directoryObj.insert("NDAData",OpenSRAPreferences::getInstance()->getNDADataDir());
 
     outputObj.insert("AnalysisID",analysisLineEdit->text());
 //    outputObj.insert("UnitSystem",unitsCombo->currentText());
