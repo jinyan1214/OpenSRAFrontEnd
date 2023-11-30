@@ -77,7 +77,7 @@ UserDefinedGroundMotionWidget::UserDefinedGroundMotionWidget(VisualizationWidget
     theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
     assert(theVisualizationWidget);
 
-    theComponentDb = ComponentDatabaseManager::getInstance()->createAssetDb("SiteCPTData");
+    theComponentDb = ComponentDatabaseManager::getInstance()->createAssetDb("UserDefinedGM");
 
     theComponentDb->setOffset(1);
 
@@ -110,7 +110,7 @@ bool UserDefinedGroundMotionWidget::outputToJSON(QJsonObject &jsonObj)
     QFileInfo pathToSummaryTXT(summaryFileLineEdit->text());
     QFileInfo pathToGMDataFolder(GMDirLineEdit->text());
 
-    jsonObj.insert("pathToSummaryTXTTXT",pathToSummaryTXT.absoluteFilePath());
+    jsonObj.insert("PathToSummaryTXT",pathToSummaryTXT.absoluteFilePath());
     jsonObj.insert("PathToGMDataFolder",pathToGMDataFolder.absoluteFilePath());
 
     return true;
@@ -127,39 +127,44 @@ bool UserDefinedGroundMotionWidget::inputAppDataFromJSON(QJsonObject &jsonObj)
 bool UserDefinedGroundMotionWidget::inputFromJSON(QJsonObject &jsonObject)
 {
     // set the line
-    if (jsonObject.contains("pathToSummaryTXT"))
+    if (jsonObject.contains("UserDefinedGM"))
     {
-        auto sum_path = jsonObject["pathToSummaryTXT"].toString();
+        auto userDefJsonPbj = jsonObject["UserDefinedGM"].toObject();
 
-        // if string is not empty, then continue, else don't load into CPT widget tab
-        if (sum_path.length() > 0)
+        if (userDefJsonPbj.contains("PathToSummaryTXT"))
         {
-            // Check for relative/absolute paths
-            QFileInfo pathToSummaryTXT(sum_path);
-            if (!pathToSummaryTXT.exists())
-                sum_path=QDir::currentPath() + QDir::separator() + sum_path;
-            pathToSummaryTXT.setFile(sum_path);
+            auto sum_path = userDefJsonPbj["PathToSummaryTXT"].toString();
 
-            summaryFileLineEdit->setText(pathToSummaryTXT.absoluteFilePath());
-            eventFile = sum_path;
-
-            // set the line
-            if (jsonObject.contains("pathToGMDataFolder"))
+            // if string is not empty, then continue, else don't load into CPT widget tab
+            if (sum_path.length() > 0)
             {
-                auto cpt_dir = jsonObject["pathToGMDataFolder"].toString();
-
                 // Check for relative/absolute paths
-                QFileInfo pathToGMDataFolder(cpt_dir);
-                if (!pathToGMDataFolder.exists())
-                    cpt_dir=QDir::currentPath() + QDir::separator() + cpt_dir;
-                pathToGMDataFolder.setFile(cpt_dir);
+                QFileInfo pathToSummaryTXT(sum_path);
+                if (!pathToSummaryTXT.exists())
+                    sum_path=QDir::currentPath() + QDir::separator() + sum_path;
+                pathToSummaryTXT.setFile(sum_path);
 
-                GMDirLineEdit->setText(pathToGMDataFolder.absoluteFilePath());
-                gmDataDir = cpt_dir;
+                summaryFileLineEdit->setText(pathToSummaryTXT.absoluteFilePath());
+                eventFile = sum_path;
+
+                // load the events
+                this->loadUserGMData();
             }
+        }
 
-            // load the events
-            this->loadUserGMData();
+        // set the line
+        if (userDefJsonPbj.contains("PathToGMDataFolder"))
+        {
+            auto data_dir = userDefJsonPbj["PathToGMDataFolder"].toString();
+
+            // Check for relative/absolute paths
+            QFileInfo pathToGMDataFolder(data_dir);
+            if (!pathToGMDataFolder.exists())
+                data_dir=QDir::currentPath() + QDir::separator() + data_dir;
+            pathToGMDataFolder.setFile(data_dir);
+
+            GMDirLineEdit->setText(pathToGMDataFolder.absoluteFilePath());
+            gmDataDir = data_dir;
         }
     }
 
@@ -216,7 +221,7 @@ QStackedWidget* UserDefinedGroundMotionWidget::getUserDefinedGroundMotionWidget(
     connect(browseSummaryButton,SIGNAL(clicked()),this,SLOT(chooseEventFileDialog()));
 
     QLabel* summaryNoteText = new QLabel(
-        "\tExpected format for event summary file (table for scenarios start on row 11):\n"
+        "\tExpected format for event summary file:\n\n"
         "\t\tRow  1| # Run control file for scenario maps\n"
         "\t\tRow  2| # Missing value\n"
         "\t\tRow  3| -1\n"
@@ -228,10 +233,10 @@ QStackedWidget* UserDefinedGroundMotionWidget::getUserDefinedGroundMotionWidget(
         "\t\tRow  9| 20\n"
         "\t\tRow 10| # ID, Magnitude, and file name of scenarios\n"
         "\t\tRow 11| 0 7.5 4.6626e-05 gm_data-0000.txt\n"
-        "\t\tRow 12| 1 7.25 4.6626e-05 gm_data-0001.txt\n"
-        "\tNote: 1. The keywords \"Missing value\", \"Bounds\", and \"Number of scenario maps\" are used locate the respective information in the header block."
+        "\t\tRow 12| 1 7.25 4.6626e-05 gm_data-0001.txt\n\n"
+        "\tNotes:\t1. The keywords \"Missing value\", \"Bounds\", and \"Number of scenario maps\" are used locate the respective information in the header block."
         "The keywords and values should be placed in the consecutive rows, but their line positions can change.\n"
-        "\t      2. Table for scenarios is expected to start on row 11, is space-delimited, and in the order of: \"EventID\" \"Magnitude\" \"Annual Rate\" \"File Name\""
+        "\t\t2. Table for scenarios is expected to start on row 11, is space-delimited, and in the order of: \"EventID\" \"Magnitude\" \"Annual Rate\" \"File Name\""
     );
 
     // Grid layout is specified with row/col integers
@@ -254,17 +259,16 @@ QStackedWidget* UserDefinedGroundMotionWidget::getUserDefinedGroundMotionWidget(
     connect(browseFolderButton,SIGNAL(clicked()),this,SLOT(chooseGMDirDialog()));
 
     QLabel* gmDirNoteText = new QLabel(
-        "\tExpected format for event summary file (table header expected to start on row 5, and data expected to start on row 6):\n"
+        "\tExpected format for gridded scenario files:\n\n"
         "\t\tRow  1| # Header line 1\n"
         "\t\tRow  2| # Header line 2\n"
         "\t\tRow  3| # Header line 3\n"
         "\t\tRow  4| # Header line 4\n"
         "\t\tRow  5| # Latitude (N), Longitude (E), PGA (g), PGV (cm/s), SA(T=0.3s) (g), SA(T=1.0s) (g), SA(T=3.0s) (g) \n"
         "\t\tRow  6| 37.000,-122.500,-1.0,-1.0,-1.0,-1.0,-1.0\n"
-        "\t\tRow  7| 37.000,-122.495,-1.0,-1.0,-1.0,-1.0,-1.0\n"
-        "\t\tRow  8| 37.000,-122.490,-1.0,-1.0,-1.0,-1.0,-1.0\n"
-        "\tNote: 1. Metadata for each scenario is based on the event summary file. Information placed in the header block is not used at this time.\n"
-        "\t      2. The header for the data table is expected to start on row 5. The data table is expected to start on row 6."
+        "\t\tRow  7| 37.000,-122.495,-1.0,-1.0,-1.0,-1.0,-1.0\n\n"
+        "\tNotes:\t1. Metadata for each scenario is based on the event summary file. Information placed in the header block is not used at this time.\n"
+        "\t\t2. The header for the data table is expected to start on row 5. The data table is expected to start on row 6."
     );
 
     gmDirLayout->addWidget(selectFolderText);
@@ -665,7 +669,7 @@ void UserDefinedGroundMotionWidget::handleComponentSelection(void)
     }
 
     auto numAssets = selectedComponentIDs.size();
-    QString msg = "A total of "+ QString::number(numAssets) + " CPT sites are selected for analysis";
+    QString msg = "A total of "+ QString::number(numAssets) + " events are selected for analysis";
     this->statusMessage(msg);
 
     theComponentDb->startEditing();
