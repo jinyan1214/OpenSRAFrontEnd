@@ -329,11 +329,11 @@ void OpenSRAPreferences::loadPreferences()
 
     // python.exe path
     QString currentPythonPath = this->getPython();
-    QVariant  customPythonPath = settingsApplication.value("pythonExePath", false);
+    QVariant customPythonPath = settingsApplication.value("customPythonPath", false);
     if(customPythonPath.isValid() && customPythonPath.toBool() == true)
     {
         customPythonCheckBox->setChecked(true);
-        QVariant  pythonPathVariant = settingsApplication.value("appDir");
+        QVariant  pythonPathVariant = settingsApplication.value("pythonExePath");
         if (pythonPathVariant.isValid())
             currentPythonPath = pythonPathVariant.toString();
     }
