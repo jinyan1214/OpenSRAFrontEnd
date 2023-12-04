@@ -207,6 +207,7 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &/
 
 
     auto procEnv = QProcessEnvironment();
+    auto sysEnv = QProcessEnvironment::systemEnvironment();
     procEnv.clear();
 
     statusMessage("Script to run: " + pySCRIPT);
@@ -249,6 +250,19 @@ bool LocalApplication::setupDoneRunPreprocessing(QString &workingDir, QString &/
     procEnv.insert("USERNAME", "opensra_user");
     procEnv.insert("LOCALAPPDATA", QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
 
+    // other environment variables needed for OpenSRA
+    QFileInfo pythonPath(python);
+    auto condaPrefix = pythonPath.absoluteDir().absolutePath();
+    procEnv.insert("CONDA_PREFIX", condaPrefix);
+    QString projDataPath = condaPrefix + QDir::separator() + "Library" + QDir::separator() + "share" + QDir::separator() + "proj";
+    procEnv.insert("PROJ_DATA", projDataPath);
+    QString gdalDataPath = condaPrefix + QDir::separator() + "Library" + QDir::separator() + "share" + QDir::separator() + "gdal";
+    procEnv.insert("GDAL_DATA", gdalDataPath);
+
+    // Add some env var from system
+    procEnv.insert("PROCESSOR_ARCHITECTURE", qgetenv("PROCESSOR_ARCHITECTURE"));
+
+    // add procEnv
     thePreprocessHandler->setProcessEnv(procEnv);
 
     qDebug() << "Env: "<< procEnv.toStringList();
@@ -361,6 +375,7 @@ bool LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &i
 
 
     auto procEnv = QProcessEnvironment();
+    auto sysEnv = QProcessEnvironment::systemEnvironment();
     procEnv.clear();
 
 
@@ -405,6 +420,19 @@ bool LocalApplication::setupDoneRunApplication(QString &tmpDirectory, QString &i
     procEnv.insert("PYTHONPATH", python);
     procEnv.insert("LOCALAPPDATA", QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
 
+    // other environment variables needed for OpenSRA
+    QFileInfo pythonPath(python);
+    auto condaPrefix = pythonPath.absoluteDir().absolutePath();
+    procEnv.insert("CONDA_PREFIX", condaPrefix);
+    QString projDataPath = condaPrefix + QDir::separator() + "Library" + QDir::separator() + "share" + QDir::separator() + "proj";
+    procEnv.insert("PROJ_DATA", projDataPath);
+    QString gdalDataPath = condaPrefix + QDir::separator() + "Library" + QDir::separator() + "share" + QDir::separator() + "gdal";
+    procEnv.insert("GDAL_DATA", gdalDataPath);
+
+    // Add some env var from system
+    procEnv.insert("PROCESSOR_ARCHITECTURE", qgetenv("PROCESSOR_ARCHITECTURE"));
+
+    // add procEnv
     theMainProcessHandler->setProcessEnv(procEnv);
 
     qDebug() << "Env: "<< procEnv.toStringList();

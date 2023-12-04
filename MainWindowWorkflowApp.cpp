@@ -208,7 +208,8 @@ bool MainWindowWorkflowApp::saveAs()
 
 void MainWindowWorkflowApp::open()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, "Open Simulation Model", "",  "Json files (*.json);;All files (*)");
+    auto openDir = this->thePreferences->getLocalWorkDir();
+    QString fileName = QFileDialog::getOpenFileName(this, "Open Simulation Model", openDir,  "Json files (*.json);;All files (*)");
     if (!fileName.isEmpty())
         loadFile(fileName);
 }

@@ -270,7 +270,7 @@ void OpenSRAPostProcessor::handleListSelection(const TreeItem* itemSelected)
             QVector<QColor> colors;
             QVector<QString> labels;
 
-            if (this->IMSourceType == "UCERF")
+            if (this->IMSourceType == "UCERF" || this->IMSourceType == "UserDefinedGM")
             {
                 // rates can be on the order of 1e-6, -7, use log scale
 //                classBreaks.append(QPair<double,double>(1.00E+01, 1.00E+03));
