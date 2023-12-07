@@ -123,7 +123,7 @@ void LocalApplication::onRunButtonPressed(QPushButton* button)
     this->statusMessage("\nonRunButtonPressed "+ appDir);
 
     QString localWorkDir = OpenSRAPreferences::getInstance()->getLocalWorkDir();
-    auto results_dir = localWorkDir + QDir::separator() + "analysis" + QDir::separator() + "Results";
+    auto results_dir = localWorkDir + QDir::separator() + "Results";
 
     QDir dirWorkdir(results_dir);
     if (dirWorkdir.exists()) {
@@ -158,9 +158,7 @@ void LocalApplication::onPreprocessButtonPressed(QPushButton* button)
         return;
     }
 
-
-    //this->setupTempDir("preprocessing");
-    this->setupTempDir("analysis");
+    this->setupTempDir(QString());
 
     this->preProcessButton = button;
 

@@ -104,7 +104,6 @@ int OpenSRAPreProcessor::loadPreprocessingResults(const QString path)
         return -1;
     }
 
-
     QString jsonString = doc.toJson(QJsonDocument::Indented);
 
 //    this->statusMessage("Workflow :");

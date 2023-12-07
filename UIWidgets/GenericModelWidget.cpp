@@ -350,17 +350,8 @@ bool GenericModelWidget::outputToJSON(QJsonObject &jsonObj) {
         genModCatAbbr = "DV";
 
     // build path and file name for CSV export
-    QString fileDir =
-            OpenSRAPreferences::getInstance()->getLocalWorkDir() +
-            QDir::separator() + "analysis" +
-            QDir::separator() + "Input";
+    QString fileDir = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "Input";
     QFileInfo fileDirInfo(fileDir);
-    if (!fileDirInfo.exists())
-    {
-        fileDir =
-                OpenSRAPreferences::getInstance()->getLocalWorkDir() +
-                QDir::separator() + "Input";
-    }
     fileDirInfo.setFile(fileDir);
     if (!fileDirInfo.exists())
     {
@@ -587,21 +578,9 @@ bool GenericModelWidget::inputFromJSON(QJsonObject &jsonObj)
         if (!filePathInfo.exists())
         {
             // first try using work_dir/Input as reference
-            filePath =
-                    OpenSRAPreferences::getInstance()->getLocalWorkDir() +
-                    QDir::separator() + "analysis" +
-                    QDir::separator() + "Input" +
-                    filePath;
+            filePath = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "Input" + filePath;
         }
         filePathInfo.setFile(filePath);
-        if (!filePathInfo.exists())
-        {
-            // first try using work_dir/analysis/Input as reference
-            filePath =
-                    OpenSRAPreferences::getInstance()->getLocalWorkDir() +
-                    QDir::separator() + "Input" +
-                    filePath;
-        }
         filePathInfo.setFile(filePath);
         if (!filePathInfo.exists())
         {

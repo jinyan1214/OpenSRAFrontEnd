@@ -206,12 +206,28 @@ bool MainWindowWorkflowApp::saveAs()
 }
 
 
-void MainWindowWorkflowApp::open()
+void MainWindowWorkflowApp::openConfigJson()
 {
-    auto openDir = this->thePreferences->getLocalWorkDir();
-    QString fileName = QFileDialog::getOpenFileName(this, "Open Simulation Model", openDir,  "Json files (*.json);;All files (*)");
+    auto openDir = this->thePreferences->getLocalWorkDir() + QDir::separator() + "Input";
+    QFileInfo openDirStatus(openDir);
+    if (!openDirStatus.exists())
+        openDir = this->thePreferences->getLocalWorkDir();
+    QString fileName = QFileDialog::getOpenFileName(this, "Load SetupConfig.Jjson file (under analysisDir/Input)", openDir,  "Json files (*.json);;All files (*)");
     if (!fileName.isEmpty())
         loadFile(fileName);
+}
+
+
+void MainWindowWorkflowApp::openRunFolder()
+{
+    auto openDir = this->thePreferences->getLocalWorkDir();
+    QDir runDir = QFileDialog::getExistingDirectory(this, "Load from an existing analysis (working) folder", openDir, QFileDialog::ShowDirsOnly);
+    // find SetupConfig.json from runDir
+    auto configJsonFile = runDir.path() + QDir::separator() + "Input" + QDir::separator() + "SetupConfig.json";
+    if (!configJsonFile.isEmpty())
+        loadFile(configJsonFile);
+    else
+        this->sendErrorMessage("Error, could not locate SetupConfig.json under analysisDir/Input; try another analysis folder");
 }
 
 
@@ -354,13 +370,19 @@ void MainWindowWorkflowApp::createActions() {
     //    connect(newAction, &QAction::triggered, this, &MainWindowWorkflowApp::newFile);
     //    fileMenu->addAction(newAction);
 
-    QAction *openAction = new QAction(tr("&Open"), this);
-    openAction->setShortcuts(QKeySequence::Open);
-    openAction->setStatusTip(tr("Open an existing file"));
-    connect(openAction, &QAction::triggered, this, &MainWindowWorkflowApp::open);
-    fileMenu->addAction(openAction);
+    QAction *openRunFolderAction = new QAction(tr("&Open working directory"), this);
+    openRunFolderAction->setShortcuts(QKeySequence::Open);
+    openRunFolderAction->setStatusTip(tr("Load from an existing analysis folder"));
+    connect(openRunFolderAction, &QAction::triggered, this, &MainWindowWorkflowApp::openRunFolder);
+    fileMenu->addAction(openRunFolderAction);
     //fileToolBar->addAction(openAction);
 
+    QAction *openConfigJsonAction = new QAction(tr("&Open SetupConfig.json"), this);
+    openConfigJsonAction->setShortcuts(QKeySequence::Open);
+    openConfigJsonAction->setStatusTip(tr("Open an existing SetupConfig.json file (under workDir/Input)"));
+    connect(openConfigJsonAction, &QAction::triggered, this, &MainWindowWorkflowApp::openConfigJson);
+    fileMenu->addAction(openConfigJsonAction);
+    //fileToolBar->addAction(openAction);
 
     QAction *saveAction = new QAction(tr("&Save"), this);
     saveAction->setShortcuts(QKeySequence::Save);

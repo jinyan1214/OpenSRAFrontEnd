@@ -48,7 +48,8 @@ protected:
   public slots:
     // for menu items
     void newFile();
-    void open();
+    void openConfigJson();
+    void openRunFolder();
     void openFile(QString filename);
     bool save();
     bool saveAs();

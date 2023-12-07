@@ -137,7 +137,7 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent) : QDialog(parent)
     appDirButton->setToolTip(tr("Select directory containing the Backend directory named applications"));
     appDirLayout->addWidget(appDirButton);
 
-    customAppDirCheckBox = new QCheckBox("Custom Local Applications:");
+    customAppDirCheckBox = new QCheckBox("Custom OpenSRA Backend:");
     customAppDirCheckBox->setChecked(false);
     customAppDirLineEdit->setEnabled(false);
     appDirButton->setEnabled(false);
@@ -152,7 +152,7 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent) : QDialog(parent)
     QPushButton *appDataDirButton = new QPushButton();
     appDataDirButton->setText("Browse");
     appDataDirButton->setToolTip(tr("Select directory containing the prepackaged datasets for OpenSRA"));
-    auto appDataDirLabel = new QLabel("Folder with Prepackaged OpenSRA Datasets:");
+    auto appDataDirLabel = new QLabel("Folder with Prepackaged Datasets:");
     appDataDirLayout->addWidget(appDataDirLabel);
     appDataDirLayout->addWidget(appDataDirLineEdit);
     appDataDirLayout->addWidget(appDataDirButton);
@@ -164,7 +164,7 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent) : QDialog(parent)
     QPushButton *NDADataDirButton = new QPushButton();
     NDADataDirButton->setText("Browse");
     NDADataDirButton->setToolTip(tr("Select directory containing the NDA datasets for OpenSRA"));
-    auto NDADataDirLabel = new QLabel("Folder with NDA Datasets (required for methods under NDA):");
+    auto NDADataDirLabel = new QLabel("Folder with NDA Datasets:");
     NDADataDirLayout->addWidget(NDADataDirLabel);
     NDADataDirLayout->addWidget(NDADataDirLineEdit);
     NDADataDirLayout->addWidget(NDADataDirButton);
@@ -235,6 +235,7 @@ OpenSRAPreferences::OpenSRAPreferences(QWidget *parent) : QDialog(parent)
 
     layout->addWidget(externalApplicationsBox);
     layout->addWidget(locationDirectoriesBox);
+    layout->setStretch(1,1);
     layout->addLayout(buttonsLayout);
 
     this->setLayout(layout);

@@ -566,7 +566,7 @@ bool WorkflowAppOpenSRA::outputToJSON(QJsonObject &jsonObjectTop)
 void WorkflowAppOpenSRA::postprocessResults(QString resultsDirectory, QString /*doesNothing2*/, QString /*doesNothing3*/)
 {
     if(resultsDirectory.isEmpty())
-        resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "analysis"+ QDir::separator() + "Results";
+        resultsDirectory = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "Results";
 
 //    auto res = theResultsWidget->processResults(resultsDirectory);
     auto res = theCustomVisualizationWidget->processResults(resultsDirectory);
@@ -590,8 +590,7 @@ void WorkflowAppOpenSRA::postprocessResults(QString resultsDirectory, QString /*
 
 void WorkflowAppOpenSRA::preprocessingDone(void)
 {
-    //auto  preprocessingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "preprocessing";
-    auto  preprocessingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir() + QDir::separator() + "analysis";
+    auto  preprocessingDir = OpenSRAPreferences::getInstance()->getLocalWorkDir();
 
     QDir dirWork(preprocessingDir);
     if (!dirWork.exists())
@@ -653,7 +652,7 @@ void WorkflowAppOpenSRA::clearResultsDir(void)
 
     QString workDirectoryPath =  thePreferences->getLocalWorkDir();
 
-    QString resultsPath = workDirectoryPath + QDir::separator() + "analysis" + QDir::separator() + "Results";
+    QString resultsPath = workDirectoryPath + QDir::separator() + "Results";
 
     QDir resultsDirectory(resultsPath);
 
@@ -813,8 +812,7 @@ void WorkflowAppOpenSRA::setUpForPreprocessingRun(QString &workingDir, QString &
 
 void WorkflowAppOpenSRA::setUpForApplicationRun(QString &workingDir, QString &subDir)
 {
-    //auto preprocessdir = workingDir + QDir::separator() + "preprocessing";
-    auto analysisdir = workingDir + QDir::separator() + "analysis";
+    auto analysisdir = workingDir;
 
 //    auto runDir = workingDir + QDir::separator() + "run";
 
