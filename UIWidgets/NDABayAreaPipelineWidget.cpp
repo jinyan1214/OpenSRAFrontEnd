@@ -1,4 +1,4 @@
-#include "LosAngelesPipelineWidget.h"
+#include "NDABayAreaPipelineWidget.h"
 #include "QGISVisualizationWidget.h"
 #include "ComponentDatabaseManager.h"
 #include "ComponentTableView.h"
@@ -23,24 +23,24 @@
 
 
 // Constructor
-LosAngelesPipelineWidget::LosAngelesPipelineWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : GISAssetInputWidget(parent, visWidget, assetType, appType)
+NDABayAreaPipelineWidget::NDABayAreaPipelineWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType) : GISAssetInputWidget(parent, visWidget, assetType, appType)
 {
 #ifdef OpenSRA
-    LosAngelesPipelineWidget::createComponentsBox();
+    NDABayAreaPipelineWidget::createComponentsBox();
 #endif
 
     componentFileLineEdit->setEnabled(false);
     componentFileLineEdit->setStyleSheet("{color: #000000; background-color: #D3D3D3;}");
 
-    componentFileLineEdit->setPlaceholderText("Click on the \"Load Network\" button to load the Los Angeles natural gas network (clipped from the statewide network for California)");
+    componentFileLineEdit->setPlaceholderText("Click on the \"Load Network\" button to load the NDA natural gas network (Bay Area)");
 
     browseFileButton->setText("Load Network:");
 
     // Disconnect the old slot and connect the new one
     disconnect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseComponentInfoFileDialog()));
-    connect(browseFileButton,&QPushButton::clicked,this,&LosAngelesPipelineWidget::handleLoadData);
+    connect(browseFileButton,&QPushButton::clicked,this,&NDABayAreaPipelineWidget::handleLoadData);
 
-    label1->setText("Use the prepackaged Los Angeles natural gas network (clipped from the statewide network for California)");
+    label1->setText("Use the NDA natural gas network (Bay Area)");
 
     // Hide the CRS
     crsSelectorWidget->hide();
@@ -52,14 +52,15 @@ LosAngelesPipelineWidget::LosAngelesPipelineWidget(QWidget *parent, Visualizatio
 
 
 // Destructor
-LosAngelesPipelineWidget::~LosAngelesPipelineWidget()
+NDABayAreaPipelineWidget::~NDABayAreaPipelineWidget()
 {
 
 }
 
 
+
 #ifdef OpenSRA
-bool LosAngelesPipelineWidget::outputToJSON(QJsonObject &rvObject)
+bool NDABayAreaPipelineWidget::outputToJSON(QJsonObject &rvObject)
 {
     QJsonObject outJson;
 
@@ -98,13 +99,13 @@ bool LosAngelesPipelineWidget::outputToJSON(QJsonObject &rvObject)
 
     rvObject.insert("CRS",appData["CRS"]);
 
-    rvObject.insert("DataType", "Region_Network");
+    rvObject.insert("DataType", "NDA_Network");
 
     return true;
 }
 
 
-bool LosAngelesPipelineWidget::inputFromJSON(QJsonObject &rvObject)
+bool NDABayAreaPipelineWidget::inputFromJSON(QJsonObject &rvObject)
 {
     // load data as part of call for input
     this->handleLoadData();
@@ -112,38 +113,39 @@ bool LosAngelesPipelineWidget::inputFromJSON(QJsonObject &rvObject)
 }
 
 
-void LosAngelesPipelineWidget::createComponentsBox(void)
+void NDABayAreaPipelineWidget::createComponentsBox(void)
 {
 
-    QWidget* regionLoadWidget = new QWidget();
-    QHBoxLayout* regionSitesLayout = new QHBoxLayout(regionLoadWidget);
+    QWidget* loadWidget = new QWidget();
+    QHBoxLayout* sitesLayout = new QHBoxLayout(loadWidget);
+
 
     auto insPoint = mainWidgetLayout->count();
-    mainWidgetLayout->insertWidget(insPoint-3,regionLoadWidget);
+    mainWidgetLayout->insertWidget(insPoint-3,loadWidget);
 }
 
 
 #endif
 
 
-void LosAngelesPipelineWidget::clear()
+void NDABayAreaPipelineWidget::clear()
 {
     GISAssetInputWidget::clear();
     isLoaded = false;
 }
 
 
-void LosAngelesPipelineWidget::setTheNodesWidget(PointAssetInputWidget *newTheNodesWidget)
+void NDABayAreaPipelineWidget::setTheNodesWidget(PointAssetInputWidget *newTheNodesWidget)
 {
     theNodesWidget = newTheNodesWidget;
 }
 
 
-void LosAngelesPipelineWidget::handleLoadData(void)
+void NDABayAreaPipelineWidget::handleLoadData(void)
 {
     // clear previously loaded network
 //    this->clear();
-//    auto pipelinesMainLayer = this->getMainLayer();
+//    auto pipelinesMainLayer = this->theComponentDb->getMainLayer();
 //    if(pipelinesMainLayer != nullptr)
 //        theVisualizationWidget->removeLayer(pipelinesMainLayer);
 
@@ -152,15 +154,13 @@ void LosAngelesPipelineWidget::handleLoadData(void)
 
     // Get the path to the application data
     auto prefs = OpenSRAPreferences::getInstance();
-    auto pathToOSRABackend = prefs->getAppDir();
+    auto pathToNDAData = prefs->getNDADataDir();
 
     // Assemble the path for the
-    auto path = pathToOSRABackend + QDir::separator() + "lib" +
-            QDir::separator()+"OtherData"+
-            QDir::separator()+"Preprocessed"+
-            QDir::separator()+"Los_Angeles_Pipeline_Network_Clipped_From_Statewide"+
-            QDir::separator() + "Los_Angeles_Pipeline_Network_Clipped_From_Statewide.gpkg";
-
+    auto path = pathToNDAData +
+            QDir::separator() + "Pipeline_Network" +
+            QDir::separator() + "Infra_BayArea"+
+            QDir::separator() + "infra_bayarea_preproc.shp";
 
     if(!QFile::exists(path))
     {
@@ -170,7 +170,7 @@ void LosAngelesPipelineWidget::handleLoadData(void)
     pathToComponentInputFile = path;
     componentFileLineEdit->setText(path);
 
-    this->statusMessage("Loading the Los Angeles network at : "+path);
+    this->statusMessage("Loading the NDA network at : "+path);
 
     this->loadAssetData();
 

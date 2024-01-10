@@ -55,6 +55,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "GISWellsCaprocksInputWidget.h"
 #include "CSVAboveGroundGasComponentInputWidget.h"
 #include "GISAboveGroundGasComponentInputWidget.h"
+#include "NDAStateWidePipelineWidget.h"
+#include "NDABayAreaPipelineWidget.h"
 
 #include "VisualizationWidget.h"
 
@@ -109,11 +111,15 @@ PipelineNetworkWidget::PipelineNetworkWidget(VisualizationWidget* visWidget, QWi
     bayareaBelowGroundInputWidget = new BayAreaPipelineWidget(this, theVisualizationWidget, "Pipeline Network","Pipeline Network");
     losangelesBelowGroundInputWidget = new LosAngelesPipelineWidget(this, theVisualizationWidget, "Pipeline Network","Pipeline Network");
     //    statewideBelowGroundInputWidget->setGroupBoxText("Enter Component Locations and Characteristics");
+    ndaStatewideBelowGroundInputWidget = new NDAStateWidePipelineWidget(this, theVisualizationWidget, "Pipeline Network","Pipeline Network");
+    ndaBayareaBelowGroundInputWidget = new NDABayAreaPipelineWidget(this, theVisualizationWidget, "Pipeline Network","Pipeline Network");
 
     //    statewideBelowGroundInputWidget->setLabel1("Load information from CSV File (headers in CSV file must match those shown in the table below)");
     statewideBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
     bayareaBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
     losangelesBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
+    ndaStatewideBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
+    ndaBayareaBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
 
 
     // GIS pipelines
@@ -126,6 +132,8 @@ PipelineNetworkWidget::PipelineNetworkWidget(VisualizationWidget* visWidget, QWi
     gasPipelineWidget->addComponent(QString("Use Prepackaged State Pipeline Network"), QString("STATE_PIPELINE"), statewideBelowGroundInputWidget);
     gasPipelineWidget->addComponent(QString("Use Prepackaged Bay Area Pipeline Network"), QString("BAY_AREA_PIPELINE"), bayareaBelowGroundInputWidget);
     gasPipelineWidget->addComponent(QString("Use Prepackaged Los Angeles Pipeline Network"), QString("LOS_ANGELES_PIPELINE"), losangelesBelowGroundInputWidget);
+    gasPipelineWidget->addComponent(QString("Use NDA Pipeline Network - Statewide"), QString("NDA_PIPELINE"), ndaStatewideBelowGroundInputWidget);
+    gasPipelineWidget->addComponent(QString("Use NDA Pipeline Network - Bay Area"), QString("NDA_PIPELINE"), ndaBayareaBelowGroundInputWidget);
 
 
     // Above ground widget
@@ -315,6 +323,13 @@ bool PipelineNetworkWidget::inputFromJSON(QJsonObject &jsonObject)
                 app = "Use Prepackaged Bay Area Pipeline Network";
             else if (fileName.contains("Los_Angeles"))
                 app = "Use Prepackaged Los Angeles Pipeline Network";
+        }
+        else if (typeOfFile.compare("NDA_Network") == 0)
+        {
+            if (fileName.contains("full"))
+                app = "Use NDA Pipeline Network - Statewide";
+            else if (fileName.contains("bayarea"))
+                app = "Use NDA Pipeline Network - Bay Area";
         }
 
     }

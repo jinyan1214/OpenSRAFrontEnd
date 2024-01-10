@@ -52,6 +52,8 @@ class CSVWellsCaprocksInputWidget;
 class GISWellsCaprocksInputWidget;
 class CSVAboveGroundGasComponentInputWidget;
 class GISAboveGroundGasComponentInputWidget;
+class NDAStateWidePipelineWidget;
+class NDABayAreaPipelineWidget;
 
 class QGroupBox;
 
@@ -88,7 +90,8 @@ private:
     StateWidePipelineWidget* statewideBelowGroundInputWidget = nullptr;
     BayAreaPipelineWidget* bayareaBelowGroundInputWidget = nullptr;
     LosAngelesPipelineWidget* losangelesBelowGroundInputWidget = nullptr;
-
+    NDAStateWidePipelineWidget* ndaStatewideBelowGroundInputWidget = nullptr;
+    NDABayAreaPipelineWidget* ndaBayareaBelowGroundInputWidget = nullptr;
 
     SimCenterAppSelection* theWellsCaprocksWidget = nullptr;
     SimCenterAppSelection* theAboveGroundInfWidget = nullptr;
