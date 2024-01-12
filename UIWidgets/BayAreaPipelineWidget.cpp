@@ -130,6 +130,7 @@ void BayAreaPipelineWidget::clear()
 {
     GISAssetInputWidget::clear();
     isLoaded = false;
+    emit headingValuesChanged(QStringList{"N/A"});
 }
 
 
@@ -173,6 +174,10 @@ void BayAreaPipelineWidget::handleLoadData(void)
     this->statusMessage("Loading the Bay Area network at : "+path);
 
     this->loadAssetData();
+
+    auto tableHeadings = this->getMainLayer()->fields().names();
+
+    emit headingValuesChanged(tableHeadings);
 
     // zoom to layer
 //    theVisualizationWidget->zoomToLayer(this->getMainLayer());

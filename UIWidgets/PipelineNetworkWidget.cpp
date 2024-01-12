@@ -132,8 +132,8 @@ PipelineNetworkWidget::PipelineNetworkWidget(VisualizationWidget* visWidget, QWi
     gasPipelineWidget->addComponent(QString("Use Prepackaged State Pipeline Network"), QString("STATE_PIPELINE"), statewideBelowGroundInputWidget);
     gasPipelineWidget->addComponent(QString("Use Prepackaged Bay Area Pipeline Network"), QString("BAY_AREA_PIPELINE"), bayareaBelowGroundInputWidget);
     gasPipelineWidget->addComponent(QString("Use Prepackaged Los Angeles Pipeline Network"), QString("LOS_ANGELES_PIPELINE"), losangelesBelowGroundInputWidget);
-    gasPipelineWidget->addComponent(QString("Use NDA Pipeline Network - Statewide"), QString("NDA_PIPELINE"), ndaStatewideBelowGroundInputWidget);
-    gasPipelineWidget->addComponent(QString("Use NDA Pipeline Network - Bay Area"), QString("NDA_PIPELINE"), ndaBayareaBelowGroundInputWidget);
+    gasPipelineWidget->addComponent(QString("Use NDA Pipeline Network - Statewide"), QString("NDA_PIPELINE_STATE"), ndaStatewideBelowGroundInputWidget);
+    gasPipelineWidget->addComponent(QString("Use NDA Pipeline Network - Cropped to Bay Area"), QString("NDA_PIPELINE_BAY_AREA"), ndaBayareaBelowGroundInputWidget);
 
 
     // Above ground widget
@@ -174,6 +174,11 @@ PipelineNetworkWidget::PipelineNetworkWidget(VisualizationWidget* visWidget, QWi
 
     connect(csvBelowGroundInputWidget, &AssetInputWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
     connect(gisGasNetworkInventory, &GISGasNetworkInputWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
+    connect(statewideBelowGroundInputWidget, &StateWidePipelineWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
+    connect(bayareaBelowGroundInputWidget, &BayAreaPipelineWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
+    connect(losangelesBelowGroundInputWidget, &LosAngelesPipelineWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
+    connect(ndaStatewideBelowGroundInputWidget, &NDAStateWidePipelineWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
+    connect(ndaBayareaBelowGroundInputWidget, &NDABayAreaPipelineWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
 
     connect(csvWellsCaprocksWidgetInventory, &AssetInputWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);
     connect(csvAboveGroundInventory, &AssetInputWidget::headingValuesChanged, colDelegate, &MixedDelegate::updateComboBoxValues);

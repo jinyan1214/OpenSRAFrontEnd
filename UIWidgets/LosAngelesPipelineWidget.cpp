@@ -130,6 +130,7 @@ void LosAngelesPipelineWidget::clear()
 {
     GISAssetInputWidget::clear();
     isLoaded = false;
+    emit headingValuesChanged(QStringList{"N/A"});
 }
 
 
@@ -173,6 +174,10 @@ void LosAngelesPipelineWidget::handleLoadData(void)
     this->statusMessage("Loading the Los Angeles network at : "+path);
 
     this->loadAssetData();
+
+    auto tableHeadings = this->getMainLayer()->fields().names();
+
+    emit headingValuesChanged(tableHeadings);
 
     // zoom to layer
 //    theVisualizationWidget->zoomToLayer(this->getMainLayer());
