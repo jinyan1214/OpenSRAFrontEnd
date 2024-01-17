@@ -324,7 +324,8 @@ bool RandomVariablesWidget::addRandomVariable(RV& newRV)
 
     // Dist type column
     auto distTypeIndex = RVtableModel->index(rowRV,3);
-    RVtableModel->setData(distTypeIndex,QVariant("Normal"));
+//    RVtableModel->setData(distTypeIndex,QVariant("Normal"));
+    RVtableModel->setData(distTypeIndex,QVariant(""));
 
 
     return true;
@@ -684,6 +685,27 @@ void RandomVariablesWidget::handleSourceChanged(int val)
 {
     if(val == 0 || val == 1)
     {
+        // reset columns if preferred
+        if (val == 0)
+        {
+            RVTableModel* rvTableModel = theRVTableView->getTableModel();
+            auto index = theRVTableView->selectionModel()->currentIndex();
+            auto row = index.row();
+            rvTableModel->setData(rvTableModel->index(row,3),QVariant(),Qt::EditRole);
+            rvTableModel->setData(rvTableModel->index(row,4),QVariant(),Qt::EditRole);
+            rvTableModel->setData(rvTableModel->index(row,5),QVariant(),Qt::EditRole);
+            rvTableModel->setData(rvTableModel->index(row,6),QVariant(),Qt::EditRole);
+            rvTableModel->setData(rvTableModel->index(row,7),QVariant(),Qt::EditRole);
+            rvTableModel->setData(rvTableModel->index(row,8),QVariant(),Qt::EditRole);
+//            theRVTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+            RVTableModel* constantTableModel = theConstantTableView->getTableModel();
+            index = theConstantTableView->selectionModel()->currentIndex();
+            row = index.row();
+            constantTableModel->setData(constantTableModel->index(row,3),QVariant(),Qt::EditRole);
+//            theConstantTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        }
+
         // "Name","Description","Source","Distribution Type","Mean or Median","Sigma","CoV","Distribution Min","Distribution Max","From Model"
 
         // "Mean or Median"

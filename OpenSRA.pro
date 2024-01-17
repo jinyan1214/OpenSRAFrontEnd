@@ -112,6 +112,8 @@ SOURCES += main.cpp \
     UIWidgets/StateWidePipelineWidget.cpp \
     UIWidgets/BayAreaPipelineWidget.cpp \
     UIWidgets/LosAngelesPipelineWidget.cpp \
+    UIWidgets/NDAStateWidePipelineWidget.cpp \
+    UIWidgets/NDABayAreaPipelineWidget.cpp \
     UIWidgets/UserDefinedGroundMotionWidget.cpp \
     ModelViewItems/RVTableView.cpp \
     ModelViewItems/RVTableModel.cpp \
@@ -154,6 +156,8 @@ HEADERS  += \
     UIWidgets/StateWidePipelineWidget.h \
     UIWidgets/BayAreaPipelineWidget.h \
     UIWidgets/LosAngelesPipelineWidget.h \
+    UIWidgets/NDAStateWidePipelineWidget.h \
+    UIWidgets/NDABayAreaPipelineWidget.h \
     Utils/EventFilter.h \
     WorkflowAppOpenSRA.h \
     WorkflowAppWidget.h \

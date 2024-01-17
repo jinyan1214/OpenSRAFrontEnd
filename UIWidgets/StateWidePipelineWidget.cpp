@@ -326,6 +326,7 @@ void StateWidePipelineWidget::clear()
 {
     GISAssetInputWidget::clear();
     isLoaded = false;
+    emit headingValuesChanged(QStringList{"N/A"});
 }
 
 
@@ -337,6 +338,11 @@ void StateWidePipelineWidget::setTheNodesWidget(PointAssetInputWidget *newTheNod
 
 void StateWidePipelineWidget::handleLoadStateData(void)
 {
+    // clear previously loaded network
+//    this->clear();
+//    auto pipelinesMainLayer = this->getMainLayer();
+//    if(pipelinesMainLayer != nullptr)
+//        theVisualizationWidget->removeLayer(pipelinesMainLayer);
 
     if(isLoaded)
         return;
@@ -367,5 +373,12 @@ void StateWidePipelineWidget::handleLoadStateData(void)
     this->statusMessage("Loading the statewide network at : "+path);
 
     this->loadAssetData();
+
+    auto tableHeadings = this->getMainLayer()->fields().names();
+
+    emit headingValuesChanged(tableHeadings);
+
+    // zoom to layer
+//    theVisualizationWidget->zoomToLayer(this->getMainLayer());
 
 }

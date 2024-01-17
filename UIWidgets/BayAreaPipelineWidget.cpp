@@ -130,6 +130,7 @@ void BayAreaPipelineWidget::clear()
 {
     GISAssetInputWidget::clear();
     isLoaded = false;
+    emit headingValuesChanged(QStringList{"N/A"});
 }
 
 
@@ -141,6 +142,11 @@ void BayAreaPipelineWidget::setTheNodesWidget(PointAssetInputWidget *newTheNodes
 
 void BayAreaPipelineWidget::handleLoadData(void)
 {
+    // clear previously loaded network
+//    this->clear();
+//    auto pipelinesMainLayer = this->theComponentDb->getMainLayer();
+//    if(pipelinesMainLayer != nullptr)
+//        theVisualizationWidget->removeLayer(pipelinesMainLayer);
 
     if(isLoaded)
         return;
@@ -168,5 +174,12 @@ void BayAreaPipelineWidget::handleLoadData(void)
     this->statusMessage("Loading the Bay Area network at : "+path);
 
     this->loadAssetData();
+
+    auto tableHeadings = this->getMainLayer()->fields().names();
+
+    emit headingValuesChanged(tableHeadings);
+
+    // zoom to layer
+//    theVisualizationWidget->zoomToLayer(this->getMainLayer());
 
 }
