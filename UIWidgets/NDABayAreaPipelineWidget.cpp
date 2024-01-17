@@ -119,9 +119,9 @@ void NDABayAreaPipelineWidget::createComponentsBox(void)
     QWidget* loadWidget = new QWidget();
     QHBoxLayout* sitesLayout = new QHBoxLayout(loadWidget);
 
+    // Insert the widget three rows from the bottom
+    insertWidgetIntoLayout(loadWidget,3);
 
-    auto insPoint = mainWidgetLayout->count();
-    mainWidgetLayout->insertWidget(insPoint-3,loadWidget);
 }
 
 
