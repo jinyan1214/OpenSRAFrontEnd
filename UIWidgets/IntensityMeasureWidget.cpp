@@ -65,7 +65,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QPushButton>
 #include <QSplitter>
 
-IntensityMeasureWidget::IntensityMeasureWidget(VisualizationWidget* visWidget, QWidget *parent)
+IntensityMeasureWidget::IntensityMeasureWidget(QGISVisualizationWidget* visWidget, QWidget *parent)
     : SimCenterAppWidget(parent)
 {
     this->setContentsMargins(0,0,0,0);

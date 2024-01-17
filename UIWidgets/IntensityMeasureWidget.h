@@ -40,7 +40,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <SimCenterAppWidget.h>
 
-class VisualizationWidget;
+class QGISVisualizationWidget;
 class OpenSHAWidget;
 class JsonGroupBoxWidget;
 class ShakeMapWidget;
@@ -59,7 +59,7 @@ class IntensityMeasureWidget : public  SimCenterAppWidget
 
 public:
 
-    explicit IntensityMeasureWidget(VisualizationWidget* visWidget, QWidget *parent = 0);
+    explicit IntensityMeasureWidget(QGISVisualizationWidget* visWidget, QWidget *parent = 0);
     ~IntensityMeasureWidget();
 
     bool outputToJSON(QJsonObject &rvObject);

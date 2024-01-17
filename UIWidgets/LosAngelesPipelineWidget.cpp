@@ -116,10 +116,11 @@ void LosAngelesPipelineWidget::createComponentsBox(void)
 {
 
     QWidget* regionLoadWidget = new QWidget();
-    QHBoxLayout* regionSitesLayout = new QHBoxLayout(regionLoadWidget);
+//    QHBoxLayout* regionSitesLayout = new QHBoxLayout(regionLoadWidget);
 
-    auto insPoint = mainWidgetLayout->count();
-    mainWidgetLayout->insertWidget(insPoint-3,regionLoadWidget);
+    // Insert the widget three rows from the bottom
+    insertWidgetIntoLayout(regionLoadWidget,3);
+
 }
 
 

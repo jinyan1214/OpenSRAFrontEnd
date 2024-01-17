@@ -66,7 +66,7 @@ class UserDefinedGroundMotionWidget : public SimCenterAppWidget, public GISSelec
     Q_OBJECT
 
 public:
-    UserDefinedGroundMotionWidget(VisualizationWidget* visWidget, QWidget *parent = nullptr);
+    UserDefinedGroundMotionWidget(QGISVisualizationWidget* visWidget, QWidget *parent = nullptr);
     ~UserDefinedGroundMotionWidget();
 
     void insertSelectedAssets(QgsFeatureIds& featureIds);

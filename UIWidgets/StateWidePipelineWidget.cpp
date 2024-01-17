@@ -310,11 +310,12 @@ void StateWidePipelineWidget::createComponentsBox(void)
 {
 
     QWidget* stateLoadWidget = new QWidget();
-    QHBoxLayout* stateSitesLayout = new QHBoxLayout(stateLoadWidget);
+//    QHBoxLayout* stateSitesLayout = new QHBoxLayout(stateLoadWidget);
+
+    // Insert the widget three rows from the bottom
+    insertWidgetIntoLayout(stateLoadWidget,3);
 
 
-    auto insPoint = mainWidgetLayout->count();
-    mainWidgetLayout->insertWidget(insPoint-3,stateLoadWidget);
 }
 
 

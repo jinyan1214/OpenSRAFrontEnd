@@ -84,7 +84,7 @@ bool GeospatialDataWidget::inputFromJSON(QJsonObject &jsonObject)
         if(res == false)
             return false;
 
-        this->selectApp("GISDatasets");
+        this->selectComponent("GISDatasets");
     }
 
 
@@ -97,7 +97,7 @@ bool GeospatialDataWidget::inputFromJSON(QJsonObject &jsonObject)
         if(res == false)
             return false;
 
-        this->selectApp("CPTParameters");
+        this->selectComponent("CPTParameters");
     }
 
     return true;

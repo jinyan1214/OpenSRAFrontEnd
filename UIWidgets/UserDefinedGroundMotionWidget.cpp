@@ -72,11 +72,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <qgsvectorlayer.h>
 
 
-UserDefinedGroundMotionWidget::UserDefinedGroundMotionWidget(VisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent)
+UserDefinedGroundMotionWidget::UserDefinedGroundMotionWidget(QGISVisualizationWidget* visWidget, QWidget *parent) : SimCenterAppWidget(parent), theVisualizationWidget(visWidget)
 {
-    theVisualizationWidget = static_cast<QGISVisualizationWidget*>(visWidget);
-    assert(theVisualizationWidget);
-
     theComponentDb = ComponentDatabaseManager::getInstance()->createAssetDb("UserDefinedGM");
 
     theComponentDb->setOffset(1);
@@ -395,6 +392,7 @@ void UserDefinedGroundMotionWidget::chooseEventFileDialog(void)
 
     return;
 }
+
 
 QVector<QStringList> UserDefinedGroundMotionWidget::parseTXTFile(const QString &pathToFile, int skiprows, QString &delimiter, QString& err)
 {
