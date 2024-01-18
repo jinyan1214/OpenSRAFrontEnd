@@ -56,6 +56,8 @@ class JsonGroupBoxWidget;
 
 class BayAreaPipelineWidget : public GISAssetInputWidget
 {
+    Q_OBJECT
+
 public:
     BayAreaPipelineWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
     ~BayAreaPipelineWidget();

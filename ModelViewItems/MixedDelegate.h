@@ -73,7 +73,7 @@ private:
     bool isPreferred(const QModelIndex &index) const;
 
     // Column where need to look for source
-    int col = 3;
+    int col = 2;
 
     QStringList items;
 

@@ -130,7 +130,7 @@ bool LineEditDelegate::isPreferred(const QModelIndex &index) const
 {
     auto row = index.row();
     auto model = index.model();
-    auto sIndex = model->index(row,3);
+    auto sIndex = model->index(row,sourceCol);
     auto str = model->data(sIndex).toString();
 
     if(str.compare("Preferred") == 0)
@@ -143,7 +143,7 @@ bool LineEditDelegate::hasDistribution(const QModelIndex &index) const
 {
     auto row = index.row();
     auto model = index.model();
-    auto sIndex = model->index(row,4);
+    auto sIndex = model->index(row,distCol);
     auto str = model->data(sIndex).toString();
 
     if(str.compare("") == 0)

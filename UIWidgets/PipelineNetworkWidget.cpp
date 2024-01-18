@@ -122,6 +122,9 @@ PipelineNetworkWidget::PipelineNetworkWidget(VisualizationWidget* visWidget, QWi
     ndaBayareaBelowGroundInputWidget->setLabel3("Locations and Characteristics of the Components to the Infrastructure");
 
 
+    // Clear exsiting data if any
+    connect(ndaStatewideBelowGroundInputWidget, &NDAStateWidePipelineWidget::clearExisting, this, &PipelineNetworkWidget::clear);
+
     // GIS pipelines
     GISGasNetworkInputWidget *gisGasNetworkInventory = new GISGasNetworkInputWidget(this, theVisualizationWidget);
 

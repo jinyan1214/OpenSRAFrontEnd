@@ -56,6 +56,8 @@ class JsonGroupBoxWidget;
 
 class NDABayAreaPipelineWidget : public GISAssetInputWidget
 {
+    Q_OBJECT
+
 public:
     NDABayAreaPipelineWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
     ~NDABayAreaPipelineWidget();

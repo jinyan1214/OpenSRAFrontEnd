@@ -309,11 +309,11 @@ bool StateWidePipelineWidget::inputFromJSON(QJsonObject &rvObject)
 void StateWidePipelineWidget::createComponentsBox(void)
 {
 
-    QWidget* stateLoadWidget = new QWidget();
-//    QHBoxLayout* stateSitesLayout = new QHBoxLayout(stateLoadWidget);
+    //    QWidget* stateLoadWidget = new QWidget();
+    //    QHBoxLayout* stateSitesLayout = new QHBoxLayout(stateLoadWidget);
 
     // Insert the widget three rows from the bottom
-    insertWidgetIntoLayout(stateLoadWidget,3);
+    //    insertWidgetIntoLayout(stateLoadWidget,3);
 
 
 }

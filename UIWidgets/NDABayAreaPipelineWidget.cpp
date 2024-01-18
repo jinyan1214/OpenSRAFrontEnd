@@ -116,11 +116,11 @@ bool NDABayAreaPipelineWidget::inputFromJSON(QJsonObject &rvObject)
 void NDABayAreaPipelineWidget::createComponentsBox(void)
 {
 
-    QWidget* loadWidget = new QWidget();
-    QHBoxLayout* sitesLayout = new QHBoxLayout(loadWidget);
+//    QWidget* loadWidget = new QWidget();
+//    QHBoxLayout* sitesLayout = new QHBoxLayout(loadWidget);
 
-    // Insert the widget three rows from the bottom
-    insertWidgetIntoLayout(loadWidget,3);
+//    // Insert the widget three rows from the bottom
+//    insertWidgetIntoLayout(loadWidget,3);
 
 }
 

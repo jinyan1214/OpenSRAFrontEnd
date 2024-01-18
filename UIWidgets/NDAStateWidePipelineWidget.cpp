@@ -116,11 +116,11 @@ bool NDAStateWidePipelineWidget::inputFromJSON(QJsonObject &rvObject)
 void NDAStateWidePipelineWidget::createComponentsBox(void)
 {
 
-    QWidget* loadWidget = new QWidget();
-    QHBoxLayout* sitesLayout = new QHBoxLayout(loadWidget);
+//    QWidget* loadWidget = new QWidget();
+//    QHBoxLayout* sitesLayout = new QHBoxLayout(loadWidget);
 
-    // Insert the widget three rows from the bottom
-    insertWidgetIntoLayout(loadWidget,3);
+//    // Insert the widget three rows from the bottom
+//    insertWidgetIntoLayout(loadWidget,3);
 
 }
 
@@ -149,6 +149,8 @@ void NDAStateWidePipelineWidget::handleLoadData(void)
 //    auto pipelinesMainLayer = this->getMainLayer();
 //    if(pipelinesMainLayer != nullptr)
 //        theVisualizationWidget->removeLayer(pipelinesMainLayer);
+
+    emit clearExisting();
 
     if(isLoaded)
         return;

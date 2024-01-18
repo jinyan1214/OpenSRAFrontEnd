@@ -69,9 +69,8 @@ public:
     bool inputFromJSON(QJsonObject &rvObject);
     bool copyFiles(QString &destName);
 
-    void clear(void);
-
     LineAssetInputWidget *getTheBelowGroundInputWidget() const;
+
 
 signals:
 
@@ -80,6 +79,7 @@ signals:
 public slots:
 
 //    void handleComponentChanged(QString compName);
+    void clear(void);
 
 private:
 

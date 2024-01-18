@@ -64,6 +64,9 @@ public:
 public slots:
 
 private:
+    // Column where need to look for source
+    int sourceCol = 2;
+    int distCol = 3;
 
     bool hasDistribution(const QModelIndex &index) const;
     bool isPreferred(const QModelIndex &index) const;

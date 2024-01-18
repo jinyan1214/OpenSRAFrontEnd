@@ -56,6 +56,8 @@ class JsonGroupBoxWidget;
 
 class LosAngelesPipelineWidget : public GISAssetInputWidget
 {
+    Q_OBJECT
+
 public:
     LosAngelesPipelineWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
     ~LosAngelesPipelineWidget();

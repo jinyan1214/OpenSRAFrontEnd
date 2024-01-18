@@ -56,6 +56,8 @@ class JsonGroupBoxWidget;
 
 class NDAStateWidePipelineWidget : public GISAssetInputWidget
 {
+    Q_OBJECT
+
 public:
     NDAStateWidePipelineWidget(QWidget *parent, VisualizationWidget* visWidget, QString assetType, QString appType = QString());
     ~NDAStateWidePipelineWidget();
@@ -79,6 +81,10 @@ public:
 public slots:
 
     void handleLoadData(void);
+
+signals:
+
+    void clearExisting();
 
 private:
 

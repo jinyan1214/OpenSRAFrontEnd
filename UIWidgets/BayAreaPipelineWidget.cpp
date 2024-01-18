@@ -115,11 +115,11 @@ bool BayAreaPipelineWidget::inputFromJSON(QJsonObject &rvObject)
 void BayAreaPipelineWidget::createComponentsBox(void)
 {
 
-    QWidget* regionLoadWidget = new QWidget();
+//    QWidget* regionLoadWidget = new QWidget();
 //    QHBoxLayout* regionSitesLayout = new QHBoxLayout(regionLoadWidget);
 
-    // Insert the widget three rows from the bottom
-    insertWidgetIntoLayout(regionLoadWidget,3);
+//    Insert the widget three rows from the bottom
+//    insertWidgetIntoLayout(regionLoadWidget,3);
 }
 
 
