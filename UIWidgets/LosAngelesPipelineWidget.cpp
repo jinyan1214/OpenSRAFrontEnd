@@ -13,7 +13,6 @@
 #include "WorkflowAppOpenSRA.h"
 #include "WidgetFactory.h"
 #include "JsonGroupBoxWidget.h"
-#include "PipelineNetworkWidget.h"
 #endif
 
 #include <qgsfeature.h>
@@ -142,14 +141,6 @@ void LosAngelesPipelineWidget::setTheNodesWidget(PointAssetInputWidget *newTheNo
 }
 
 
-void LosAngelesPipelineWidget::clearMainLayer(void)
-{
-    auto mainLayer = this->getMainLayer();
-    if(mainLayer != nullptr)
-        theVisualizationWidget->removeLayer(mainLayer);
-}
-
-
 void LosAngelesPipelineWidget::handleLoadData(void)
 {
     // clear previously loaded network
@@ -157,11 +148,6 @@ void LosAngelesPipelineWidget::handleLoadData(void)
 //    auto pipelinesMainLayer = this->getMainLayer();
 //    if(pipelinesMainLayer != nullptr)
 //        theVisualizationWidget->removeLayer(pipelinesMainLayer);
-
-    emit clearExisting();
-
-//    auto thePipelineNetworkWidget = WorkflowAppOpenSRA::getInstance()->getThePipelineNetworkWidget();
-//    thePipelineNetworkWidget->clearExisting("LosAngeles");
 
     if(isLoaded)
         return;
@@ -189,8 +175,6 @@ void LosAngelesPipelineWidget::handleLoadData(void)
     this->statusMessage("Loading the Los Angeles network at : "+path);
 
     this->loadAssetData();
-
-    isLoaded = true;
 
     auto tableHeadings = this->getMainLayer()->fields().names();
 

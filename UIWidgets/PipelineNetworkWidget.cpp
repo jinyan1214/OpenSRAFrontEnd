@@ -123,11 +123,7 @@ PipelineNetworkWidget::PipelineNetworkWidget(VisualizationWidget* visWidget, QWi
 
 
     // Clear exsiting data if any
-    connect(statewideBelowGroundInputWidget, &StateWidePipelineWidget::clearExisting, this, &PipelineNetworkWidget::clear);
-    connect(bayareaBelowGroundInputWidget, &BayAreaPipelineWidget::clearExisting, this, &PipelineNetworkWidget::clear);
-    connect(losangelesBelowGroundInputWidget, &LosAngelesPipelineWidget::clearExisting, this, &PipelineNetworkWidget::clear);
     connect(ndaStatewideBelowGroundInputWidget, &NDAStateWidePipelineWidget::clearExisting, this, &PipelineNetworkWidget::clear);
-    connect(ndaBayareaBelowGroundInputWidget, &NDABayAreaPipelineWidget::clearExisting, this, &PipelineNetworkWidget::clear);
 
     // GIS pipelines
     GISGasNetworkInputWidget *gisGasNetworkInventory = new GISGasNetworkInputWidget(this, theVisualizationWidget);
@@ -413,93 +409,6 @@ void PipelineNetworkWidget::clear(void)
     gasPipelineWidget->clear();
     theWellsCaprocksWidget->clear();
     theAboveGroundInfWidget->clear();
-}
-
-
-void PipelineNetworkWidget::clearExisting(QString currAssetName)
-{
-    auto isLoadedState = statewideBelowGroundInputWidget->isLoaded;
-    auto isLoadedBA = bayareaBelowGroundInputWidget->isLoaded;
-    auto isLoadedLA = losangelesBelowGroundInputWidget->isLoaded;
-    auto isLoadedNDAState = ndaStatewideBelowGroundInputWidget->isLoaded;
-    auto isLoadedNDABA = ndaBayareaBelowGroundInputWidget->isLoaded;
-
-    if (isLoadedState && currAssetName != "State") {
-//        auto mainLayer = statewideBelowGroundInputWidget->getMainLayer();
-//        if (mainLayer != nullptr)
-//            theVisualizationWidget->removeLayer(mainLayer);
-//        statewideBelowGroundInputWidget->clearMainLayer();
-        statewideBelowGroundInputWidget->clear();
-    }
-
-    if (isLoadedBA && currAssetName != "BayArea") {
-//        auto mainLayer = bayareaBelowGroundInputWidget->getMainLayer();
-//        if (mainLayer != nullptr)
-//            theVisualizationWidget->removeLayer(mainLayer);
-//        bayareaBelowGroundInputWidget->clearMainLayer();
-        bayareaBelowGroundInputWidget->clear();
-    }
-
-    if (isLoadedLA && currAssetName != "LosAngeles") {
-//        auto mainLayer = losangelesBelowGroundInputWidget->getMainLayer();
-//        if (mainLayer != nullptr)
-//            theVisualizationWidget->removeLayer(mainLayer);
-//        losangelesBelowGroundInputWidget->clearMainLayer();
-        losangelesBelowGroundInputWidget->clear();
-    }
-
-    if (isLoadedNDAState && currAssetName != "NDAState") {
-//        auto mainLayer = ndaStatewideBelowGroundInputWidget->getMainLayer();
-//        if (mainLayer != nullptr)
-//            theVisualizationWidget->removeLayer(mainLayer);
-//        ndaStatewideBelowGroundInputWidget->clearMainLayer();
-        ndaStatewideBelowGroundInputWidget->clear();
-    }
-
-    if (isLoadedNDABA && currAssetName != "NDABayArea"){
-//        auto mainLayer = ndaBayareaBelowGroundInputWidget->getMainLayer();
-//        if (mainLayer != nullptr)
-////            theVisualizationWidget->removeLayer(mainLayer);
-//            ndaBayareaBelowGroundInputWidget->get
-//        ndaBayareaBelowGroundInputWidget->clearMainLayer();
-        ndaBayareaBelowGroundInputWidget->clear();
-    }
-
-//    if (currAssetName == "State") {
-////        statewideBelowGroundInputWidget->clear();
-//        bayareaBelowGroundInputWidget->clear();
-//        losangelesBelowGroundInputWidget->clear();
-//        ndaStatewideBelowGroundInputWidget->clear();
-//        ndaBayareaBelowGroundInputWidget->clear();
-//    }
-//    else if (currAssetName == "BayArea") {
-//        statewideBelowGroundInputWidget->clear();
-////        bayareaBelowGroundInputWidget->clear();
-//        losangelesBelowGroundInputWidget->clear();
-//        ndaStatewideBelowGroundInputWidget->clear();
-//        ndaBayareaBelowGroundInputWidget->clear();
-//    }
-//    else if (currAssetName == "LosAngeles") {
-//        statewideBelowGroundInputWidget->clear();
-//        bayareaBelowGroundInputWidget->clear();
-////        losangelesBelowGroundInputWidget->clear();
-//        ndaStatewideBelowGroundInputWidget->clear();
-//        ndaBayareaBelowGroundInputWidget->clear();
-//    }
-//    else if (currAssetName == "NDAState") {
-//        statewideBelowGroundInputWidget->clear();
-//        bayareaBelowGroundInputWidget->clear();
-//        losangelesBelowGroundInputWidget->clear();
-////        ndaStatewideBelowGroundInputWidget->clear();
-//        ndaBayareaBelowGroundInputWidget->clear();
-//    }
-//    else if (currAssetName == "NDABayArea") {
-//        statewideBelowGroundInputWidget->clear();
-//        bayareaBelowGroundInputWidget->clear();
-//        losangelesBelowGroundInputWidget->clear();
-//        ndaStatewideBelowGroundInputWidget->clear();
-////        ndaBayareaBelowGroundInputWidget->clear();
-//    }
 }
 
 

@@ -13,7 +13,6 @@
 #include "WorkflowAppOpenSRA.h"
 #include "WidgetFactory.h"
 #include "JsonGroupBoxWidget.h"
-#include "PipelineNetworkWidget.h"
 #endif
 
 #include <qgsfeature.h>
@@ -39,7 +38,7 @@ StateWidePipelineWidget::StateWidePipelineWidget(QWidget *parent, VisualizationW
 
     // Disconnect the old slot and connect the new one
     disconnect(browseFileButton,SIGNAL(clicked()),this,SLOT(chooseComponentInfoFileDialog()));
-    connect(browseFileButton,&QPushButton::clicked,this,&StateWidePipelineWidget::handleLoadData);
+    connect(browseFileButton,&QPushButton::clicked,this,&StateWidePipelineWidget::handleLoadStateData);
 
     label1->setText("Use the prepackaged statewide natural gas network for California");
 
@@ -302,7 +301,7 @@ bool StateWidePipelineWidget::outputToJSON(QJsonObject &rvObject)
 bool StateWidePipelineWidget::inputFromJSON(QJsonObject &rvObject)
 {
     // load state data as part of call for input
-    this->handleLoadData();
+    this->handleLoadStateData();
     return true;
 }
 
@@ -337,26 +336,13 @@ void StateWidePipelineWidget::setTheNodesWidget(PointAssetInputWidget *newTheNod
 }
 
 
-void StateWidePipelineWidget::clearMainLayer(void)
-{
-    auto mainLayer = this->getMainLayer();
-    if(mainLayer != nullptr)
-        theVisualizationWidget->removeLayer(mainLayer);
-}
-
-
-void StateWidePipelineWidget::handleLoadData(void)
+void StateWidePipelineWidget::handleLoadStateData(void)
 {
     // clear previously loaded network
 //    this->clear();
 //    auto pipelinesMainLayer = this->getMainLayer();
 //    if(pipelinesMainLayer != nullptr)
 //        theVisualizationWidget->removeLayer(pipelinesMainLayer);
-
-    emit clearExisting();
-
-//    auto thePipelineNetworkWidget = WorkflowAppOpenSRA::getInstance()->getThePipelineNetworkWidget();
-//    thePipelineNetworkWidget->clearExisting("State");
 
     if(isLoaded)
         return;
@@ -387,8 +373,6 @@ void StateWidePipelineWidget::handleLoadData(void)
     this->statusMessage("Loading the statewide network at : "+path);
 
     this->loadAssetData();
-
-    isLoaded = true;
 
     auto tableHeadings = this->getMainLayer()->fields().names();
 

@@ -13,7 +13,6 @@
 #include "WorkflowAppOpenSRA.h"
 #include "WidgetFactory.h"
 #include "JsonGroupBoxWidget.h"
-#include "PipelineNetworkWidget.h"
 #endif
 
 #include <qgsfeature.h>
@@ -143,14 +142,6 @@ void NDAStateWidePipelineWidget::setTheNodesWidget(PointAssetInputWidget *newThe
 }
 
 
-void NDAStateWidePipelineWidget::clearMainLayer(void)
-{
-    auto mainLayer = this->getMainLayer();
-    if(mainLayer != nullptr)
-        theVisualizationWidget->removeLayer(mainLayer);
-}
-
-
 void NDAStateWidePipelineWidget::handleLoadData(void)
 {
     // clear previously loaded network
@@ -160,9 +151,6 @@ void NDAStateWidePipelineWidget::handleLoadData(void)
 //        theVisualizationWidget->removeLayer(pipelinesMainLayer);
 
     emit clearExisting();
-
-//    auto thePipelineNetworkWidget = WorkflowAppOpenSRA::getInstance()->getThePipelineNetworkWidget();
-//    thePipelineNetworkWidget->clearExisting("NDAState");
 
     if(isLoaded)
         return;
@@ -188,8 +176,6 @@ void NDAStateWidePipelineWidget::handleLoadData(void)
     this->statusMessage("Loading the NDA network at : "+path);
 
     this->loadAssetData();
-
-    isLoaded = true;
 
     auto tableHeadings = this->getMainLayer()->fields().names();
 

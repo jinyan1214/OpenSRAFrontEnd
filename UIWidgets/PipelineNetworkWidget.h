@@ -80,7 +80,6 @@ public slots:
 
 //    void handleComponentChanged(QString compName);
     void clear(void);
-    void clearExisting(QString currAssetName);
 
 private:
 
