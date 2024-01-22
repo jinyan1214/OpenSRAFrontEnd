@@ -13,6 +13,7 @@
 #include "WorkflowAppOpenSRA.h"
 #include "WidgetFactory.h"
 #include "JsonGroupBoxWidget.h"
+#include "PipelineNetworkWidget.h"
 #endif
 
 #include <qgsfeature.h>
@@ -140,6 +141,14 @@ void BayAreaPipelineWidget::setTheNodesWidget(PointAssetInputWidget *newTheNodes
 }
 
 
+void BayAreaPipelineWidget::clearMainLayer(void)
+{
+    auto mainLayer = this->getMainLayer();
+    if(mainLayer != nullptr)
+        theVisualizationWidget->removeLayer(mainLayer);
+}
+
+
 void BayAreaPipelineWidget::handleLoadData(void)
 {
     // clear previously loaded network
@@ -147,6 +156,11 @@ void BayAreaPipelineWidget::handleLoadData(void)
 //    auto pipelinesMainLayer = this->theComponentDb->getMainLayer();
 //    if(pipelinesMainLayer != nullptr)
 //        theVisualizationWidget->removeLayer(pipelinesMainLayer);
+
+    emit clearExisting();
+
+//    auto thePipelineNetworkWidget = WorkflowAppOpenSRA::getInstance()->getThePipelineNetworkWidget();
+//    thePipelineNetworkWidget->clearExisting("BayArea");
 
     if(isLoaded)
         return;
@@ -159,7 +173,7 @@ void BayAreaPipelineWidget::handleLoadData(void)
     auto path = pathToOSRABackend + QDir::separator() + "lib" +
             QDir::separator()+"OtherData"+
             QDir::separator()+"Preprocessed"+
-            QDir::separator()+"Bay_Area_Pipeline_Network_Clipped_From_Statewide"+
+            QDir::separator()+"Bay_Area_Pipeline_Network_Clipped_From_Statewide_100"+
             QDir::separator() + "Bay_Area_Pipeline_Network_Clipped_From_Statewide.gpkg";
 
 
@@ -174,6 +188,10 @@ void BayAreaPipelineWidget::handleLoadData(void)
     this->statusMessage("Loading the Bay Area network at : "+path);
 
     this->loadAssetData();
+
+    isLoaded = true;
+
+    auto mainLayer = this->getMainLayer();
 
     auto tableHeadings = this->getMainLayer()->fields().names();
 

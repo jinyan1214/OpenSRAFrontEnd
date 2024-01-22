@@ -76,7 +76,11 @@ public:
 
     void clear() override;
 
+    void clearMainLayer(void);
+
     void setTheNodesWidget(PointAssetInputWidget *newTheNodesWidget);
+
+    bool isLoaded = false;
 
 public slots:
 
@@ -84,13 +88,11 @@ public slots:
 
 signals:
 
-    void clearExisting();
+    void clearExisting(void);
 
 private:
 
     PointAssetInputWidget* theNodesWidget = nullptr;
-
-    bool isLoaded = false;
 
 };
 

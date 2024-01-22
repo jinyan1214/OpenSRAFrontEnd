@@ -1,4 +1,5 @@
 #include "NDABayAreaPipelineWidget.h"
+#include "PipelineNetworkWidget.h"
 #include "QGISVisualizationWidget.h"
 #include "ComponentDatabaseManager.h"
 #include "ComponentTableView.h"
@@ -13,6 +14,7 @@
 #include "WorkflowAppOpenSRA.h"
 #include "WidgetFactory.h"
 #include "JsonGroupBoxWidget.h"
+#include "PipelineNetworkWidget.h"
 #endif
 
 #include <qgsfeature.h>
@@ -142,6 +144,14 @@ void NDABayAreaPipelineWidget::setTheNodesWidget(PointAssetInputWidget *newTheNo
 }
 
 
+void NDABayAreaPipelineWidget::clearMainLayer(void)
+{
+    auto mainLayer = this->getMainLayer();
+    if(mainLayer != nullptr)
+        theVisualizationWidget->removeLayer(mainLayer);
+}
+
+
 void NDABayAreaPipelineWidget::handleLoadData(void)
 {
     // clear previously loaded network
@@ -149,6 +159,11 @@ void NDABayAreaPipelineWidget::handleLoadData(void)
 //    auto pipelinesMainLayer = this->theComponentDb->getMainLayer();
 //    if(pipelinesMainLayer != nullptr)
 //        theVisualizationWidget->removeLayer(pipelinesMainLayer);
+
+    emit clearExisting();
+
+//    auto thePipelineNetworkWidget = WorkflowAppOpenSRA::getInstance()->getThePipelineNetworkWidget();
+//    thePipelineNetworkWidget->clearExisting("NDABayArea");
 
     if(isLoaded)
         return;
@@ -160,7 +175,7 @@ void NDABayAreaPipelineWidget::handleLoadData(void)
     // Assemble the path for the
     auto path = pathToNDAData +
             QDir::separator() + "Pipeline_Network" +
-            QDir::separator() + "Infra_BayArea"+
+            QDir::separator() + "Infra_BayArea_100"+
             QDir::separator() + "infra_bayarea_preproc.shp";
 
     if(!QFile::exists(path))
@@ -174,6 +189,10 @@ void NDABayAreaPipelineWidget::handleLoadData(void)
     this->statusMessage("Loading the NDA network at : "+path);
 
     this->loadAssetData();
+
+    isLoaded = true;
+
+    auto mainLayer = this->getMainLayer();
 
     auto tableHeadings = this->getMainLayer()->fields().names();
 
