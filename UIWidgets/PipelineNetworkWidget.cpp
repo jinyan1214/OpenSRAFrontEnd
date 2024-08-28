@@ -393,14 +393,14 @@ bool PipelineNetworkWidget::copyFiles(QString &destDir)
     -> this is a problem embedded in SimCenter commons. For OpenSRA, turn off copy of files for component and have program always refer to original source
     */
 
-    return true;
+//    return true;
 
-//    auto theCurrInputWidget = this->getCurrentComponent();
+    auto theCurrInputWidget = this->getCurrentComponent();
 
-//    if(theCurrInputWidget == nullptr)
-//        return false;
+    if(theCurrInputWidget == nullptr)
+        return false;
 
-//    return theCurrInputWidget->copyFiles(destDir);
+    return theCurrInputWidget->copyFiles(destDir);
 }
 
 

@@ -4,7 +4,7 @@ QT += core gui charts concurrent network sql 3dcore 3drender 3dextras charts xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
 
-TARGET = OpenSRA
+TARGET = OpenSRA_UI
 TEMPLATE = app
 VERSION=1.0.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\" OpenSRA
@@ -45,7 +45,7 @@ win32 {
 
 # GIS plugin
 DEFINES +=  Q_GIS
-PATH_TO_QGIS_PLUGIN=../../qgisplugin
+PATH_TO_QGIS_PLUGIN=../QGISPlugin
 include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 
 #DEFINES += ARC_GIS
@@ -53,10 +53,11 @@ include($$PATH_TO_QGIS_PLUGIN/QGIS.pri)
 #include($$PWD/arcgisruntime.pri)
 
 # Specify the path to R2D and common
-PATH_TO_R2D=../../R2DTool/R2DTool
-PATH_TO_COMMON=../../SimCenterCommon
+#PATH_TO_R2D=../R2DToolForOpenSRA/R2DTool
+PATH_TO_R2D=../R2DTool
+PATH_TO_COMMON=../SimCenterCommon
 #PATH_TO_BACKEND=../OpenSRA_dev
-PATH_TO_BACKEND=../../../../OneDrive - SlateGeotech/CEC/OpenSRA
+PATH_TO_BACKEND=../OpenSRA_dev
 
 # To avoid code copying, include the common SimCenter code
 include(OpenSRACommon.pri)
@@ -230,9 +231,9 @@ INCLUDEPATH += $$PWD/Utils \
 
 #QMAKE_EXTRA_TARGETS += first copyExamples copyBackEnd
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/'../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/'../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
-else:unix: LIBS += -L$$PWD/'../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/'../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/'../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
+#else:unix: LIBS += -L$$PWD/'../../../../../../Program Files (x86)/GnuWin32/lib/' -lzlib
 
-INCLUDEPATH += $$PWD/'../../../../../../Program Files (x86)/GnuWin32/include'
-DEPENDPATH += $$PWD/'../../../../../../Program Files (x86)/GnuWin32/include'
+#INCLUDEPATH += /usr/local/Cellar/gcc/13.2.0/include/c++/13
+#DEPENDPATH += /usr/local/Cellar/gcc/13.2.0/include/c++/13
